@@ -9,8 +9,8 @@ android {
         minSdkVersion 15
         targetSdkVersion 23
 
-        versionCode 41
-        versionName "2.0.1.6"
+        versionCode 42
+        versionName "2.0.2"
 
         setProperty("archivesBaseName", "aMetro-$versionName")
 
