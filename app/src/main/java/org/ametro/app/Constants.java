@@ -5,7 +5,7 @@ import java.net.URI;
 public class Constants {
     public static final URI MAP_SERVICE_URI = URI.create("https://absurdlysuspicious.github.io/ametro-services/repo/");
 
-    public static final long MAP_EXPIRATION_PERIOD_MILLISECONDS = 1000 * 60 * 60 * 24;
+    public static final long MAP_EXPIRATION_PERIOD_MILLISECONDS = 1000 * 60 * 5; // 5 min
 
     public static final String LINE_NAME = "LINE_NAME";
 
