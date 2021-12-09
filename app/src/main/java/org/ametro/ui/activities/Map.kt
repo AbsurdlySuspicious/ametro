@@ -243,18 +243,24 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    private fun dismissLoadingDialog() {
+        if (loadingProgressDialog != null) {
+            loadingProgressDialog!!.dismiss()
+            loadingProgressDialog = null
+        }
+    }
+
     override fun onBeforeMapLoading(container: MapContainer, schemeName: String, enabledTransports: Array<String>?) {
         if (!container.isLoaded(schemeName, enabledTransports)) {
-            if (loadingProgressDialog != null) {
-                loadingProgressDialog!!.dismiss()
-                loadingProgressDialog = null
-            }
+            dismissLoadingDialog()
             loadingProgressDialog = ProgressDialog(this)
-            loadingProgressDialog!!.isIndeterminate = true
-            loadingProgressDialog!!.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-            loadingProgressDialog!!.setCancelable(false)
-            loadingProgressDialog!!.setMessage(resources.getString(R.string.msg_map_loading_progress, schemeName))
-            loadingProgressDialog!!.show()
+            with(loadingProgressDialog!!) {
+                isIndeterminate = true
+                setProgressStyle(ProgressDialog.STYLE_SPINNER)
+                setCancelable(false)
+                setMessage(resources.getString(R.string.msg_map_loading_progress, schemeName))
+                show()
+            }
         }
     }
 
@@ -264,10 +270,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         enabledTransports: Array<String>?,
         time: Long
     ) {
-        if (loadingProgressDialog != null) {
-            loadingProgressDialog!!.dismiss()
-            loadingProgressDialog = null
-        }
+        dismissLoadingDialog()
         DebugToast.show(this, getString(R.string.msg_map_loaded, time.toString()), Toast.LENGTH_LONG)
         app.setCurrentMapViewState(container, schemeName, enabledTransports)
         initMapViewState()
@@ -315,10 +318,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         enabledTransports: Array<String>?,
         reason: Throwable
     ) {
-        if (loadingProgressDialog != null) {
-            loadingProgressDialog!!.dismiss()
-            loadingProgressDialog = null
-        }
+        dismissLoadingDialog()
         Toast.makeText(this, getString(R.string.msg_map_loading_failed, reason.message), Toast.LENGTH_LONG).show()
         Log.e(Constants.LOG, "Map load failed due exception: " + reason.message, reason)
     }
