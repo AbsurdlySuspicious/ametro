@@ -106,9 +106,9 @@ public class StationSearchAdapter extends CursorAdapter {
         private final ImageView iconView;
 
         public StationInfoHolder(View v){
-            stationView = (TextView)v.findViewById(R.id.station);
-            lineView = (TextView)v.findViewById(R.id.line);
-            iconView = (ImageView)v.findViewById(R.id.icon);
+            stationView = v.findViewById(R.id.station);
+            lineView = v.findViewById(R.id.line);
+            iconView = v.findViewById(R.id.icon);
         }
 
         public void Update(StationInfo station){

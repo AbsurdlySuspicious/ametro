@@ -84,15 +84,15 @@ public class MapListFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map_list_view, container, false);
 
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        progressText = (TextView) view.findViewById(R.id.progressText);
+        progressBar = view.findViewById(R.id.progressBar);
+        progressText = view.findViewById(R.id.progressText);
 
         noMapsView = view.findViewById(R.id.no_maps);
         noMapsView.setOnClickListener(this);
 
         emptyView = view.findViewById(R.id.empty);
 
-        list = (ListView) view.findViewById(R.id.list);
+        list = view.findViewById(R.id.list);
         list.setOnItemClickListener(this);
         list.setLongClickable(true);
         list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);

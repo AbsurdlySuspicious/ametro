@@ -35,7 +35,7 @@ public class MetadataTypes {
                     null);
             array.add(scheme);
         }
-        return array.toArray(new MapStationInformation[array.size()]);
+        return array.toArray(new MapStationInformation[0]);
     }
 
     public static HashMap<Integer, String> asTextMap(JsonNode node){

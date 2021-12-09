@@ -46,14 +46,14 @@ public class MapCatalogManager {
         List<MapInfo> mapsList = Arrays.asList(newMaps);
         maps.removeAll(mapsList);
         maps.addAll(0, mapsList);
-        catalog = new MapCatalog(maps.toArray(new MapInfo[maps.size()]));
+        catalog = new MapCatalog(maps.toArray(new MapInfo[0]));
         storeCatalog();
     }
 
     public void deleteMapAll(MapInfo[] deletingMaps) {
         List<MapInfo> maps = new ArrayList<>(Arrays.asList(getMapCatalog().getMaps()));
         maps.removeAll(Arrays.asList(deletingMaps));
-        catalog = new MapCatalog(maps.toArray(new MapInfo[maps.size()]));
+        catalog = new MapCatalog(maps.toArray(new MapInfo[0]));
         storeCatalog();
         for (MapInfo m : deletingMaps) {
             try {

@@ -67,7 +67,7 @@ public class MapListAdapter extends ArrayAdapter<ExtendedMapInfo> {
                 maps.add(new MapInfo(map));
             }
         }
-        return maps.toArray(new MapInfo[maps.size()]);
+        return maps.toArray(new MapInfo[0]);
     }
 
     private static class MapViewHolder {
@@ -88,12 +88,12 @@ public class MapListAdapter extends ArrayAdapter<ExtendedMapInfo> {
         public MapViewHolder(View view, IconProvider countryFlagProvider, TransportIconsProvider transportIconsProvider) {
             this.countryFlagProvider = countryFlagProvider;
             this.transportIconsProvider = transportIconsProvider;
-            icon = (ImageView) view.findViewById(R.id.icon);
-            city = (TextView) view.findViewById(R.id.city);
-            country = (TextView) view.findViewById(R.id.country);
-            transportsContainer = (ViewGroup) view.findViewById(R.id.icons);
-            comment = (TextView) view.findViewById(R.id.comment);
-            status = (TextView) view.findViewById(R.id.status);
+            icon = view.findViewById(R.id.icon);
+            city = view.findViewById(R.id.city);
+            country = view.findViewById(R.id.country);
+            transportsContainer = view.findViewById(R.id.icons);
+            comment = view.findViewById(R.id.comment);
+            status = view.findViewById(R.id.status);
             container = view;
 
             defaultStatusColor = status.getCurrentTextColor();

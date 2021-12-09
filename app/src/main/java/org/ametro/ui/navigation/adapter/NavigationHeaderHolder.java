@@ -20,11 +20,11 @@ class NavigationHeaderHolder implements IHolder
 
 
     public NavigationHeaderHolder(View view){
-        icon = (ImageView)view.findViewById(R.id.icon);
-        city = (TextView)view.findViewById(R.id.city);
-        country = (TextView)view.findViewById(R.id.country);
-        comment = (TextView)view.findViewById(R.id.comment);
-        transportsContainer = (ViewGroup)view.findViewById(R.id.icons);
+        icon = view.findViewById(R.id.icon);
+        city = view.findViewById(R.id.city);
+        country = view.findViewById(R.id.country);
+        comment = view.findViewById(R.id.comment);
+        transportsContainer = view.findViewById(R.id.icons);
     }
 
     @Override

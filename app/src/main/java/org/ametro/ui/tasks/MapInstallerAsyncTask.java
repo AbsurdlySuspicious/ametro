@@ -69,7 +69,7 @@ public class MapInstallerAsyncTask extends AsyncTask<Void, Object, Throwable> {
             for (MapInfo map : maps) {
                 FileUtils.move(localManager.getTempMapFile(map), localManager.getMapFile(map));
             }
-            localManager.addOrReplaceMapAll(updatedMaps.toArray(new MapInfo[updatedMaps.size()]));
+            localManager.addOrReplaceMapAll(updatedMaps.toArray(new MapInfo[0]));
         } catch (Throwable ex) {
             return ex;
         } finally {

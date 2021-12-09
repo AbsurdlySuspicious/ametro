@@ -58,13 +58,13 @@ public class CityListFragment extends Fragment implements ExpandableListView.OnC
             country = savedInstanceState.getString(Constants.MAP_COUNTRY);
             city = savedInstanceState.getString(Constants.MAP_CITY);
         }
-        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        progressText = (TextView) view.findViewById(R.id.progressText);
+        progressBar = view.findViewById(R.id.progressBar);
+        progressText = view.findViewById(R.id.progressText);
 
         noConnectionView = view.findViewById(R.id.no_connection);
         emptyView = view.findViewById(R.id.empty);
 
-        list = (ExpandableListView) view.findViewById(R.id.list);
+        list = view.findViewById(R.id.list);
         list.setOnChildClickListener(this);
 
         return view;
@@ -95,7 +95,7 @@ public class CityListFragment extends Fragment implements ExpandableListView.OnC
             }
         }
 
-        citySelectionListener.onCitySelected(result.toArray(new MapInfo[result.size()]));
+        citySelectionListener.onCitySelected(result.toArray(new MapInfo[0]));
         return true;
     }
 
@@ -125,7 +125,7 @@ public class CityListFragment extends Fragment implements ExpandableListView.OnC
             Collection<MapInfo> remoteMaps =
                     ListUtils.filter(Arrays.asList(remoteMapCatalog.getMaps()),
                             map -> !loadedMaps.contains(map.getFileName()));
-            return remoteMaps.toArray(new MapInfo[remoteMaps.size()]);
+            return remoteMaps.toArray(new MapInfo[0]);
         }
     }
 

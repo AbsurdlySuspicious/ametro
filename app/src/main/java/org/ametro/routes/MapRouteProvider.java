@@ -45,7 +45,7 @@ public class MapRouteProvider {
 
         Collections.reverse(parts);
 
-        return new MapRoute(parts.toArray(new MapRoutePart[parts.size()]));
+        return new MapRoute(parts.toArray(new MapRoutePart[0]));
     }
 
     private static void CreateGraphEdges(DijkstraHeap.TransportGraph graph, MapRouteQueryParameters parameters) {

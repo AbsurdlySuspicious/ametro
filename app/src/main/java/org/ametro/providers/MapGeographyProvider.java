@@ -37,18 +37,16 @@ public class MapGeographyProvider {
                 localCountries.put(country, localCities);
             }
             String city = m.getCity();
-            if(!localCities.contains(city)){
-                localCities.add(city);
-            }
+            localCities.add(city);
         }
 
-        countries = localCountries.keySet().toArray(new String[localCountries.keySet().size()]);
+        countries = localCountries.keySet().toArray(new String[0]);
         Arrays.sort(countries);
 
         cities = new String[countries.length][];
         for(int i=0;i< cities.length;i++){
             cities[i] = localCountries.get(countries[i]).toArray(
-                    new String[localCountries.get(countries[i]).size()]);
+                    new String[0]);
             Arrays.sort(cities[i]);
         }
     }

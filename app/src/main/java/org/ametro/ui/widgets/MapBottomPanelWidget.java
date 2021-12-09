@@ -54,11 +54,11 @@ public class MapBottomPanelWidget implements Animator.AnimatorListener {
         this.visible = false;
         this.firstTime = true;
 
-        stationTextView = (TextView) view.findViewById(R.id.station);
-        lineTextView = (TextView) view.findViewById(R.id.line);
-        detailButton = (Button) view.findViewById(R.id.button_details);
-        beginButton = (Button) view.findViewById(R.id.button_begin);
-        endButton = (Button) view.findViewById(R.id.button_end);
+        stationTextView = view.findViewById(R.id.station);
+        lineTextView = view.findViewById(R.id.line);
+        detailButton = view.findViewById(R.id.button_details);
+        beginButton = view.findViewById(R.id.button_begin);
+        endButton = view.findViewById(R.id.button_end);
 
         View.OnClickListener clickListener = new View.OnClickListener() {
             @Override

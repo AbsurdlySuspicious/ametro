@@ -380,7 +380,7 @@ public class Map extends AppCompatActivity implements
     @Override
     public boolean onChangeScheme(String schemeName) {
         mapBottomPanel.hide();
-        new MapLoadAsyncTask(this, this, container, schemeName, enabledTransportsSet.toArray(new String[enabledTransportsSet.size()])).execute();
+        new MapLoadAsyncTask(this, this, container, schemeName, enabledTransportsSet.toArray(new String[0])).execute();
         return true;
     }
 
@@ -391,7 +391,7 @@ public class Map extends AppCompatActivity implements
                 enabledTransportsSet.add(transportName);
                 container.loadSchemeWithTransports(
                         schemeName,
-                        enabledTransportsSet.toArray(new String[enabledTransportsSet.size()]));
+                        enabledTransportsSet.toArray(new String[0]));
             } else {
                 enabledTransportsSet.remove(transportName);
             }

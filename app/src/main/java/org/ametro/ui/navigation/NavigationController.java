@@ -188,8 +188,7 @@ public class NavigationController implements AdapterView.OnItemClickListener {
 
     private NavigationItem[] createNavigationItems(MapContainer container, String schemeName, String[] enabledTransports, MapDelay currentDelay) {
 
-        ArrayList<NavigationItem> items = new ArrayList<>();
-        items.addAll(Collections.singletonList(createHeaderNavigationItem(container)));
+        ArrayList<NavigationItem> items = new ArrayList<>(Collections.singletonList(createHeaderNavigationItem(container)));
 
         items.add(new NavigationSubHeader(resources.getString(R.string.nav_options), new NavigationItem[]{
                 new NavigationTextItem(OPEN_MAPS_ACTION, ContextCompat.getDrawable(context, R.drawable.ic_public_black_18dp), resources.getString(R.string.nav_select_map)),
@@ -216,7 +215,7 @@ public class NavigationController implements AdapterView.OnItemClickListener {
             items.add(new NavigationSplitter());
         }
 
-        return items.toArray(new NavigationItem[items.size()]);
+        return items.toArray(new NavigationItem[0]);
     }
 
     private NavigationItem createHeaderNavigationItem(MapContainer container) {
@@ -284,7 +283,7 @@ public class NavigationController implements AdapterView.OnItemClickListener {
 
             schemes.add(item);
         }
-        return schemes.toArray(new NavigationItem[schemes.size()]);
+        return schemes.toArray(new NavigationItem[0]);
     }
 
     private NavigationItem[] createTransportNavigationItems(MapContainer container, String schemeName, String[] enabledTransports) {
@@ -311,7 +310,7 @@ public class NavigationController implements AdapterView.OnItemClickListener {
                     enabledTransportsSet.contains(name),
                     transportSchemeMeta.getName()));
         }
-        return transports.toArray(new NavigationItem[transports.size()]);
+        return transports.toArray(new NavigationItem[0]);
     }
 
     private NavigationItem[] createDelayNavigationItems(MapContainer container, MapDelay currentDelay) {
@@ -343,7 +342,7 @@ public class NavigationController implements AdapterView.OnItemClickListener {
             delays.get(0).setSelected(true);
         }
 
-        return delays.toArray(new NavigationItem[delays.size()]);
+        return delays.toArray(new NavigationItem[0]);
     }
 
 

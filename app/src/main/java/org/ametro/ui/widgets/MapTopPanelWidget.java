@@ -37,7 +37,7 @@ public class MapTopPanelWidget implements Animator.AnimatorListener {
 
     public MapTopPanelWidget(ViewGroup view) {
         this.view = view;
-        this.textView = (TextView)view.findViewById(R.id.message);
+        this.textView = view.findViewById(R.id.message);
         this.visible = false;
         this.firstTime = true;
     }

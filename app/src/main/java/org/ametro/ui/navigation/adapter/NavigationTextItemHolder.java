@@ -15,8 +15,8 @@ class NavigationTextItemHolder implements IHolder
     private final View container;
 
     public NavigationTextItemHolder(View view){
-        imageView = (ImageView)view.findViewById(R.id.icon);
-        textView = (TextView)view.findViewById(R.id.text);
+        imageView = view.findViewById(R.id.icon);
+        textView = view.findViewById(R.id.text);
         this.container = view;
     }
 

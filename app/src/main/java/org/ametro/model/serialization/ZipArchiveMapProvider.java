@@ -63,7 +63,7 @@ public class ZipArchiveMapProvider extends ZipFile {
     }
 
     public MapScheme getScheme(String name, MapLocale locale) throws IOException {
-        MapScheme scheme = null;
+        MapScheme scheme;
         InputStream stream = getInputStream(name);
         try {
             scheme = SchemeTypes.asMapScheme(identifierProvider, reader.readTree(stream), locale);

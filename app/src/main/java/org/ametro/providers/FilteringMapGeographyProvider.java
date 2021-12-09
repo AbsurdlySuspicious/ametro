@@ -29,7 +29,7 @@ public class FilteringMapGeographyProvider extends MapGeographyProvider {
                 filteredMaps.add(map);
             }
         }
-        return filteredMaps.toArray(new MapInfo[filteredMaps.size()]);
+        return filteredMaps.toArray(new MapInfo[0]);
     }
 
 }

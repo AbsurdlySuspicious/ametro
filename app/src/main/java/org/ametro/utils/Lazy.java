@@ -3,7 +3,7 @@ package org.ametro.utils;
 public class Lazy<T> {
 
     private final IFactory<T> factory;
-    private T instance;
+    private volatile T instance;
 
     public interface IFactory<T> {
         T create();

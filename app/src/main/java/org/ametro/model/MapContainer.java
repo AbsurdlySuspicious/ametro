@@ -115,7 +115,7 @@ public class MapContainer {
             }
             result.add(transport);
         }
-        return result.toArray(new MapTransportScheme[result.size()]);
+        return result.toArray(new MapTransportScheme[0]);
     }
 
     public MapStationInformation findStationInformation(String lineName, String stationName) {

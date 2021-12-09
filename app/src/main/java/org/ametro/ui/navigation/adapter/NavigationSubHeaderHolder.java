@@ -12,7 +12,7 @@ class NavigationSubHeaderHolder implements IHolder
     private final TextView textView;
 
     public NavigationSubHeaderHolder(View view){
-        textView = (TextView)view.findViewById(R.id.text);
+        textView = view.findViewById(R.id.text);
     }
 
     @Override

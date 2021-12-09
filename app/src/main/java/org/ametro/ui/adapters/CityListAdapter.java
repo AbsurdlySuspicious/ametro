@@ -104,8 +104,8 @@ public class CityListAdapter extends BaseExpandableListAdapter  {
         private final ImageView icon;
 
         public CountryViewHolder(View view) {
-            country = (TextView) view.findViewById(R.id.country);
-            icon = (ImageView) view.findViewById(R.id.icon);
+            country = view.findViewById(R.id.country);
+            icon = view.findViewById(R.id.icon);
         }
 
         public void update(String countryName, Drawable countryIcon){
@@ -118,7 +118,7 @@ public class CityListAdapter extends BaseExpandableListAdapter  {
         private final TextView city;
 
         public CityViewHolder(View view) {
-            city = (TextView) view.findViewById(R.id.city);
+            city = view.findViewById(R.id.city);
         }
 
         public void update(String cityName){

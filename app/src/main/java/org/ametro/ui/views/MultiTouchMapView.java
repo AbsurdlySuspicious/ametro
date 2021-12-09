@@ -227,7 +227,7 @@ public class MultiTouchMapView extends ScrollView implements MultiTouchControlle
         final float scaleY = getHeight() / area.height();
         final float targetScale = Math.min(scaleX, scaleY);
         final float currentScale = getScale();
-        final float scale = targetScale > currentScale ? currentScale : targetScale;
+        final float scale = Math.min(targetScale, currentScale);
         setCenterPositionAndScale(new PointF(area.centerX(), area.centerY()), scale, false);
     }
 

@@ -85,7 +85,7 @@ public class MapList extends AppCompatActivity implements
                 outdated.add(new MapInfo(map));
             }
         }
-        outdatedMaps = outdated.toArray(new MapInfo[outdated.size()]);
+        outdatedMaps = outdated.toArray(new MapInfo[0]);
         messagePanel.setVisibility(outdatedMaps.length > 0 ? View.VISIBLE : View.GONE);
     }
 

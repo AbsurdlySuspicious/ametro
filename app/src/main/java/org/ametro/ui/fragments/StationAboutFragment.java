@@ -24,7 +24,7 @@ public class StationAboutFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_station_about_view, container, false);
         Bundle arguments = getArguments();
-        setupWebView((WebView) rootView.findViewById(R.id.web),
+        setupWebView(rootView.findViewById(R.id.web),
                 arguments.getString(Constants.LINE_NAME),
                 arguments.getString(Constants.STATION_NAME));
         return rootView;

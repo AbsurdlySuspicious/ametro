@@ -14,8 +14,8 @@ class NavigationCheckBoxItemHolder implements IHolder
     private final TextView textView;
 
     public NavigationCheckBoxItemHolder(View view){
-        checkBox = (CheckBox)view.findViewById(R.id.checkbox);
-        textView = (TextView)view.findViewById(R.id.text);
+        checkBox = view.findViewById(R.id.checkbox);
+        textView = view.findViewById(R.id.text);
     }
 
     @Override

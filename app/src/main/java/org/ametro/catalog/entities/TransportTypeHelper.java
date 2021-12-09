@@ -39,6 +39,6 @@ public class TransportTypeHelper {
         for(String name : names){
             types.add(parseTransportType(name));
         }
-        return types.toArray(new TransportType[types.size()]);
+        return types.toArray(new TransportType[0]);
     }
 }
