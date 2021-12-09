@@ -149,6 +149,7 @@ public class Map extends AppCompatActivity implements
                 onRouteSelectionComplete(routeStart.second, routeEnd.second);
             }
         }else {
+            app.clearCurrentMapViewState();
             File currentMapFile = settingsProvider.getCurrentMap();
             if (currentMapFile != null) {
                 new MapLoadAsyncTask(this, this, new MapContainer(
