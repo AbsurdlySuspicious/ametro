@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <include layout="@layout/widget_toolbar"/>
+
+    <include android:id="@+id/include_toolbar" layout="@layout/widget_toolbar" />
 
     <ScrollView
         android:layout_width="match_parent"
