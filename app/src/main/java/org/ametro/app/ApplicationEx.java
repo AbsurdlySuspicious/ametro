@@ -16,6 +16,8 @@ import org.ametro.catalog.service.IMapServiceCache;
 import org.ametro.catalog.service.MapServiceCache;
 import org.ametro.catalog.service.ServiceTransport;
 import org.ametro.model.MapContainer;
+import org.ametro.model.entities.MapSchemeLine;
+import org.ametro.model.entities.MapSchemeStation;
 import org.ametro.providers.IconProvider;
 import org.ametro.utils.Lazy;
 
@@ -32,6 +34,8 @@ public class ApplicationEx extends Application {
     private String schemeName;
     private String[] enabledTransports;
     private Pair<PointF, Float> centerPositionAndScale;
+    private Pair<MapSchemeLine, MapSchemeStation> routeStart = null;
+    private Pair<MapSchemeLine, MapSchemeStation> routeEnd = null;
 
     public static ApplicationEx getInstance(Activity activity) {
         return (ApplicationEx) activity.getApplication();
@@ -125,6 +129,7 @@ public class ApplicationEx extends Application {
     }
 
     public void setCurrentMapViewState(MapContainer container, String schemeName, String[] enabledTransports) {
+        clearCurrentMapViewState();
         this.container = container;
         this.schemeName = schemeName;
         this.enabledTransports = enabledTransports;
@@ -134,6 +139,8 @@ public class ApplicationEx extends Application {
         this.container = null;
         this.schemeName = null;
         this.enabledTransports = null;
+        this.centerPositionAndScale = null;
+        clearRoute();
     }
 
     public MapContainer getContainer() {
@@ -155,4 +162,26 @@ public class ApplicationEx extends Application {
     public Pair<PointF, Float> getCenterPositionAndScale() {
         return centerPositionAndScale;
     }
+
+    public void clearRoute() {
+        this.routeStart = null;
+        this.routeEnd = null;
+    }
+    
+    public void setRouteStart(MapSchemeLine line, MapSchemeStation station) {
+        this.routeStart = new Pair<>(line, station);
+    }
+    
+    public Pair<MapSchemeLine, MapSchemeStation> getRouteStart() {
+        return this.routeStart;
+    }
+    
+    public void setRouteEnd(MapSchemeLine line, MapSchemeStation station) {
+        this.routeEnd = new Pair<>(line, station);
+    }
+    
+    public Pair<MapSchemeLine, MapSchemeStation> getRouteEnd() {
+        return this.routeEnd;
+    }
+    
 }

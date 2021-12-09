@@ -129,11 +129,26 @@ public class Map extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         initMapViewState();
-        if(mapView!=null && app.getCenterPositionAndScale()!=null){
-            android.util.Pair<PointF, Float> data = app.getCenterPositionAndScale();
-            mapView.setCenterPositionAndScale(data.first, data.second, false);
-        }
-        if(mapView==null){
+        if(mapView!=null) {
+            android.util.Pair<PointF, Float> pos = app.getCenterPositionAndScale();
+            android.util.Pair<MapSchemeLine, MapSchemeStation> routeStart = app.getRouteStart();
+            android.util.Pair<MapSchemeLine, MapSchemeStation> routeEnd = app.getRouteEnd();
+            int selectedStations = 0;
+            if (pos != null) {
+                mapView.setCenterPositionAndScale(pos.first, pos.second, false);
+            }
+            if (routeStart != null) {
+                onSelectBeginStation(routeStart.first, routeStart.second);
+                selectedStations++;
+            }
+            if (routeEnd != null) {
+                onSelectEndStation(routeEnd.first, routeEnd.second);
+                selectedStations++;
+            }
+            if (selectedStations == 2) {
+                onRouteSelectionComplete(routeStart.second, routeEnd.second);
+            }
+        }else {
             File currentMapFile = settingsProvider.getCurrentMap();
             if (currentMapFile != null) {
                 new MapLoadAsyncTask(this, this, new MapContainer(
@@ -241,6 +256,7 @@ public class Map extends AppCompatActivity implements
             mapBottomPanel.hide();
         } else if (mapSelectionIndicators.hasSelection()) {
             mapSelectionIndicators.clearSelection();
+            app.clearRoute();
         } else {
             super.onBackPressed();
         }
@@ -420,12 +436,14 @@ public class Map extends AppCompatActivity implements
     public void onSelectBeginStation(MapSchemeLine line, MapSchemeStation station) {
         mapBottomPanel.hide();
         mapSelectionIndicators.setBeginStation(station);
+        app.setRouteStart(line, station);
     }
 
     @Override
     public void onSelectEndStation(MapSchemeLine line, MapSchemeStation station) {
         mapBottomPanel.hide();
         mapSelectionIndicators.setEndStation(station);
+        app.setRouteEnd(line, station);
     }
 
     @Override
