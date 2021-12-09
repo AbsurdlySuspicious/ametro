@@ -51,9 +51,9 @@ class MapList : AppCompatActivity(), IMapListEventListener, IMapInstallerEventLi
         setContentView(binding.root)
         setSupportActionBar(binding.includeToolbar.toolbar)
 
-        supportActionBar?.let { actionBar ->
-            actionBar.setDefaultDisplayHomeAsUpEnabled(true)
-            actionBar.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.run {
+            setDefaultDisplayHomeAsUpEnabled(true)
+            setDisplayHomeAsUpEnabled(true)
         }
 
         listFragment = supportFragmentManager.findFragmentById(R.id.list) as MapListFragment

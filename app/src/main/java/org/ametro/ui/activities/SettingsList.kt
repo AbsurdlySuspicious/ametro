@@ -21,9 +21,9 @@ class SettingsList : AppCompatActivity() {
         setContentView(binding.root)
         setSupportActionBar(binding.includeToolbar.toolbar)
 
-        supportActionBar?.let { actionBar ->
-            actionBar.setDefaultDisplayHomeAsUpEnabled(true)
-            actionBar.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.run {
+            setDefaultDisplayHomeAsUpEnabled(true)
+            setDisplayHomeAsUpEnabled(true)
         }
     }
 
