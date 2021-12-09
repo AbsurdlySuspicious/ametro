@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import org.ametro.R;
+import org.ametro.catalog.entities.MapInfoEntityName;
 import org.ametro.catalog.entities.TransportTypeHelper;
 import org.ametro.catalog.localization.MapInfoLocalizationProvider;
 import org.ametro.model.MapContainer;
@@ -223,10 +224,11 @@ public class NavigationController implements AdapterView.OnItemClickListener {
             return new NavigationHeader(resources.getString(R.string.nav_no_city));
         }
         MapMetadata meta = container.getMetadata();
+        MapInfoEntityName local = localizationProvider.getEntity(meta.getCityId());
         return new NavigationHeader(
-                countryIconProvider.getIcon(localizationProvider.getCountryIsoCode(meta.getCityId())),
-                localizationProvider.getCityName(meta.getCityId()),
-                localizationProvider.getCountryName(meta.getCityId()),
+                countryIconProvider.getIcon(local.getCountryIsoCode()),
+                local.getCityName(),
+                local.getCountryName(),
                 meta.getComments(),
                 transportIconProvider.getTransportIcons(
                         TransportTypeHelper.parseTransportTypes(meta.getTransportTypes()))
