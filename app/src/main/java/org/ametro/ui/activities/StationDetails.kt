@@ -56,6 +56,7 @@ class StationDetails : AppCompatActivity(), TabColorizer {
             mapFragment.arguments = intent.extras
             tabs.add(FragmentPagerTabInfo(getString(R.string.tab_map), mapFragment))
 
+            // todo investigate ("about station" tab in details/info)
             // Fragment aboutFragment = new StationAboutFragment();
             // aboutFragment.setArguments(getIntent().getExtras());
             // tabs.add(new FragmentPagerTabInfo(getString(R.string.tab_about), aboutFragment));

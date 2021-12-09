@@ -191,6 +191,7 @@ public class NavigationController implements AdapterView.OnItemClickListener {
 
         items.add(new NavigationSubHeader(resources.getString(R.string.nav_options), new NavigationItem[]{
                 new NavigationTextItem(OPEN_MAPS_ACTION, ContextCompat.getDrawable(context, R.drawable.ic_public_black_18dp), resources.getString(R.string.nav_select_map)),
+                // todo uncomment settings later (check settings.xml and SettingsListFragment)
                 //new NavigationTextItem(OPEN_SETTINGS_ACTION, ContextCompat.getDrawable(context, R.drawable.ic_settings_black_18dp), resources.getString(R.string.nav_settings)),
                 new NavigationTextItem(OPEN_ABOUT_ACTION, ContextCompat.getDrawable(context, R.drawable.ic_info_black_24dp), resources.getString(R.string.nav_about)),
                 new NavigationSplitter()
