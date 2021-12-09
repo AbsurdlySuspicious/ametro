@@ -44,11 +44,11 @@
                 android:src="@drawable/map_marker_end"
                 />
 
-            <include layout="@layout/widget_map_top_panel" />
-            <include layout="@layout/widget_map_bottom_panel" />
+            <include android:id="@+id/include_top_panel" layout="@layout/widget_map_top_panel" />
+            <include android:id="@+id/include_bottom_panel" layout="@layout/widget_map_bottom_panel" />
         </RelativeLayout>
 
-        <include layout="@layout/widget_empty_map" />
+        <include android:id="@+id/include_empty_map" layout="@layout/widget_empty_map" />
     </LinearLayout>
 
     <ListView

@@ -18,6 +18,7 @@ import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
 import org.ametro.app.Constants
+import org.ametro.databinding.ActivityMapViewBinding
 import org.ametro.model.MapContainer
 import org.ametro.model.ModelUtil
 import org.ametro.model.entities.MapDelay
@@ -53,35 +54,38 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     private var schemeName: String? = null
     private var currentDelay: MapDelay? = null
 
-    private lateinit var testMenuOptionsProcessor: TestMenuOptionsProcessor
-    private lateinit var mapContainerView: ViewGroup
+    private lateinit var binding: ActivityMapViewBinding
     private lateinit var mapSelectionIndicators: MapSelectionIndicatorsWidget
-    private lateinit var mapPanelView: View
     private lateinit var mapBottomPanel: MapBottomPanelWidget
     private lateinit var mapTopPanel: MapTopPanelWidget
+    private val mapPanelView: View
+        get() = binding.mapPanel
+    private val mapContainerView: ViewGroup
+        get() = binding.mapContainer
 
     private var mapView: MultiTouchMapView? = null
     private var loadingProgressDialog: ProgressDialog? = null
 
+    private lateinit var testMenuOptionsProcessor: TestMenuOptionsProcessor
     private lateinit var app: ApplicationEx
     private lateinit var settingsProvider: ApplicationSettingsProvider
     private lateinit var navigationController: NavigationController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_map_view)
-        mapContainerView = findViewById<View>(R.id.map_container) as ViewGroup
-        mapPanelView = findViewById(R.id.map_panel)
-        mapTopPanel = MapTopPanelWidget(findViewById<View>(R.id.map_top_panel) as ViewGroup)
-        mapBottomPanel = MapBottomPanelWidget(findViewById<View>(R.id.map_bottom_panel) as ViewGroup, this)
+        binding = ActivityMapViewBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
+        mapBottomPanel = MapBottomPanelWidget(binding.includeBottomPanel.mapBottomPanel, this)
         mapSelectionIndicators = MapSelectionIndicatorsWidget(
             this,
-            findViewById(R.id.begin_indicator),
-            findViewById(R.id.end_indicator)
+            binding.beginIndicator,
+            binding.endIndicator
         )
         app = ApplicationEx.getInstance(this)
         settingsProvider = app.applicationSettingsProvider
-        findViewById<View>(R.id.map_empty_panel).setOnClickListener { onOpenMaps() }
+        binding.includeEmptyMap.mapEmptyPanel.setOnClickListener { onOpenMaps() }
         testMenuOptionsProcessor = TestMenuOptionsProcessor(this)
         navigationController = NavigationController(
             this,
@@ -94,8 +98,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
     override fun onPause() {
         super.onPause()
-        if (mapView != null) {
-            app.centerPositionAndScale = mapView!!.centerPositionAndScale
+        mapView?.let {
+            app.centerPositionAndScale = it.centerPositionAndScale
         }
     }
 
@@ -103,33 +107,32 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         super.onResume()
         initMapViewState()
         if (mapView != null) {
-            val pos = app.centerPositionAndScale
             val routeStart = app.routeStart
             val routeEnd = app.routeEnd
             var selectedStations = 0
-            if (pos != null) {
-                mapView!!.setCenterPositionAndScale(pos.first, pos.second, false)
+
+            app.centerPositionAndScale?.let {
+                mapView!!.setCenterPositionAndScale(it.first, it.second, false)
             }
-            if (routeStart != null) {
-                onSelectBeginStation(routeStart.first, routeStart.second)
+
+            routeStart?.let {
+                onSelectBeginStation(it.first, it.second)
                 selectedStations++
             }
-            if (routeEnd != null) {
-                onSelectEndStation(routeEnd.first, routeEnd.second)
+
+            routeEnd?.let {
+                onSelectEndStation(it.first, it.second)
                 selectedStations++
             }
+
             if (selectedStations == 2) {
                 onRouteSelectionComplete(routeStart!!.second, routeEnd!!.second)
             }
         } else {
             app.clearCurrentMapViewState()
-            val currentMapFile = settingsProvider.currentMap
-            if (currentMapFile != null) {
+            settingsProvider.currentMap?.let {
                 MapLoadAsyncTask(
-                    this, this, MapContainer(
-                        currentMapFile,
-                        settingsProvider.preferredMapLanguage
-                    )
+                    this, this, MapContainer(it, settingsProvider.preferredMapLanguage)
                 ).execute()
             }
         }
@@ -180,23 +183,19 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 if (scheme == null) {
                     return true
                 }
-                if (selectedStation[0] != null) {
-                    val stationInfo = ModelUtil.findStationByUid(
-                        scheme, selectedStation[0]!!
-                            .uid.toLong()
+                selectedStation[0]?.let {
+                    ModelUtil.findStationByUid(scheme, it.uid.toLong())
+                }?.let { stationInfo ->
+                    val stationInformation = container!!
+                        .findStationInformation(stationInfo.first.name, stationInfo.second.name)
+                    val p = PointF(selectedStation[0]!!.position.x, selectedStation[0]!!.position.y)
+                    mapView!!.setCenterPositionAndScale(p, mapView!!.scale, true)
+                    mapBottomPanel.show(
+                        stationInfo.first,
+                        stationInfo.second,
+                        stationInformation?.mapFilePath != null
                     )
-                    if (stationInfo != null) {
-                        val stationInformation = container!!
-                            .findStationInformation(stationInfo.first.name, stationInfo.second.name)
-                        val p = PointF(selectedStation[0]!!.position.x, selectedStation[0]!!.position.y)
-                        mapView!!.setCenterPositionAndScale(p, mapView!!.scale, true)
-                        mapBottomPanel.show(
-                            stationInfo.first,
-                            stationInfo.second,
-                            stationInformation != null && stationInformation.mapFilePath != null
-                        )
-                        searchMenuItem.collapseActionView()
-                    }
+                    searchMenuItem.collapseActionView()
                 }
                 return true
             }
@@ -285,26 +284,25 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         container = app.container
         schemeName = app.schemeName
         scheme = container!!.getScheme(schemeName)
-        enabledTransportsSet = HashSet(listOf(
-            *app.enabledTransports ?: container!!.getScheme(schemeName).defaultTransports
-        ))
+        enabledTransportsSet = HashSet(
+            listOf(
+                *app.enabledTransports ?: container!!.getScheme(schemeName).defaultTransports
+            )
+        )
         navigationController.setNavigation(container, schemeName, app.enabledTransports, currentDelay)
         mapPanelView.visibility = View.VISIBLE
         mapSelectionIndicators.clearSelection()
         mapView = MultiTouchMapView(this, container, schemeName, mapSelectionIndicators)
         mapView!!.setOnClickListener {
-            val stationInfo = ModelUtil.findTouchedStation(scheme, mapView!!.touchPoint)
-            if (stationInfo != null) {
+            ModelUtil.findTouchedStation(scheme, mapView!!.touchPoint)?.let { stationInfo ->
                 val stationInformation = container!!
                     .findStationInformation(stationInfo.first.name, stationInfo.second.name)
                 mapBottomPanel.show(
                     stationInfo.first,
                     stationInfo.second,
-                    stationInformation != null && stationInformation.mapFilePath != null
+                    stationInformation?.mapFilePath != null
                 )
-            } else {
-                mapBottomPanel.hide()
-            }
+            } ?: mapBottomPanel.hide()
         }
         mapContainerView.removeAllViews()
         mapContainerView.addView(mapView)
@@ -421,8 +419,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onRouteSelectionCleared() {
-        if (mapView != null) {
-            mapView!!.highlightsElements(null)
+        mapView?.let {
+            it.highlightsElements(null)
             mapTopPanel.hide()
         }
     }
