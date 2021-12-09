@@ -1,5 +1,6 @@
 package org.ametro.ui.fragments;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -152,24 +153,42 @@ public class MapListFragment extends Fragment implements
         listener.onOpenMap(adapter.getItem(position));
     }
 
+    private static class MapCatalogAsyncTaskLoaderLocal extends AsyncTaskLoader<MapCatalog> {
+        private final ApplicationEx app;
+
+        public MapCatalogAsyncTaskLoaderLocal(ApplicationEx app, Activity act) {
+            super(act);
+            this.app = app;
+        }
+
+        @Override
+        public MapCatalog loadInBackground() {
+            return app.getLocalMapCatalogManager().getMapCatalog();
+        }
+    }
+
+    private static class MapCatalogAsyncTaskLoaderRemote extends AsyncTaskLoader<MapCatalog> {
+        private final ApplicationEx app;
+
+        public MapCatalogAsyncTaskLoaderRemote(ApplicationEx app, Activity act) {
+            super(act);
+            this.app = app;
+        }
+
+        @Override
+        public MapCatalog loadInBackground() {
+            return app.getRemoteMapCatalogProvider().getMapCatalog(false);
+        }
+    }
+
     @Override
     public Loader<MapCatalog> onCreateLoader(int id, Bundle args) {
         final ApplicationEx app = ApplicationEx.getInstance(MapListFragment.this.getActivity());
         switch(id){
             case LOCAL_CATALOG_LOADER:
-                return new AsyncTaskLoader<MapCatalog>(getActivity()) {
-                    @Override
-                    public MapCatalog loadInBackground() {
-                        return app.getLocalMapCatalogManager().getMapCatalog();
-                    }
-                };
+                return new MapCatalogAsyncTaskLoaderLocal(app, getActivity());
             case REMOTE_CATALOG_LOADER:
-                return new AsyncTaskLoader<MapCatalog>(getActivity()) {
-                    @Override
-                    public MapCatalog loadInBackground() {
-                        return app.getRemoteMapCatalogProvider().getMapCatalog(false);
-                    }
-                };
+                return new MapCatalogAsyncTaskLoaderRemote(app, getActivity());
         }
         return null;
     }

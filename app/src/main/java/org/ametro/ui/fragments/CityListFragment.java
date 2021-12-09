@@ -1,6 +1,7 @@
 package org.ametro.ui.fragments;
 
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -102,34 +103,35 @@ public class CityListFragment extends Fragment implements ExpandableListView.OnC
         citySelectionListener = newListener;
     }
 
+    private static class MapInfoAsyncTaskLoader extends AsyncTaskLoader<MapInfo[]> {
+        public MapInfoAsyncTaskLoader(Activity act) {
+            super(act);
+        }
+
+        @Override
+        public MapInfo[] loadInBackground() {
+            ApplicationEx app = ApplicationEx.getInstance(this);
+            final Set<String> loadedMaps = new HashSet<>();
+            for (MapInfo m : app.getLocalMapCatalogManager().getMapCatalog().getMaps()) {
+                loadedMaps.add(m.getFileName());
+            }
+            MapCatalog remoteMapCatalog = app.getRemoteMapCatalogProvider()
+                    .getMapCatalog(false);
+
+            if (remoteMapCatalog == null) {
+                return null;
+            }
+
+            Collection<MapInfo> remoteMaps =
+                    ListUtils.filter(Arrays.asList(remoteMapCatalog.getMaps()),
+                            map -> !loadedMaps.contains(map.getFileName()));
+            return remoteMaps.toArray(new MapInfo[remoteMaps.size()]);
+        }
+    }
+
     @Override
     public Loader<MapInfo[]> onCreateLoader(int id, Bundle args) {
-        return new AsyncTaskLoader<MapInfo[]>(getActivity()) {
-            @Override
-            public MapInfo[] loadInBackground() {
-                ApplicationEx app = ApplicationEx.getInstance(this);
-                final Set<String> loadedMaps = new HashSet<>();
-                for (MapInfo m : app.getLocalMapCatalogManager().getMapCatalog().getMaps()) {
-                    loadedMaps.add(m.getFileName());
-                }
-                MapCatalog remoteMapCatalog = app.getRemoteMapCatalogProvider()
-                        .getMapCatalog(false);
-
-                if(remoteMapCatalog == null){
-                    return null;
-                }
-
-                Collection<MapInfo> remoteMaps =
-                        ListUtils.filter(Arrays.asList(remoteMapCatalog.getMaps()),
-                                new ListUtils.IPredicate<MapInfo>() {
-                                    @Override
-                                    public boolean apply(MapInfo map) {
-                                        return !loadedMaps.contains(map.getFileName());
-                                    }
-                                });
-                return remoteMaps.toArray(new MapInfo[remoteMaps.size()]);
-            }
-        };
+        return new MapInfoAsyncTaskLoader(getActivity());
     }
 
     @Override
@@ -151,14 +153,14 @@ public class CityListFragment extends Fragment implements ExpandableListView.OnC
 
     @Override
     public void onLoaderReset(Loader<MapInfo[]> loader) {
-        if(geographyProvider!=null) {
+        if (geographyProvider != null) {
             geographyProvider.setData(new MapInfo[0]);
         }
     }
 
     @Override
     public boolean onQueryTextSubmit(String s) {
-        if(adapter == null){
+        if (adapter == null) {
             return true;
         }
 
@@ -172,7 +174,7 @@ public class CityListFragment extends Fragment implements ExpandableListView.OnC
 
     @Override
     public boolean onQueryTextChange(String s) {
-        if(adapter == null){
+        if (adapter == null) {
             return true;
         }
 
