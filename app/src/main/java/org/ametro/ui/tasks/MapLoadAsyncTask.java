@@ -3,7 +3,7 @@ package org.ametro.ui.tasks;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.PowerManager;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.ametro.model.MapContainer;
 

@@ -12,13 +12,13 @@ import android.graphics.PointF
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.Lazy.IFactory
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import org.ametro.R
 import org.ametro.catalog.service.MapServiceCache
 import org.ametro.catalog.service.ServiceTransport
 import android.app.Activity
 import android.content.Context
-import android.support.v4.content.AsyncTaskLoader
+import androidx.loader.content.AsyncTaskLoader
 import android.util.Pair
 import org.ametro.app.ApplicationEx
 import org.ametro.utils.Lazy
