@@ -304,7 +304,7 @@ public class Map extends AppCompatActivity implements
             loadingProgressDialog.dismiss();
             loadingProgressDialog = null;
         }
-        DebugToast.show(this, getString(R.string.msg_map_loaded, time), Toast.LENGTH_LONG);
+        DebugToast.show(this, getString(R.string.msg_map_loaded, String.valueOf(time)), Toast.LENGTH_LONG);
         this.app.setCurrentMapViewState(container, schemeName, enabledTransports);
         initMapViewState();
         settingsProvider.setCurrentMap(container.getMapFile());
