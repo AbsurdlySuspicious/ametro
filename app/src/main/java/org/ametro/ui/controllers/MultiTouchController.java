@@ -7,6 +7,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
@@ -40,6 +41,7 @@ public class MultiTouchController {
 	private static final int ANIMATION_TIME = 250;
 	
 	/** controller states **/
+	private boolean doubleTapZoomInit = false;
 	private int mode = MODE_NONE;
 	public static final int MODE_NONE = 1;
 	public static final int MODE_INIT = 2;
@@ -47,8 +49,8 @@ public class MultiTouchController {
 	public static final int MODE_DRAG = 4;
 	public static final int MODE_ZOOM = 5;
     public static final int MODE_SHORTPRESS_START = 6;
-    public static final int MODE_SHORTPRESS_MODE = 7;
     public static final int MODE_LONGPRESS_START = 8;
+	public static final int MODE_DT_ZOOM = 9;
     
     public static final int MODE_ANIMATION = 100;
 
@@ -56,6 +58,7 @@ public class MultiTouchController {
 	private static final int MSG_SWITCH_TO_LONGPRESS = 2;
 	private static final int MSG_PROCESS_FLING = 3;
 	private static final int MSG_PROCESS_ANIMATION = 4;
+	private static final int MSG_DO_SHORTPRESS = 5;
 
 	public static final int ZOOM_IN = 1;
 	public static final int ZOOM_OUT = 2;
@@ -146,6 +149,7 @@ public class MultiTouchController {
 			initialized = true;
 		}
 		int action = event.getAction();
+		Log.i("touch event", MotionEvent.actionToString(action));
 		boolean handled = true;
 		if(action == MotionEvent.ACTION_DOWN){
 			handled = doActionDown(event);
@@ -169,30 +173,83 @@ public class MultiTouchController {
 		} else {
 			setControllerMode(MODE_INIT);
 		}
-		if (mode == MODE_INIT) {
-			privateHandler.sendEmptyMessageDelayed(MSG_SWITCH_TO_SHORTPRESS, ViewConfiguration.getTapTimeout());
-		}
-		velocityTracker = VelocityTracker.obtain();
-		savedMatrix.set(matrix);
+
 		touchStartPoint.set(event.getX(), event.getY());
 		touchStartTime = event.getEventTime();
+
+		if (mode == MODE_INIT) {
+			if (doubleTapZoomInit) {
+				privateHandler.removeMessages(MSG_DO_SHORTPRESS);
+				doubleTapZoomInit = false;
+
+				zoomStart();
+				zoomBase = 1f;
+				zoomCenter.set(touchStartPoint);
+				setControllerMode(MODE_DT_ZOOM);
+				return true;
+			} else {
+				privateHandler.sendEmptyMessageDelayed(MSG_SWITCH_TO_SHORTPRESS, ViewConfiguration.getTapTimeout());
+			}
+		}
+
+		velocityTracker = VelocityTracker.obtain();
+		savedMatrix.set(matrix);
+
 		return true;
 	}
-	
+
+	/** Determine the distance between the first two fingers */
+	private float distance(MotionEventWrapper event) {
+		float x = event.getX(0) - event.getX(1);
+		float y = event.getY(0) - event.getY(1);
+		return (float)Math.sqrt(x * x + y * y);
+	}
+
+	private float distance(MotionEventWrapper event, PointF secondPoint) {
+		float x = event.getX() - secondPoint.x;
+		float y = event.getY() - secondPoint.y;
+		return (float)Math.sqrt(x * x + y * y);
+	}
+
 	private boolean doActionPointerDown(MotionEventWrapper event){
 		zoomBase = distance(event);
+		Log.i("touch event", "pinch zoom base: " + zoomBase);
 		//Log.d(TAG, "oldDist=" + zoomBase);
 		if (zoomBase > 10f) {
-			if (!scroller.isFinished()) {
-				scroller.abortAnimation();
-			}
-			savedMatrix.set(matrix);
+			zoomStart();
 			float x = event.getX(0) + event.getX(1);
 			float y = event.getY(0) + event.getY(1);
 			zoomCenter.set(x / 2, y / 2);
 			setControllerMode( MODE_ZOOM );
 		}			
 		return true;
+	}
+
+	private void zoomStart() {
+		if (!scroller.isFinished()) {
+			scroller.abortAnimation();
+		}
+		savedMatrix.set(matrix);
+	}
+
+	private void zoomMove(float newDist, float distLimit) {
+		if (newDist <= distLimit) return;
+
+		matrix.set(savedMatrix);
+		float scale = newDist / zoomBase;
+		Log.i("touch event", "zmove: dist " + newDist + ", scale " + scale + ", base " + zoomBase);
+
+		matrix.getValues(matrixValues);
+		float currentScale = matrixValues[Matrix.MSCALE_X];
+
+		// limit zoom
+		if (scale * currentScale > maxScale) {
+			scale = maxScale / currentScale;
+		} else if (scale * currentScale < minScale) {
+			scale = minScale / currentScale;
+		}
+		matrix.postScale(scale, scale, zoomCenter.x, zoomCenter.y);
+		adjustPan();
 	}
 	
 	private boolean doActionMove(MotionEventWrapper event){
@@ -201,24 +258,14 @@ public class MultiTouchController {
 			return false; 
 		} else if (mode == MODE_ZOOM) {
 			float newDist = distance(event);
-			if (newDist > 10f) {
-				matrix.set(savedMatrix);
-				float scale = newDist / zoomBase;
-
-				matrix.getValues(matrixValues);
-				float currentScale = matrixValues[Matrix.MSCALE_X];
-
-				// limit zoom
-				if (scale * currentScale > maxScale) {
-					scale = maxScale / currentScale;
-				} else if (scale * currentScale < minScale) {
-					scale = minScale / currentScale;
-				}
-				matrix.postScale(scale, scale, zoomCenter.x, zoomCenter.y);
-				adjustPan();
-			}
+			zoomMove(newDist, 10f);
+			return true;
+		} else if (mode == MODE_DT_ZOOM) {
+			float newDist = distance(event, zoomCenter);
+			zoomMove(newDist, 3f);
 			return true;
 		}
+
 		velocityTracker.addMovement(event.getEvent());
 
 		if (mode != MODE_DRAG) {
@@ -228,7 +275,7 @@ public class MultiTouchController {
 			if ((deltaX * deltaX + deltaY * deltaY) < touchSlopSquare) {
 				return false;
 			}
-			if (mode == MODE_SHORTPRESS_MODE || mode == MODE_SHORTPRESS_START) {
+			if (mode == MODE_SHORTPRESS_START) {
 				privateHandler.removeMessages(MSG_SWITCH_TO_LONGPRESS);
 			} else if (mode == MODE_INIT) {
 				privateHandler.removeMessages(MSG_SWITCH_TO_SHORTPRESS);
@@ -248,15 +295,18 @@ public class MultiTouchController {
 		switch (mode) {
 		case MODE_INIT: // tap
 		case MODE_SHORTPRESS_START:
-		case MODE_SHORTPRESS_MODE:
+			privateHandler.removeMessages(MSG_DO_SHORTPRESS);
 			privateHandler.removeMessages(MSG_SWITCH_TO_SHORTPRESS);
 			privateHandler.removeMessages(MSG_SWITCH_TO_LONGPRESS);
+
+			privateHandler.sendEmptyMessageDelayed(MSG_DO_SHORTPRESS, ViewConfiguration.getDoubleTapTimeout());
+			doubleTapZoomInit = true;
+
 			if (velocityTracker != null) {
 				velocityTracker.recycle();
 				velocityTracker = null;
 			}
 			setControllerMode(MODE_NONE);
-			performClick();
 			return true;
 		case MODE_LONGPRESS_START:
 			// do nothing
@@ -285,6 +335,7 @@ public class MultiTouchController {
 				break;
 			}
 			break;
+		case MODE_DT_ZOOM:
 		case MODE_ZOOM:
 			// ???
 		case MODE_NONE:
@@ -365,13 +416,6 @@ public class MultiTouchController {
 			dy = -currentY + (displayRect.height() - currentHeight)/2;
 		}
 		matrix.postTranslate(dx, dy);
-	}
-	
-	/** Determine the distance between the first two fingers */
-	private float distance(MotionEventWrapper event) {
-		float x = event.getX(0) - event.getX(1);
-		float y = event.getY(0) - event.getY(1);
-		return (float)Math.sqrt(x * x + y * y);
 	}
 
 	boolean computeScroll() {
@@ -529,6 +573,11 @@ public class MultiTouchController {
 			case MSG_SWITCH_TO_LONGPRESS: {
 				setControllerMode(MODE_LONGPRESS_START);
 				performLongClick();
+				break;
+			}
+			case MSG_DO_SHORTPRESS: {
+				doubleTapZoomInit = false;
+				performClick();
 				break;
 			}
 			default:

@@ -143,7 +143,11 @@ public class MultiTouchMapView extends ScrollView implements MultiTouchControlle
     }
 
     public void onTouchModeChanged(int mode) {
-        renderer.setUpdatesEnabled(mode != MultiTouchController.MODE_ZOOM && mode != MultiTouchController.MODE_ANIMATION);
+        renderer.setUpdatesEnabled(
+                mode != MultiTouchController.MODE_ZOOM &&
+                        mode != MultiTouchController.MODE_DT_ZOOM &&
+                        mode != MultiTouchController.MODE_ANIMATION
+        );
     }
 
     public void onPerformClick(PointF position) {
