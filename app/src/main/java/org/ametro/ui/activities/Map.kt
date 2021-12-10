@@ -244,7 +244,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    override fun onBeforeMapLoading(container: MapContainer, schemeName: String, enabledTransports: Array<String>) {
+    override fun onBeforeMapLoading(container: MapContainer, schemeName: String, enabledTransports: Array<String>?) {
         if (!container.isLoaded(schemeName, enabledTransports)) {
             if (loadingProgressDialog != null) {
                 loadingProgressDialog!!.dismiss()
@@ -262,7 +262,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onMapLoadComplete(
         container: MapContainer,
         schemeName: String,
-        enabledTransports: Array<String>,
+        enabledTransports: Array<String>?,
         time: Long
     ) {
         if (loadingProgressDialog != null) {
@@ -314,7 +314,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onMapLoadFailed(
         container: MapContainer,
         schemeName: String,
-        enabledTransports: Array<String>,
+        enabledTransports: Array<String>?,
         reason: Throwable
     ) {
         if (loadingProgressDialog != null) {
