@@ -101,7 +101,7 @@ class RenderProgram(container: MapContainer, schemeName: String) {
                 }
                 bounds.union(element.boundingBox)
             }
-            return bounds ?: Rect(0, 0, 0, 0)
+            return bounds ?: throw Exception("No drawing elements")
         }
     }
 }
