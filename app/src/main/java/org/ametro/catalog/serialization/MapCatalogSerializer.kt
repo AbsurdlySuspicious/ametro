@@ -3,10 +3,7 @@ package org.ametro.catalog.serialization
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.ObjectReader
-import org.ametro.catalog.entities.MapInfoEntity
-import org.ametro.catalog.entities.MapInfoEntityName
-import org.ametro.catalog.entities.TransportType
-import org.ametro.catalog.entities.TransportTypeHelper
+import org.ametro.catalog.entities.*
 import org.ametro.utils.misc.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -16,9 +13,9 @@ object MapCatalogSerializer {
 
     @JvmStatic
     @Throws(SerializationException::class)
-    fun deserializeMapInfoArray(jsonText: String?): Array<MapInfoEntity?> {
+    fun deserializeMapInfoArray(jsonText: String?): Array<MapInfoEntity> {
         return try {
-            val json = reader.readTree(jsonText) ?: return arrayOfNulls(0)
+            val json = reader.readTree(jsonText) ?: return emptyArray()
             json.mapToArraySizedExact(json.size()) { jsonMap ->
                 MapInfoEntity(
                     jsonMap["city_id"].asInt(),
@@ -56,7 +53,7 @@ object MapCatalogSerializer {
 
     @JvmStatic
     @Throws(SerializationException::class)
-    fun serializeMapInfoArray(maps: Array<MapInfoEntity>): String {
+    fun serializeMapInfoArray(maps: Array<MapInfo>): String {
         return try {
             val jsonMaps = JSONArray()
             for (map in maps) {
