@@ -8,6 +8,7 @@ import org.ametro.catalog.entities.MapInfo
 import org.ametro.catalog.serialization.MapCatalogSerializer
 import org.ametro.catalog.serialization.SerializationException
 import org.ametro.utils.FileUtils
+import org.ametro.utils.misc.*
 import java.io.IOException
 import java.lang.RuntimeException
 import java.util.HashMap
@@ -48,10 +49,9 @@ class MapInfoLocalizationProvider(private val cache: IMapServiceCache) {
 
     fun createCatalog(maps: Array<MapInfoEntity>): MapCatalog {
         val localizations = localizationMap
-        val localizedMaps = arrayOfNulls<MapInfo>(maps.size)
-        for ((i, map) in maps.withIndex()) {
-            localizedMaps[i] = localizations[map.cityId]!!.run {
-                MapInfo(map, cityName, countryName, countryIsoCode)
+        val localizedMaps = maps.mapArray {
+            localizations[it.cityId]!!.run {
+                MapInfo(it, cityName, countryName, countryIsoCode)
             }
         }
         return MapCatalog(localizedMaps)
