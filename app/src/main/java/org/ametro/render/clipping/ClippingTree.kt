@@ -13,7 +13,7 @@ class ClippingTree(bounds: Rect, elements: List<DrawingElement>) {
         }
     }
 
-    fun getClippedElements(v1: RectF, v2: RectF?): List<DrawingElement> {
+    fun getClippedElements(v1: RectF, v2: RectF?): MutableList<DrawingElement> {
         val elements: MutableList<DrawingElement> = ArrayList()
         clipping(rootNode, toRectWithOffset(v1), v2?.let { toRectWithOffset(it) }, elements)
         return elements
