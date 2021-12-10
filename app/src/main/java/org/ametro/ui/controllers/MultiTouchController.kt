@@ -38,9 +38,54 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         private const val MSG_PROCESS_FLING = 3
         private const val MSG_PROCESS_ANIMATION = 4
         private const val MSG_DO_SHORTPRESS = 5
+        private val DELAY_MSG_SHORTPRESS = ViewConfiguration.getTapTimeout().toLong()
+        private val DELAY_MSG_LONGPRESS = ViewConfiguration.getLongPressTimeout().toLong()
+        private val DELAY_MSG_DOUBLETAP = ViewConfiguration.getDoubleTapTimeout().toLong()
         const val ZOOM_IN = 1
         const val ZOOM_OUT = 2
         private const val ZOOM_LEVEL_DISTANCE = 1.5f
+
+        private object MultiTouchHandler : Handler()  {
+            override fun handleMessage(msg: Message) {
+                (msg.obj as MultiTouchController).apply {
+                    when (msg.what) {
+                        MSG_PROCESS_ANIMATION -> {
+                            if (mode == MODE_ANIMATION) {
+                                val more = computeAnimation()
+                                if (more) {
+                                    sendMessage(MSG_PROCESS_ANIMATION)
+                                } else {
+                                    controllerMode = MODE_NONE
+                                    listener.positionAndScaleMatrix = matrix
+                                }
+                            }
+                        }
+                        MSG_PROCESS_FLING -> {
+                            val more = computeScroll()
+                            if (more) {
+                                sendMessage(MSG_PROCESS_FLING)
+                            }
+                        }
+                        MSG_SWITCH_TO_SHORTPRESS -> {
+                            if (mode == MODE_INIT) {
+                                controllerMode = MODE_SHORTPRESS_START
+                                sendMessageDelay(MSG_SWITCH_TO_LONGPRESS, DELAY_MSG_LONGPRESS)
+                            }
+                        }
+                        MSG_SWITCH_TO_LONGPRESS -> {
+                            controllerMode = MODE_LONGPRESS_START
+                            performLongClick()
+                        }
+                        MSG_DO_SHORTPRESS -> {
+                            doubleTapZoomInit = false
+                            performClick()
+                        }
+                        else -> super.handleMessage(msg)
+                    }
+                }
+            }
+        }
+        
     }
 
     private var initialized = false
@@ -73,7 +118,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private var displayRect: RectF? = null
     private val scroller: Scroller
     private var velocityTracker: VelocityTracker?
-    val privateHandler: Handler = PrivateHandler()
     private val density: Float
     private val animationEndPoint = PointF()
     private val animationStartPoint = PointF()
@@ -85,6 +129,20 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         touchSlopSquare = slop * slop
         density = context.resources.displayMetrics.density
         velocityTracker = null
+    }
+    
+    private fun sendMessage(msgId: Int) {
+        val msg = Message.obtain(MultiTouchHandler, msgId, this)
+        MultiTouchHandler.sendMessage(msg)
+    }
+    
+    private fun sendMessageDelay(msgId: Int, delayMs: Long) {
+        val msg = Message.obtain(MultiTouchHandler, msgId, this)
+        MultiTouchHandler.sendMessageDelayed(msg, delayMs)
+    }
+    
+    private fun removeMessages(msgId: Int) {
+        MultiTouchHandler.removeMessages(msgId)
     }
 
     /** Map point from model to screen coordinates  */
@@ -170,7 +228,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         touchStartTime = event.eventTime
         if (mode == MODE_INIT) {
             if (doubleTapZoomInit) {
-                privateHandler.removeMessages(MSG_DO_SHORTPRESS)
+                removeMessages(MSG_DO_SHORTPRESS)
                 doubleTapZoomInit = false
                 zoomStart()
                 zoomBase = 1f
@@ -178,10 +236,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                 controllerMode = MODE_DT_ZOOM
                 return true
             } else {
-                privateHandler.sendEmptyMessageDelayed(
-                    MSG_SWITCH_TO_SHORTPRESS,
-                    ViewConfiguration.getTapTimeout().toLong()
-                )
+                sendMessageDelay(MSG_SWITCH_TO_SHORTPRESS, DELAY_MSG_SHORTPRESS)
             }
         }
         velocityTracker = VelocityTracker.obtain()
@@ -265,9 +320,9 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                         return false
                     }
                     if (mode == MODE_SHORTPRESS_START) {
-                        privateHandler.removeMessages(MSG_SWITCH_TO_LONGPRESS)
+                        removeMessages(MSG_SWITCH_TO_LONGPRESS)
                     } else if (mode == MODE_INIT) {
-                        privateHandler.removeMessages(MSG_SWITCH_TO_SHORTPRESS)
+                        removeMessages(MSG_SWITCH_TO_SHORTPRESS)
                     }
                     controllerMode = MODE_DRAG
                 }
@@ -284,13 +339,10 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private fun doActionUp(event: MotionEventWrapper): Boolean {
         when (mode) {
             MODE_INIT, MODE_SHORTPRESS_START -> {
-                privateHandler.removeMessages(MSG_DO_SHORTPRESS)
-                privateHandler.removeMessages(MSG_SWITCH_TO_SHORTPRESS)
-                privateHandler.removeMessages(MSG_SWITCH_TO_LONGPRESS)
-                privateHandler.sendEmptyMessageDelayed(
-                    MSG_DO_SHORTPRESS,
-                    ViewConfiguration.getDoubleTapTimeout().toLong()
-                )
+                removeMessages(MSG_DO_SHORTPRESS)
+                removeMessages(MSG_SWITCH_TO_SHORTPRESS)
+                removeMessages(MSG_SWITCH_TO_LONGPRESS)
+                sendMessageDelay(MSG_DO_SHORTPRESS, DELAY_MSG_DOUBLETAP)
                 doubleTapZoomInit = true
                 if (velocityTracker != null) {
                     velocityTracker!!.recycle()
@@ -317,7 +369,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                     val maxX = Math.max(currentWidth - displayRect!!.width(), 0f).toInt()
                     val maxY = Math.max(currentHeight - displayRect!!.height(), 0f).toInt()
                     scroller.fling(-currentX.toInt(), -currentY.toInt(), vx, vy, 0, maxX, 0, maxY)
-                    privateHandler.sendEmptyMessage(MSG_PROCESS_FLING)
+                    sendMessage(MSG_PROCESS_FLING)
                 }
         }
         if (velocityTracker != null) {
@@ -329,8 +381,8 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     }
 
     private fun doActionCancel(event: MotionEventWrapper): Boolean {
-        privateHandler.removeMessages(MSG_SWITCH_TO_SHORTPRESS)
-        privateHandler.removeMessages(MSG_SWITCH_TO_LONGPRESS)
+        removeMessages(MSG_SWITCH_TO_SHORTPRESS)
+        removeMessages(MSG_SWITCH_TO_LONGPRESS)
         controllerMode = MODE_NONE
         return true
     }
@@ -531,50 +583,8 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                 scale ?: currentScale,
                 ANIMATION_TIME.toLong()
             )
-            privateHandler.sendEmptyMessage(MSG_PROCESS_ANIMATION)
+            sendMessage(MSG_PROCESS_ANIMATION)
             controllerMode = MODE_ANIMATION
-        }
-    }
-
-    internal inner class PrivateHandler : Handler() {
-        override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                MSG_PROCESS_ANIMATION -> {
-                    if (mode == MODE_ANIMATION) {
-                        val more = computeAnimation()
-                        if (more) {
-                            privateHandler.sendEmptyMessage(MSG_PROCESS_ANIMATION)
-                        } else {
-                            controllerMode = MODE_NONE
-                            listener.positionAndScaleMatrix = matrix
-                        }
-                    }
-                }
-                MSG_PROCESS_FLING -> {
-                    val more = computeScroll()
-                    if (more) {
-                        privateHandler.sendEmptyMessage(MSG_PROCESS_FLING)
-                    }
-                }
-                MSG_SWITCH_TO_SHORTPRESS -> {
-                    if (mode == MODE_INIT) {
-                        controllerMode = MODE_SHORTPRESS_START
-                        privateHandler.sendEmptyMessageDelayed(
-                            MSG_SWITCH_TO_LONGPRESS,
-                            ViewConfiguration.getLongPressTimeout().toLong()
-                        )
-                    }
-                }
-                MSG_SWITCH_TO_LONGPRESS -> {
-                    controllerMode = MODE_LONGPRESS_START
-                    performLongClick()
-                }
-                MSG_DO_SHORTPRESS -> {
-                    doubleTapZoomInit = false
-                    performClick()
-                }
-                else -> super.handleMessage(msg)
-            }
         }
     }
 }
