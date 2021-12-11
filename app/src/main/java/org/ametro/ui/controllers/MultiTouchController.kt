@@ -408,6 +408,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private fun doActionCancel(event: MotionEventWrapper): Boolean {
         removeMessages(MSG_SWITCH_TO_SHORTPRESS)
         removeMessages(MSG_SWITCH_TO_LONGPRESS)
+        removeMessages(MSG_DO_SHORTPRESS)
         controllerMode = MODE_NONE
         return true
     }
