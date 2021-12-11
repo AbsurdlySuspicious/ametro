@@ -27,7 +27,7 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
     SearchView.OnQueryTextListener {
 
     private var citySelectionListener: ICitySelectionListener = object : ICitySelectionListener {
-        override fun onCitySelected(maps: Array<MapInfo?>?) {}
+        override fun onCitySelected(maps: Array<MapInfo>) {}
     }
 
     private var maps: Array<MapInfo> = emptyArray()
@@ -80,7 +80,7 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
     ): Boolean {
         country = adapter!!.getGroup(groupPosition) as String
         city = adapter!!.getChild(groupPosition, childPosition) as String
-        val result: MutableList<MapInfo?> = ArrayList()
+        val result: MutableList<MapInfo> = ArrayList()
         for (map in maps) {
             if (map.city == city && map.country == country) {
                 result.add(map)
@@ -174,6 +174,6 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
     }
 
     interface ICitySelectionListener {
-        fun onCitySelected(maps: Array<MapInfo?>?)
+        fun onCitySelected(maps: Array<MapInfo>)
     }
 }

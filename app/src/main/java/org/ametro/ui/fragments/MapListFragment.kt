@@ -21,6 +21,7 @@ import org.ametro.databinding.FragmentMapListViewBinding
 import org.ametro.ui.adapters.MapListAdapter
 import org.ametro.ui.loaders.ExtendedMapInfo
 import org.ametro.ui.loaders.ExtendedMapStatus
+import org.ametro.utils.misc.*
 
 class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnCloseListener,
     LoaderManager.LoaderCallbacks<MapCatalog?>, OnItemClickListener, MultiChoiceModeListener, View.OnClickListener {
@@ -34,9 +35,9 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     private val actionModeSelection: MutableSet<String> = HashSet()
     
     private var listener: IMapListEventListener = object : IMapListEventListener {
-        override fun onOpenMap(map: MapInfo?) {}
-        override fun onDeleteMaps(map: Array<MapInfo?>?) {}
-        override fun onLoadedMaps(maps: Array<ExtendedMapInfo?>?) {}
+        override fun onOpenMap(map: MapInfo) {}
+        override fun onDeleteMaps(map: Array<MapInfo>) {}
+        override fun onLoadedMaps(maps: Array<ExtendedMapInfo>) {}
         override fun onAddMap() {}
     }
 
@@ -102,7 +103,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
             adapter!!.toggleSelection(position)
             return
         }
-        listener.onOpenMap(adapter!!.getItem(position))
+        adapter!!.getItem(position)?.let{ listener.onOpenMap(it) }
     }
 
     private class MapCatalogAsyncTaskLoaderLocal(private val app: ApplicationEx?, act: Activity?) :
@@ -220,37 +221,37 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     interface IMapListEventListener {
-        fun onOpenMap(map: MapInfo?)
-        fun onDeleteMaps(map: Array<MapInfo?>?)
-        fun onLoadedMaps(maps: Array<ExtendedMapInfo?>?)
+        fun onOpenMap(map: MapInfo)
+        fun onDeleteMaps(map: Array<MapInfo>)
+        fun onLoadedMaps(maps: Array<ExtendedMapInfo>)
         fun onAddMap()
     }
 
     private fun resetAdapter() {
-        if (localMapCatalog == null || localMapCatalog!!.maps.size == 0) {
+        if (localMapCatalog == null || localMapCatalog!!.maps.isEmpty()) {
             adapter!!.clear()
             adapter!!.filter.filter(filterValue)
             setNoMapsShown()
             return
         }
-        val localMaps = localMapCatalog!!.maps
-        val maps = arrayOfNulls<ExtendedMapInfo>(localMaps.size)
-        for (i in maps.indices) {
-            maps[i] = ExtendedMapInfo(
-                localMaps[i],
-                if (remoteMapCatalog == null) ExtendedMapStatus.Fetching else getMapStatus(
-                    localMaps[i],
-                    remoteMapCatalog!!
-                )
+
+        val maps = localMapCatalog!!.maps.mapArray { localMap ->
+            ExtendedMapInfo(
+                localMap,
+                remoteMapCatalog?.let {
+                    getMapStatus(localMap, it)
+                } ?: ExtendedMapStatus.Fetching
             )
         }
+
         if (actionModeSelection.size > 0) {
             for (map in maps) {
-                if (actionModeSelection.contains(map!!.fileName)) {
+                if (actionModeSelection.contains(map.fileName)) {
                     map.isSelected = true
                 }
             }
         }
+
         adapter!!.clear()
         adapter!!.addAll(*maps)
         adapter!!.filter.filter(filterValue)

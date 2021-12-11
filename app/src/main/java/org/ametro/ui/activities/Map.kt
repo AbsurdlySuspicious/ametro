@@ -48,6 +48,7 @@ import java.util.*
 
 class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener, IMapBottomPanelEventListener,
     IMapSelectionEventListener {
+
     private var enabledTransportsSet: MutableSet<String?>? = null
     private var container: MapContainer? = null
     private var scheme: MapScheme? = null
@@ -368,24 +369,29 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         return true
     }
 
-    override fun onShowMapDetail(line: MapSchemeLine, station: MapSchemeStation) {
+    override fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?) {
+        if (station == null) return
         val intent = Intent(this, StationDetails::class.java)
-        intent.putExtra(Constants.LINE_NAME, line.name)
+        intent.putExtra(Constants.LINE_NAME, line?.name ?: "")
         intent.putExtra(Constants.STATION_NAME, station.name)
         intent.putExtra(Constants.STATION_UID, station.uid)
         startActivityForResult(intent, OPEN_STATION_DETAILS)
     }
 
-    override fun onSelectBeginStation(line: MapSchemeLine, station: MapSchemeStation) {
+    override fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?) {
         mapBottomPanel.hide()
-        mapSelectionIndicators.beginStation = station
-        app.setRouteStart(line, station)
+        mapSelectionIndicators.setBeginStation(station)
+        if (line != null && station != null) {
+            app.setRouteStart(line, station)
+        }
     }
 
-    override fun onSelectEndStation(line: MapSchemeLine, station: MapSchemeStation) {
+    override fun onSelectEndStation(line: MapSchemeLine?, station: MapSchemeStation?) {
         mapBottomPanel.hide()
-        mapSelectionIndicators.endStation = station
-        app.setRouteEnd(line, station)
+        mapSelectionIndicators.setEndStation(station)
+        if (line != null && station != null) {
+            app.setRouteEnd(line, station)
+        }
     }
 
     override fun onRouteSelectionComplete(begin: MapSchemeStation, end: MapSchemeStation) {
@@ -394,8 +400,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 container,
                 enabledTransportsSet,
                 currentDelayIndex,
-                mapSelectionIndicators.beginStation.uid,
-                mapSelectionIndicators.endStation.uid
+                mapSelectionIndicators.getBeginStation()!!.uid,
+                mapSelectionIndicators.getEndStation()!!.uid
             )
         )
         if (routes.isEmpty()) {
