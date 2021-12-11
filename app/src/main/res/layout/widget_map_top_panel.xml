@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:background="@android:color/background_light"
         android:gravity="center"
-        android:padding="@dimen/panel_padding"
+        android:padding="@dimen/panel_bottom_padding"
         tools:text="Some messages can be displayed here" />
     <ImageView
         android:layout_width="match_parent"

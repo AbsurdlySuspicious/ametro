@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="bottomPanelLine" parent="secondaryText">
+        <item name="android:textColor">@android:color/secondary_text_light</item>
+        <item name="android:breakStrategy">high_quality</item>
+        <item name="android:hyphenationFrequency">full</item>
+        <item name="android:maxLines">2</item>
+    </style>
+
+    <style name="bottomPanelStation" parent="primaryText">
+        <item name="android:textColor">@android:color/primary_text_light</item>
+        <item name="android:breakStrategy">high_quality</item>
+        <item name="android:hyphenationFrequency">full</item>
+        <item name="android:maxLines">2</item>
+    </style>
+</resources>

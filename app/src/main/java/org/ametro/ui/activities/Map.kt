@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PointF
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -14,6 +15,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
@@ -77,17 +81,21 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         binding = ActivityMapViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        app = ApplicationEx.getInstanceActivity(this)
+
         mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
-        mapBottomPanel = MapBottomPanelWidget(binding.includeBottomPanel.mapBottomPanel, this)
+        mapBottomPanel = MapBottomPanelWidget(findViewById(R.id.map_bottom_panel), app, this)
+
         mapSelectionIndicators = MapSelectionIndicatorsWidget(
             this,
             binding.beginIndicator,
             binding.endIndicator
         )
-        app = ApplicationEx.getInstanceActivity(this)
+
         settingsProvider = app.applicationSettingsProvider
         binding.includeEmptyMap.mapEmptyPanel.setOnClickListener { onOpenMaps() }
         testMenuOptionsProcessor = TestMenuOptionsProcessor(this)
+
         navigationController = NavigationController(
             this,
             this,
@@ -104,10 +112,20 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+    }
+
     override fun onResume() {
         super.onResume()
+
         initMapViewState()
-        if (mapView != null) {
+
+        if (mapView != null && container != null) {
             val routeStart = app.routeStart
             val routeEnd = app.routeEnd
             var selectedStations = 0
@@ -128,6 +146,14 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
             if (selectedStations == 2) {
                 onRouteSelectionComplete(routeStart!!.second, routeEnd!!.second)
+            }
+
+            if (!mapBottomPanel.isOpened && app.bottomPanelOpen) run {
+                val station = app.bottomPanelStation ?: return@run
+                val hasDetails = container!!
+                    .findStationInformation(station.first.name, station.second.name)
+                    ?.mapFilePath != null
+                mapBottomPanel.show(station.first, station.second, hasDetails)
             }
         } else {
             app.clearCurrentMapViewState()
@@ -239,6 +265,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                         settingsProvider.preferredMapLanguage
                     )
                 ).execute()
+            }
+            OPEN_STATION_DETAILS -> {
+                mapBottomPanel.detailsClosed()
             }
         }
         super.onActivityResult(requestCode, resultCode, data)

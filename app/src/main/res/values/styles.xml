@@ -11,6 +11,12 @@
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
 
+    <color name="panel_secondary_text">#80000000</color>
+    <color name="panel_secondary_icon">#56000000</color>
+    <color name="panel_sub_replace_icon">#4A4A4A</color>
+    <color name="panel_sub_background">#0D000000</color>
+    <color name="panel_background">#FFFFFF</color>
+
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
@@ -29,6 +35,21 @@
         <item name="android:ellipsize">end</item>
     </style>
 
+    <style name="bottomPanelStation" parent="primaryText">
+        <item name="android:textColor">@android:color/primary_text_light</item>
+        <item name="android:maxLines">2</item>
+    </style>
+
+    <style name="bottomPanelLine" parent="secondaryText">
+        <item name="android:textColor">@android:color/secondary_text_light</item>
+        <item name="android:maxLines">2</item>
+    </style>
+
+    <style name="bottomPanelActionStation" parent="bottomPanelStation">
+        <item name="android:gravity">left</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
     <style name="secondaryAlarmText" parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:textSize">14sp</item>
         <item name="android:ellipsize">end</item>
@@ -39,6 +60,7 @@
         <item name="android:textSize">14sp</item>
         <item name="android:ellipsize">end</item>
         <item name="android:textColor">@color/secondary_disabled_text</item>
+
     </style>
 
     <style name="drawerItemText" parent="@style/TextAppearance.AppCompat.Medium">
