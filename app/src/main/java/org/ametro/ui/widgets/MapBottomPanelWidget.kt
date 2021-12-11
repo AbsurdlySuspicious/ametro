@@ -15,7 +15,7 @@ class MapBottomPanelWidget(private val view: ViewGroup, private val listener: IM
 
     private val stationTextView: TextView = view.findViewById(R.id.station)
     private val lineTextView: TextView = view.findViewById(R.id.line)
-    private val detailButton: Button = view.findViewById(R.id.button_details)
+    private val detailButton: Button = view.findViewById(R.id.station_layout)
     private val beginButton: Button = view.findViewById(R.id.button_begin)
     private val endButton: Button = view.findViewById(R.id.button_end)
 

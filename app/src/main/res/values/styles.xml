@@ -11,6 +11,9 @@
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
 
+    <color name="panel_background_button_text">#80000000</color>
+    <color name="panel_sub_background">#25000000</color>
+
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
@@ -27,6 +30,14 @@
     <style name="secondaryText" parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:textSize">14sp</item>
         <item name="android:ellipsize">end</item>
+    </style>
+
+    <style name="bottomPanelStation" parent="primaryText">
+        <iten name="android:textColor">@android:color/primary_text_light</iten>
+    </style>
+
+    <style name="bottomPanelLine" parent="secondaryText">
+        <iten name="android:textColor">@android:color/secondary_text_light</iten>
     </style>
 
     <style name="secondaryAlarmText" parent="@style/TextAppearance.AppCompat.Medium">
