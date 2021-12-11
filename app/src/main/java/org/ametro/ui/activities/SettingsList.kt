@@ -9,6 +9,7 @@ import androidx.appcompat.widget.Toolbar
 import org.ametro.R
 import androidx.core.app.NavUtils
 import org.ametro.databinding.ActivitySettingsListViewBinding
+import org.ametro.ui.fragments.SettingsListFragment
 
 class SettingsList : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsListViewBinding
@@ -25,6 +26,11 @@ class SettingsList : AppCompatActivity() {
             setDefaultDisplayHomeAsUpEnabled(true)
             setDisplayHomeAsUpEnabled(true)
         }
+
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.list, SettingsListFragment())
+            .commit()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
