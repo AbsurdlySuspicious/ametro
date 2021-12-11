@@ -6,12 +6,16 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.os.Handler
 import android.os.Message
+import android.util.DisplayMetrics
 import android.util.Log
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.ViewConfiguration
 import android.widget.Scroller
 import org.ametro.utils.AnimationInterpolator
+import kotlin.math.abs
+import kotlin.math.min
 
 class MultiTouchController(context: Context, private val listener: IMultiTouchListener) {
     interface IMultiTouchListener {
@@ -110,6 +114,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
 
     /** starting length between first and second touch  */
     private var zoomBase = 1f
+    private var swipeZoomBase = 1f
     private val matrixValues = FloatArray(9)
     private var maxScale = 0f
     private var minScale = 0f
@@ -118,6 +123,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private var displayRect: RectF? = null
     private val scroller: Scroller
     private var velocityTracker: VelocityTracker?
+    private val displayMetrics: DisplayMetrics
     private val density: Float
     private val animationEndPoint = PointF()
     private val animationStartPoint = PointF()
@@ -127,8 +133,9 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         val vc = ViewConfiguration.get(context)
         val slop = vc.scaledTouchSlop
         touchSlopSquare = slop * slop
-        density = context.resources.displayMetrics.density
         velocityTracker = null
+        displayMetrics = context.resources.displayMetrics
+        density = displayMetrics.density
     }
     
     private fun sendMessage(msgId: Int) {
@@ -176,6 +183,8 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             )
         }
         displayRect = newDisplayRect
+        swipeZoomBase = 60f * density
+        Log.i("touch event", "swipe zoom base: $swipeZoomBase, density: $density") // dt debug
         // calculate zoom bounds
         maxScale = 2.0f * density
         minScale = Math.min(displayRect!!.width() / contentWidth, displayRect!!.height() / contentHeight)
@@ -194,7 +203,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             initialized = true
         }
         val action = event.action
-        Log.i("touch event", MotionEvent.actionToString(action))
+        // Log.i("touch event", MotionEvent.actionToString(action)) // dt debug
         var handled = true
         when (action) {
             MotionEvent.ACTION_DOWN -> {
@@ -231,7 +240,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                 removeMessages(MSG_DO_SHORTPRESS)
                 doubleTapZoomInit = false
                 zoomStart()
-                zoomBase = 1f
                 zoomCenter.set(touchStartPoint)
                 controllerMode = MODE_DT_ZOOM
                 return true
@@ -257,9 +265,14 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         return Math.sqrt((x * x + y * y).toDouble()).toFloat()
     }
 
+    private fun swipeScale(event: MotionEventWrapper): Float {
+        val dist = event.y - zoomCenter.y
+        return dist / swipeZoomBase + 1f
+    }
+
     private fun doActionPointerDown(event: MotionEventWrapper): Boolean {
         zoomBase = distance(event)
-        Log.i("touch event", "pinch zoom base: $zoomBase")
+        //Log.i("touch event", "pinch zoom base: $zoomBase") // dt debug
         if (zoomBase > 10f) {
             zoomStart()
             val x = event.getX(0) + event.getX(1)
@@ -275,13 +288,17 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             scroller.abortAnimation()
         }
         savedMatrix.set(matrix)
+        // dt debug
+        minZoomScale = Float.MAX_VALUE
     }
 
-    private fun zoomMove(newDist: Float, distLimit: Float) {
-        if (newDist <= distLimit) return
+    var minZoomScale = Float.MAX_VALUE // dt debug
+
+    private inline fun zoomMove(scaleF: () -> Float) {
         matrix.set(savedMatrix)
-        var scale = newDist / zoomBase
-        Log.i("touch event", "zmove: base $zoomBase, dist $newDist, scale $scale")
+        var scale = scaleF()
+        if (scale != 1.0f) minZoomScale = min(minZoomScale, scale) // dt debug
+        Log.i("touch event", "zmove: base $zoomBase, scale $scale") // dt debug
         matrix.getValues(matrixValues)
         val currentScale = matrixValues[Matrix.MSCALE_X]
 
@@ -292,6 +309,11 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             scale = minScale / currentScale
         }
         matrix.postScale(scale, scale, zoomCenter.x, zoomCenter.y)
+        run { // dt debug
+            val valuesDebug = FloatArray(9)
+            matrix.getValues(valuesDebug)
+            Log.i("touch event", "post scale: ${valuesDebug[Matrix.MSCALE_X]}")
+        }
         adjustPan()
     }
 
@@ -303,12 +325,12 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             }
             MODE_ZOOM -> {
                 val newDist = distance(event)
-                zoomMove(newDist, 10f)
+                if (newDist > 10f)
+                    zoomMove {  newDist / zoomBase }
                 return true
             }
             MODE_DT_ZOOM -> {
-                val newDist = distance(event, zoomCenter)
-                zoomMove(newDist, 3f)
+                zoomMove { swipeScale(event) }
                 return true
             }
             else -> {
@@ -371,6 +393,9 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                     scroller.fling(-currentX.toInt(), -currentY.toInt(), vx, vy, 0, maxX, 0, maxY)
                     sendMessage(MSG_PROCESS_FLING)
                 }
+            MODE_ZOOM, MODE_DT_ZOOM -> {
+                Log.i("touch event", "min scale: $minZoomScale") // dt debug
+            }
         }
         if (velocityTracker != null) {
             velocityTracker!!.recycle()
