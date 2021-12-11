@@ -46,15 +46,7 @@ public class MultiTouchMapView extends ScrollView implements MultiTouchControlle
             fadeScrollBars();
         }
     };
-    private PointF lastClickPosition;
-    private final Runnable performClickRunnable = new Runnable() {
-        public void run() {
-            lastClickPosition = null;
-            performClick();
-        }
-    };
 
-    private float doubleClickSlop;
     private int verticalScrollOffset;
     private int horizontalScrollOffset;
     private int verticalScrollRange;
@@ -84,8 +76,6 @@ public class MultiTouchMapView extends ScrollView implements MultiTouchControlle
         mapScheme = container.getScheme(schemeName);
 
         multiTouchController = new MultiTouchController(getContext(), this);
-
-        doubleClickSlop = ViewConfiguration.get(context).getScaledDoubleTapSlop();
 
         rendererProgram = new RenderProgram(container, schemeName);
         renderer = new CanvasRenderer(this, mapScheme, rendererProgram);
@@ -150,25 +140,7 @@ public class MultiTouchMapView extends ScrollView implements MultiTouchControlle
         );
     }
 
-    public void onPerformClick(PointF position) {
-        if (lastClickPosition == null) {
-            lastClickPosition = multiTouchController.getScreenTouchPoint();
-            dispatcher.removeCallbacks(performClickRunnable);
-            dispatcher.postDelayed(performClickRunnable, ViewConfiguration.getDoubleTapTimeout());
-            return;
-        }
-
-        float distance = Algorithms.calculateDistance(lastClickPosition, multiTouchController.getScreenTouchPoint());
-
-        dispatcher.removeCallbacks(performClickRunnable);
-        lastClickPosition = null;
-
-        if (distance <= doubleClickSlop) {
-            multiTouchController.doZoomAnimation(MultiTouchController.ZOOM_IN, multiTouchController.getTouchPoint());
-        } else {
-            performClick();
-        }
-    }
+    public void onPerformClick(PointF position) { performClick(); }
 
     public void onPerformLongClick(PointF position) {
         performLongClick();

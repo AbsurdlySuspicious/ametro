@@ -45,8 +45,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         private val DELAY_MSG_SHORTPRESS = ViewConfiguration.getTapTimeout().toLong()
         private val DELAY_MSG_LONGPRESS = ViewConfiguration.getLongPressTimeout().toLong()
         private val DELAY_MSG_DOUBLETAP = ViewConfiguration.getDoubleTapTimeout().toLong()
-        const val ZOOM_IN = 1
-        const val ZOOM_OUT = 2
         private const val ZOOM_LEVEL_DISTANCE = 1.5f
 
         private object MultiTouchHandler : Handler()  {
@@ -573,23 +571,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
 
     fun performClick() {
         listener.onPerformClick(touchPoint)
-    }
-
-    fun doZoomAnimation(scaleMode: Int, scaleCenter: PointF?) {
-        val scaleFactor = if (scaleMode == ZOOM_IN) ZOOM_LEVEL_DISTANCE else 1 / ZOOM_LEVEL_DISTANCE
-        val currentScale = scale
-        var targetScale = Math.min(Math.max(minScale, scaleFactor * currentScale), maxScale)
-        // do nothing is we're on ends of zoom range
-        if (targetScale != currentScale) {
-            // fix target zoom to snap to zoom limits
-            val nextScale = Math.min(Math.max(minScale, scaleFactor * targetScale), maxScale)
-            if (nextScale == maxScale && nextScale / targetScale < scaleFactor * 0.8f) {
-                targetScale = maxScale
-            } else if (nextScale == minScale && targetScale / nextScale < scaleFactor * 0.8f) {
-                targetScale = minScale
-            }
-            doScrollAndZoomAnimation(scaleCenter, targetScale)
-        }
     }
 
     fun doScrollAndZoomAnimation(center: PointF?, scale: Float?) {
