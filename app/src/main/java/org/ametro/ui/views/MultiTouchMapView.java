@@ -28,6 +28,7 @@ import java.util.HashSet;
 public class MultiTouchMapView extends ScrollView implements MultiTouchController.IMultiTouchListener {
 
     private static final long SCROLLBAR_TIMEOUT = 1000;
+    private static final Handler dispatcher = new Handler();
 
     private final MultiTouchController multiTouchController;
     private final IViewportChangedListener viewportChangedListener;
@@ -39,7 +40,6 @@ public class MultiTouchMapView extends ScrollView implements MultiTouchControlle
 
     private final MapScheme mapScheme;
 
-    private final Handler dispatcher = new Handler();
     private final RenderProgram rendererProgram;
     private final Runnable hideScrollbarsRunnable = new Runnable() {
         public void run() {
