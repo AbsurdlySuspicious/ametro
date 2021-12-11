@@ -2,6 +2,7 @@ package org.ametro.ui.fragments
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
 import android.widget.AbsListView.MultiChoiceModeListener
@@ -13,7 +14,6 @@ import androidx.loader.content.AsyncTaskLoader
 import androidx.loader.content.Loader
 import org.ametro.R
 import org.ametro.app.ApplicationEx
-import org.ametro.app.ApplicationEx.Companion.getInstance
 import org.ametro.catalog.entities.MapCatalog
 import org.ametro.catalog.entities.MapInfo
 import org.ametro.catalog.entities.MapInfoHelpers
@@ -43,14 +43,14 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentMapListViewBinding.inflate(inflater, container, false)
-        adapter = MapListAdapter(activity, getInstance(activity)!!.getCountryFlagProvider())
+        adapter = MapListAdapter(activity, ApplicationEx.getInstance(requireActivity()).getCountryFlagProvider())
         binding!!.noMaps.setOnClickListener(this)
         binding!!.list.apply {
             onItemClickListener = this@MapListFragment
             isLongClickable = true
             choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
             setMultiChoiceModeListener(this@MapListFragment)
-            adapter = adapter
+            adapter = this@MapListFragment.adapter
         }
         return binding!!.root
     }
@@ -125,7 +125,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<MapCatalog?> {
-        val app = getInstance(this@MapListFragment.activity)
+        val app = ApplicationEx.getInstance(this@MapListFragment.requireActivity())
         when (id) {
             LOCAL_CATALOG_LOADER -> return MapCatalogAsyncTaskLoaderLocal(app, activity)
             REMOTE_CATALOG_LOADER -> return MapCatalogAsyncTaskLoaderRemote(app, activity)
@@ -174,6 +174,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     private fun setListShown() {
+        Log.i("MEME", "set list shown pre")
         binding!!.progressText.visibility = View.GONE
         binding!!.progressBar.visibility = View.GONE
         binding!!.noMaps.visibility = View.GONE
@@ -182,6 +183,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
             visibility = View.VISIBLE
             emptyView = binding!!.empty
         }
+        Log.i("MEME", "set list shown after")
     }
 
     override fun onItemCheckedStateChanged(mode: ActionMode, position: Int, id: Long, checked: Boolean) {
@@ -228,6 +230,10 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     private fun resetAdapter() {
+        Log.i("MEME", "reset adapter, " +
+                "cat null: ${localMapCatalog == null}, " +
+                "cat size ${localMapCatalog?.maps?.size ?: 0}, " +
+                "filter value: $filterValue")
         if (localMapCatalog == null || localMapCatalog!!.maps.isEmpty()) {
             adapter!!.clear()
             adapter!!.filter.filter(filterValue)

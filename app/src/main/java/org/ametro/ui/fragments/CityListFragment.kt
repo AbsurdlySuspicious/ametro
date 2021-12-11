@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.loader.app.LoaderManager
 import androidx.loader.content.AsyncTaskLoader
 import androidx.loader.content.Loader
-import org.ametro.app.ApplicationEx.Companion.getInstance
+import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
 import org.ametro.catalog.entities.MapInfo
 import org.ametro.databinding.FragmentCityListViewBinding
@@ -98,7 +98,7 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
         act!!
     ) {
         override fun loadInBackground(): Array<MapInfo>? {
-            val app = getInstance(this)
+            val app = ApplicationEx.getInstance(this)
             val loadedMaps: MutableSet<String> = HashSet()
             for (m in app!!.getLocalMapCatalogManager().mapCatalog.maps) {
                 loadedMaps.add(m.fileName)
@@ -125,7 +125,7 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
             adapter = CityListAdapter(
                 activity,
                 geographyProvider,
-                getInstance(activity)!!.getCountryFlagProvider()
+                ApplicationEx.getInstance(requireActivity()).getCountryFlagProvider()
             )
             list.setAdapter(adapter)
         } else {
