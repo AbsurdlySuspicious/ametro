@@ -182,7 +182,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         }
         displayRect = newDisplayRect
         swipeZoomBase = 60f * density
-        Log.i("touch event", "swipe zoom base: $swipeZoomBase, density: $density") // dt debug
         // calculate zoom bounds
         maxScale = 2.0f * density
         minScale = Math.min(displayRect!!.width() / contentWidth, displayRect!!.height() / contentHeight)
@@ -201,7 +200,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             initialized = true
         }
         val action = event.action
-        // Log.i("touch event", MotionEvent.actionToString(action)) // dt debug
         var handled = true
         when (action) {
             MotionEvent.ACTION_DOWN -> {
@@ -270,7 +268,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
 
     private fun doActionPointerDown(event: MotionEventWrapper): Boolean {
         zoomBase = distance(event)
-        //Log.i("touch event", "pinch zoom base: $zoomBase") // dt debug
         if (zoomBase > 10f) {
             zoomStart()
             val x = event.getX(0) + event.getX(1)
@@ -286,17 +283,11 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             scroller.abortAnimation()
         }
         savedMatrix.set(matrix)
-        // dt debug
-        minZoomScale = Float.MAX_VALUE
     }
-
-    var minZoomScale = Float.MAX_VALUE // dt debug
 
     private inline fun zoomMove(scaleF: () -> Float) {
         matrix.set(savedMatrix)
         var scale = scaleF()
-        if (scale != 1.0f) minZoomScale = min(minZoomScale, scale) // dt debug
-        Log.i("touch event", "zmove: base $zoomBase, scale $scale") // dt debug
         matrix.getValues(matrixValues)
         val currentScale = matrixValues[Matrix.MSCALE_X]
 
@@ -307,11 +298,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             scale = minScale / currentScale
         }
         matrix.postScale(scale, scale, zoomCenter.x, zoomCenter.y)
-        run { // dt debug
-            val valuesDebug = FloatArray(9)
-            matrix.getValues(valuesDebug)
-            Log.i("touch event", "post scale: ${valuesDebug[Matrix.MSCALE_X]}")
-        }
         adjustPan()
     }
 
@@ -391,9 +377,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                     scroller.fling(-currentX.toInt(), -currentY.toInt(), vx, vy, 0, maxX, 0, maxY)
                     sendMessage(MSG_PROCESS_FLING)
                 }
-            MODE_ZOOM, MODE_DT_ZOOM -> {
-                Log.i("touch event", "min scale: $minZoomScale") // dt debug
-            }
         }
         if (velocityTracker != null) {
             velocityTracker!!.recycle()
@@ -528,7 +511,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         get() = PointF(
             touchStartPoint.x,
             touchStartPoint.y
-        )//Log.w(TAG,"point=" + touchStartPoint.x + "," + touchStartPoint.y);
+        )
 
     /** Return last touch point in model coordinates  */
     val touchPoint: PointF
@@ -536,7 +519,6 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             val p = PointF()
             p.set(touchStartPoint)
             unmapPoint(p)
-            //Log.w(TAG,"point=" + touchStartPoint.x + "," + touchStartPoint.y);
             return p
         }
     val scale: Float
