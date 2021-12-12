@@ -121,7 +121,7 @@
         <!-- Route layout -->
         <View
                 android:id="@+id/route_layout"
-                android:background="@drawable/bottom_panel_sub"
+                android:background="@drawable/bottom_panel_sub_noripple"
                 android:layout_height="0dp"
                 android:layout_width="150dp"
                 app:layout_constraintEnd_toEndOf="parent"
