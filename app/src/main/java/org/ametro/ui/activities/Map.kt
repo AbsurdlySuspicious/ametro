@@ -55,7 +55,6 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     private var scheme: MapScheme? = null
     private var schemeName: String? = null
     private var currentDelay: MapDelay? = null
-    private var savedState: Bundle? = null
 
     private lateinit var binding: ActivityMapViewBinding
     private lateinit var mapSelectionIndicators: MapSelectionIndicatorsWidget
@@ -79,11 +78,14 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         binding = ActivityMapViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        app = ApplicationEx.getInstanceActivity(this)
+
         mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
 
         mapBottomPanel = MapBottomPanelWidget(
             binding.includeBottomPanel.mapBottomPanel,
             binding.includeBottomPanel,
+            app,
             this
         )
 
@@ -93,7 +95,6 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             binding.endIndicator
         )
 
-        app = ApplicationEx.getInstanceActivity(this)
         settingsProvider = app.applicationSettingsProvider
         binding.includeEmptyMap.mapEmptyPanel.setOnClickListener { onOpenMaps() }
         testMenuOptionsProcessor = TestMenuOptionsProcessor(this)
@@ -116,33 +117,18 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        run {
-            mapBottomPanel.saveState(
-                outState,
-                schemeName ?: return@run
-            )
-        }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        savedState = savedInstanceState
     }
 
     override fun onResume() {
         super.onResume()
 
         initMapViewState()
-        run {
-            mapBottomPanel.restoreState(
-                savedState ?: return@run,
-                container ?: return@run,
-                scheme ?: return@run
-            )
-        }
-        savedState = null
 
-        if (mapView != null) {
+        if (mapView != null && container != null) {
             val routeStart = app.routeStart
             val routeEnd = app.routeEnd
             var selectedStations = 0
@@ -165,7 +151,13 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 onRouteSelectionComplete(routeStart!!.second, routeEnd!!.second)
             }
 
-            mapBottomPanel.restoreWindow()
+            if (!mapBottomPanel.isOpened && app.bottomPanelOpen) run {
+                val station = app.bottomPanelStation ?: return@run
+                val hasDetails = container!!
+                    .findStationInformation(station.first.name, station.second.name)
+                    ?.mapFilePath != null
+                mapBottomPanel.show(station.first, station.second, hasDetails)
+            }
         } else {
             app.clearCurrentMapViewState()
             settingsProvider.currentMap?.let {

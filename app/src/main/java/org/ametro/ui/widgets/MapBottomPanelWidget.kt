@@ -7,8 +7,10 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
 import android.view.ViewGroup
+import android.util.Pair
 import kotlinx.parcelize.Parcelize
 import org.ametro.R
+import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.MapContainer
@@ -20,16 +22,9 @@ import org.ametro.model.entities.MapStationInformation
 
 class MapBottomPanelWidget(private val view: ViewGroup,
                            binding: WidgetMapBottomPanelBinding,
+                           private val app: ApplicationEx,
                            private val listener: IMapBottomPanelEventListener) :
     Animator.AnimatorListener {
-
-    @Parcelize
-    private data class SavedState(
-        val schemeName: String,
-        val stationUid: Int
-    ): Parcelable
-
-    private val instanceStateKey = "bottom-panel-state"
 
     private val stationTextView = binding.station
     private val lineTextView = binding.line
@@ -50,6 +45,9 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     }
 
     private val hideAnimation = Runnable {
+        app.bottomPanelOpen = false
+        app.bottomPanelStation = null
+        
         view.animate()
             .setDuration(Constants.ANIMATION_DURATION)
             .setListener(this@MapBottomPanelWidget)
@@ -63,6 +61,10 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         detailsProgress.visibility = View.INVISIBLE
         detailsHint.visibility = detailsVisibility
         (lineIcon.drawable as GradientDrawable).setColor(line!!.lineColor)
+
+        app.bottomPanelOpen = true
+        app.bottomPanelStation = Pair(line, station)
+
         view.animate()
             .setDuration(Constants.ANIMATION_DURATION)
             .setListener(this@MapBottomPanelWidget)
@@ -98,30 +100,6 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         stationLayout.setOnClickListener(clickListener)
         beginButton.setOnClickListener(clickListener)
         endButton.setOnClickListener(clickListener)
-    }
-
-    fun restoreWindow() {
-        if (!isOpened && wasOpened && line != null && station != null) {
-            wasOpened = false
-            show(line!!, station!!, hasDetails)
-        }
-    }
-
-    fun restoreState(bundle: Bundle, container: MapContainer, scheme: MapScheme) {
-        val state = bundle.getParcelable<SavedState>(instanceStateKey) ?: return
-        if (state.schemeName != scheme.name) return
-        val pack = ModelUtil.findStationByUid(scheme, state.stationUid.toLong()) ?: return
-        val info: MapStationInformation? = container.findStationInformation(pack.first.name, pack.second.name)
-        this.line = pack.first
-        this.station = pack.second
-        this.hasDetails = info?.mapFilePath != null
-        this.wasOpened = true
-    }
-
-    fun saveState(bundle: Bundle, schemeName: String) {
-        if (!isOpened || line == null || station == null) return
-        val state = SavedState(schemeName, station!!.uid)
-        bundle.putParcelable(instanceStateKey, state)
     }
 
     fun detailsClosed() {

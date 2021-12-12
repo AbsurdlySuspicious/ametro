@@ -39,6 +39,10 @@ class ApplicationEx : MultiDexApplication() {
         private set
     var routeEnd: Pair<MapSchemeLine, MapSchemeStation>? = null
         private set
+    var bottomPanelOpen: Boolean = false
+    var bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>? = null
+
+    // todo save (all of above) to instance state too
 
     override fun onCreate() {
         super.onCreate()
