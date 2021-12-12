@@ -55,6 +55,7 @@
                 app:layout_constraintEnd_toStartOf="@id/details_text"
                 app:layout_constraintVertical_chainStyle="packed"
                 android:breakStrategy="high_quality"
+                android:hyphenationFrequency="full"
                 android:maxLines="2"
                 tools:text="Station"/>
 
@@ -83,6 +84,7 @@
                 app:layout_constraintEnd_toStartOf="@id/details_text"
                 app:layout_constraintStart_toEndOf="@id/line_icon"
                 android:breakStrategy="high_quality"
+                android:hyphenationFrequency="full"
                 android:maxLines="2"
                 tools:text="Line name"/>
 
