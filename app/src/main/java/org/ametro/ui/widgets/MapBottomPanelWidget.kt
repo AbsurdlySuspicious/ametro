@@ -7,17 +7,20 @@ import android.widget.Button
 import android.widget.TextView
 import org.ametro.R
 import org.ametro.app.Constants
+import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 
-class MapBottomPanelWidget(private val view: ViewGroup, private val listener: IMapBottomPanelEventListener) :
+class MapBottomPanelWidget(private val view: ViewGroup,
+                           binding: WidgetMapBottomPanelBinding,
+                           private val listener: IMapBottomPanelEventListener) :
     Animator.AnimatorListener {
 
-    private val stationTextView: TextView = view.findViewById(R.id.station)
-    private val lineTextView: TextView = view.findViewById(R.id.line)
-    private val detailButton: Button = view.findViewById(R.id.station_layout)
-    private val beginButton: Button = view.findViewById(R.id.button_begin)
-    private val endButton: Button = view.findViewById(R.id.button_end)
+    private val stationTextView = binding.station
+    private val lineTextView = binding.line
+    private val detailButton = binding.stationLayout
+    private val beginButton = binding.buttonBegin
+    private val endButton = binding.buttonEnd
 
     private val hideAnimation = Runnable {
         view.animate().setDuration(Constants.ANIMATION_DURATION).setListener(this@MapBottomPanelWidget)
