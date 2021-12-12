@@ -84,7 +84,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             binding.beginIndicator,
             binding.endIndicator
         )
-        app = ApplicationEx.getInstance(this)
+        app = ApplicationEx.getInstanceActivity(this)
         settingsProvider = app.applicationSettingsProvider
         binding.includeEmptyMap.mapEmptyPanel.setOnClickListener { onOpenMaps() }
         testMenuOptionsProcessor = TestMenuOptionsProcessor(this)
@@ -92,8 +92,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             this,
             this,
             TransportIconsProvider(this),
-            ApplicationEx.getInstance(this).getCountryFlagProvider(),
-            ApplicationEx.getInstance(this).getLocalizedMapInfoProvider()
+            ApplicationEx.getInstanceActivity(this).getCountryFlagProvider(),
+            ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
         )
     }
 

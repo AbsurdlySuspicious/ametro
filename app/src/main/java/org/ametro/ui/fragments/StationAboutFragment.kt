@@ -23,7 +23,7 @@ class StationAboutFragment : Fragment() {
     }
 
     private fun setupWebView(webView: WebView, lineName: String?, stationName: String?) {
-        val container = ApplicationEx.getInstance(requireActivity()).container
+        val container = ApplicationEx.getInstanceActivity(requireActivity()).container
         val station = container!!.findStationInformation(lineName, stationName)
         webView.apply {
             setInitialScale(1)

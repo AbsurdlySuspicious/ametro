@@ -16,7 +16,7 @@ public class TestMenuOptionsProcessor {
 
     public TestMenuOptionsProcessor(Activity activity) {
         this.activity = activity;
-        this.app = ApplicationEx.getInstance(activity);
+        this.app = ApplicationEx.getInstanceActivity(activity);
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {

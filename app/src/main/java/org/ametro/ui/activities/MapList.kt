@@ -10,22 +10,16 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import org.ametro.R
 import android.content.Intent
-import android.app.Activity
 import android.widget.Toast
 import org.ametro.app.ApplicationEx
 import org.ametro.ui.loaders.ExtendedMapInfo
 import org.ametro.ui.loaders.ExtendedMapStatus
-import org.ametro.ui.activities.CityList
-import org.ametro.ui.activities.MapList
-import androidx.core.view.MenuItemCompat
 import androidx.core.app.NavUtils
 import org.ametro.ui.tasks.MapInstallerAsyncTask
-import android.content.DialogInterface
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import org.ametro.app.Constants
 import org.ametro.databinding.ActivityMapListViewBinding
 import org.ametro.ui.tasks.TaskHelpers
@@ -73,7 +67,7 @@ class MapList : AppCompatActivity(), IMapListEventListener, IMapInstallerEventLi
             Toast.makeText(this, getString(R.string.msg_no_maps_selected), Toast.LENGTH_LONG).show()
             return
         }
-        ApplicationEx.getInstance(this).getLocalMapCatalogManager().deleteMapAll(maps)
+        ApplicationEx.getInstanceActivity(this).getLocalMapCatalogManager().deleteMapAll(maps)
         listFragment.forceUpdate()
         Toast.makeText(this, getString(R.string.msg_maps_deleted), Toast.LENGTH_LONG).show()
     }

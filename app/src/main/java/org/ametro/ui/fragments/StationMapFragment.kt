@@ -24,7 +24,7 @@ class StationMapFragment : Fragment() {
 
     private fun setupWebView(webView: WebView, lineName: String?, stationName: String?) {
         try {
-            val container = ApplicationEx.getInstance(requireActivity()).container!!
+            val container = ApplicationEx.getInstanceActivity(requireActivity()).container!!
             val station = container.findStationInformation(lineName, stationName)
             val mapInSvgFormat = container.loadStationMap(station.mapFilePath)
             webView.apply {

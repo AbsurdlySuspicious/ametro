@@ -98,7 +98,7 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
         act!!
     ) {
         override fun loadInBackground(): Array<MapInfo>? {
-            val app = ApplicationEx.getInstance(this)
+            val app = ApplicationEx.getInstanceLoader(this)
             val loadedMaps: MutableSet<String> = HashSet()
             for (m in app!!.getLocalMapCatalogManager().mapCatalog.maps) {
                 loadedMaps.add(m.fileName)
@@ -125,7 +125,7 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
             adapter = CityListAdapter(
                 activity,
                 geographyProvider,
-                ApplicationEx.getInstance(requireActivity()).getCountryFlagProvider()
+                ApplicationEx.getInstanceActivity(requireActivity()).getCountryFlagProvider()
             )
             list.setAdapter(adapter)
         } else {

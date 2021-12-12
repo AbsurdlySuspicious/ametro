@@ -43,7 +43,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentMapListViewBinding.inflate(inflater, container, false)
-        adapter = MapListAdapter(activity, ApplicationEx.getInstance(requireActivity()).getCountryFlagProvider())
+        adapter = MapListAdapter(activity, ApplicationEx.getInstanceActivity(requireActivity()).getCountryFlagProvider())
         binding!!.noMaps.setOnClickListener(this)
         binding!!.list.apply {
             onItemClickListener = this@MapListFragment
@@ -125,7 +125,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     override fun onCreateLoader(id: Int, args: Bundle?): Loader<MapCatalog?> {
-        val app = ApplicationEx.getInstance(this@MapListFragment.requireActivity())
+        val app = ApplicationEx.getInstanceActivity(this@MapListFragment.requireActivity())
         when (id) {
             LOCAL_CATALOG_LOADER -> return MapCatalogAsyncTaskLoaderLocal(app, activity)
             REMOTE_CATALOG_LOADER -> return MapCatalogAsyncTaskLoaderRemote(app, activity)

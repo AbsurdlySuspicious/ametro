@@ -1,7 +1,6 @@
 package org.ametro.app
 
 import android.app.Application
-import org.ametro.app.ApplicationSettingsProvider
 import org.ametro.providers.IconProvider
 import org.ametro.catalog.RemoteMapCatalogProvider
 import org.ametro.catalog.service.IMapServiceCache
@@ -11,7 +10,6 @@ import org.ametro.model.MapContainer
 import android.graphics.PointF
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
-import org.ametro.utils.Lazy.IFactory
 import androidx.core.content.ContextCompat
 import org.ametro.R
 import org.ametro.catalog.service.MapServiceCache
@@ -20,7 +18,6 @@ import android.app.Activity
 import android.content.Context
 import androidx.loader.content.AsyncTaskLoader
 import android.util.Pair
-import org.ametro.app.ApplicationEx
 import org.ametro.utils.Lazy
 
 class ApplicationEx() : Application() {
@@ -127,18 +124,18 @@ class ApplicationEx() : Application() {
 
     companion object {
         @JvmStatic
-        fun getInstance(activity: Activity): ApplicationEx {
+        fun getInstanceActivity(activity: Activity): ApplicationEx {
             return activity.application as ApplicationEx
         }
 
         @JvmStatic
-        fun getInstance(applicationContext: Context?): ApplicationEx? {
+        fun getInstanceContext(applicationContext: Context?): ApplicationEx? {
             return applicationContext as ApplicationEx?
         }
 
         @JvmStatic
-        fun getInstance(loader: AsyncTaskLoader<*>): ApplicationEx? {
-            return getInstance(loader.context.applicationContext)
+        fun getInstanceLoader(loader: AsyncTaskLoader<*>): ApplicationEx? {
+            return getInstanceContext(loader.context.applicationContext)
         }
     }
 }

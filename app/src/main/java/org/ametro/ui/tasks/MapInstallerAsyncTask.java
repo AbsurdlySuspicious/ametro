@@ -35,7 +35,7 @@ public class MapInstallerAsyncTask extends AsyncTask<Void, Object, Throwable> {
     public MapInstallerAsyncTask(Activity context, IMapInstallerEventListener listener, MapInfo[] maps) {
         this.listener = listener;
         this.maps = maps;
-        this.application = ApplicationEx.getInstance(context);
+        this.application = ApplicationEx.getInstanceActivity(context);
         this.wakeLock = ((PowerManager) context.getSystemService(Context.POWER_SERVICE))
                 .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getClass().getName());
     }

@@ -35,7 +35,7 @@ class StationDetails : AppCompatActivity(), TabColorizer {
             setCustomTabColorizer(this@StationDetails)
         }
 
-        val app = ApplicationEx.getInstance(this)
+        val app = ApplicationEx.getInstanceActivity(this)
         val station = app.container!!.findSchemeStation(
             app.schemeName,
             intent.getStringExtra(Constants.LINE_NAME),
