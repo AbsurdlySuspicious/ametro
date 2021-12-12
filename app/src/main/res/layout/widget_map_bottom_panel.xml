@@ -89,7 +89,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/line_icon"
                 app:layout_constraintEnd_toStartOf="@id/details_text"
                 app:layout_constraintStart_toEndOf="@id/line_icon"
-                android:maxLines="1"
+                android:maxLines="2"
                 tools:text="Line name"/>
 
         <TextView
