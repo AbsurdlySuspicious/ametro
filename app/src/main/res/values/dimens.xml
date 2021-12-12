@@ -39,6 +39,7 @@
 
     <dimen name="panel_bottom_padding">6dp</dimen>
     <dimen name="panel_bottom_sub_padding">10dp</dimen>
+    <dimen name="panel_bottom_actions_padding">16dp</dimen>
     <dimen name="panel_bottom_sub_radius">5dp</dimen>
     <dimen name="panel_bottom_sub_spacing">10dp</dimen>
     <dimen name="panel_margin_left_right">0dp</dimen>

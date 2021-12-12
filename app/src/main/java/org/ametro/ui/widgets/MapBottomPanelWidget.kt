@@ -35,8 +35,8 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     private val stationLayout = binding.stationLayout
     private val detailsHint = binding.detailsText
     private val lineIcon = binding.lineIcon
-    private val beginButton = binding.buttonBegin
-    private val endButton = binding.buttonEnd
+    private val beginButton = binding.actionStart
+    private val endButton = binding.actionEnd
 
     private val hideAnimation = Runnable {
         view.animate()
