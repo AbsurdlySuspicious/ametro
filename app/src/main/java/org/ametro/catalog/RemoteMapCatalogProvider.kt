@@ -17,20 +17,20 @@ class RemoteMapCatalogProvider(
 ) {
     fun getMapCatalog(forceUpdate: Boolean): MapCatalog? {
         if (!forceUpdate && cache.hasValidCache()) {
-            return loadCatalog()
+            return loadCatalog(false)
         }
         try {
             cache.refreshCache()
         } catch (ex: Exception) {
             Log.e(
                 Constants.LOG,
-                String.format("Cannot refresh remote map catalog cache due exception: %s", ex.toString())
+                "Cannot refresh remote map catalog cache: forceUpdate $forceUpdate, exception $ex"
             )
         }
-        return loadCatalog()
+        return loadCatalog(true)
     }
 
-    private fun loadCatalog(): MapCatalog? {
+    private fun loadCatalog(forceLocal: Boolean): MapCatalog? {
         return try {
             localizationProvider.createCatalog(
                 deserializeMapInfoArray(
@@ -38,9 +38,10 @@ class RemoteMapCatalogProvider(
                 )
             )
         } catch (ex: Exception) {
-            Log.e(Constants.LOG, String.format("Cannot read remote map catalog cache due exception: %s", ex.toString()))
+            Log.e(Constants.LOG, "Cannot read remote map catalog cache: forceLocal $forceLocal, exception $ex")
             cache.invalidateCache()
-            null
+            if (forceLocal) null
+            else getMapCatalog(true)
         }
     }
 
