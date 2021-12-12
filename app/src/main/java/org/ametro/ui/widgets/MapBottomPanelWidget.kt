@@ -50,7 +50,7 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         stationTextView.text = station!!.displayName
         lineTextView.text = line!!.displayName
         detailsHint.visibility = if (hasDetails) View.VISIBLE else View.INVISIBLE
-        (lineIcon.background as GradientDrawable).setColor(line!!.lineColor)
+        (lineIcon.drawable as GradientDrawable).setColor(line!!.lineColor)
         view.animate()
             .setDuration(Constants.ANIMATION_DURATION)
             .setListener(this@MapBottomPanelWidget)
