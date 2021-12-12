@@ -40,7 +40,7 @@
     <dimen name="panel_bottom_padding">6dp</dimen>
     <dimen name="panel_bottom_sub_padding">10dp</dimen>
     <dimen name="panel_bottom_sub_radius">5dp</dimen>
-    <dimen name="panel_bottom_sub_margin">10dp</dimen>
+    <dimen name="panel_bottom_sub_spacing">10dp</dimen>
     <dimen name="panel_margin_left_right">0dp</dimen>
     <dimen name="panel_small_padding">8dp</dimen>
 
