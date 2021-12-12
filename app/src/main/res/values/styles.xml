@@ -33,11 +33,11 @@
     </style>
 
     <style name="bottomPanelStation" parent="primaryText">
-        <iten name="android:textColor">@android:color/primary_text_light</iten>
+        <item name="android:textColor">@android:color/primary_text_light</item>
     </style>
 
     <style name="bottomPanelLine" parent="secondaryText">
-        <iten name="android:textColor">@android:color/secondary_text_light</iten>
+        <item name="android:textColor">@android:color/secondary_text_light</item>
     </style>
 
     <style name="secondaryAlarmText" parent="@style/TextAppearance.AppCompat.Medium">
