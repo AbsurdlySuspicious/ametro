@@ -1,6 +1,7 @@
 package org.ametro.ui.widgets
 
 import android.animation.Animator
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
@@ -33,6 +34,7 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     private val lineTextView = binding.line
     private val stationLayout = binding.stationLayout
     private val detailsHint = binding.detailsText
+    private val lineIcon = binding.lineIcon
     private val beginButton = binding.buttonBegin
     private val endButton = binding.buttonEnd
 
@@ -48,6 +50,7 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         stationTextView.text = station!!.displayName
         lineTextView.text = line!!.displayName
         detailsHint.visibility = if (hasDetails) View.VISIBLE else View.INVISIBLE
+        (lineIcon.background as GradientDrawable).setColor(line!!.lineColor)
         view.animate()
             .setDuration(Constants.ANIMATION_DURATION)
             .setListener(this@MapBottomPanelWidget)
