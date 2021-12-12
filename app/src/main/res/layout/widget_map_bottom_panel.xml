@@ -141,6 +141,26 @@
                 app:layout_constraintEnd_toEndOf="@id/route_layout"
         />
 
+        <Button
+        android:id="@+id/button_begin"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/route_layout_pad"
+        app:layout_constraintTop_toTopOf="@id/route_layout_pad"
+        android:text="@string/btn_flat_begin"
+        />
+
+        <Button
+                android:id="@+id/button_end"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="@id/route_layout_pad"
+                app:layout_constraintTop_toBottomOf="@id/button_begin"
+                android:text="@string/btn_flat_end"
+        />
+
         <TextView
                 android:id="@+id/shit"
                 style="@style/bottomPanelLine"
