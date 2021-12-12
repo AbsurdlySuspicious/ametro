@@ -12,7 +12,8 @@
     <color name="divider">#B6B6B6</color>
 
     <color name="panel_background_button_text">#80000000</color>
-    <color name="panel_sub_background">#25000000</color>
+    <color name="panel_background_button_icon">#56000000</color>
+    <color name="panel_sub_background">#f5f5f5</color>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
@@ -34,10 +35,16 @@
 
     <style name="bottomPanelStation" parent="primaryText">
         <item name="android:textColor">@android:color/primary_text_light</item>
+        <item name="android:maxLines">2</item>
     </style>
 
     <style name="bottomPanelLine" parent="secondaryText">
         <item name="android:textColor">@android:color/secondary_text_light</item>
+        <item name="android:maxLines">2</item>
+    </style>
+
+    <style name="bottomPanelActionStation" parent="bottomPanelStation">
+        <item name="android:textSize">12sp</item>
     </style>
 
     <style name="secondaryAlarmText" parent="@style/TextAppearance.AppCompat.Medium">

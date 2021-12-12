@@ -1,13 +1,14 @@
 package org.ametro.ui.widgets
 
 import android.animation.Animator
+import android.graphics.PorterDuff
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Parcelable
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.parcelize.Parcelize
+import org.ametro.R
 import org.ametro.app.Constants
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.MapContainer
@@ -33,10 +34,20 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     private val stationTextView = binding.station
     private val lineTextView = binding.line
     private val stationLayout = binding.stationLayout
-    private val detailsHint = binding.detailsText
+    private val detailsHint = binding.detailsIcon
+    private val detailsProgress = binding.detailsLoading
     private val lineIcon = binding.lineIcon
     private val beginButton = binding.actionStart
     private val endButton = binding.actionEnd
+
+    init {
+        val progressTint =
+            view.context.resources.getColor(R.color.panel_background_button_icon)
+        detailsProgress.indeterminateDrawable.mutate().apply {
+            setColorFilter(progressTint, PorterDuff.Mode.SRC_IN)
+            detailsProgress.indeterminateDrawable = this
+        }
+    }
 
     private val hideAnimation = Runnable {
         view.animate()
@@ -49,7 +60,8 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         view.visibility = View.VISIBLE
         stationTextView.text = station!!.displayName
         lineTextView.text = line!!.displayName
-        detailsHint.visibility = if (hasDetails) View.VISIBLE else View.INVISIBLE
+        detailsProgress.visibility = View.INVISIBLE
+        detailsHint.visibility = detailsVisibility
         (lineIcon.drawable as GradientDrawable).setColor(line!!.lineColor)
         view.animate()
             .setDuration(Constants.ANIMATION_DURATION)
@@ -61,6 +73,9 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     var isOpened: Boolean = false
         private set
 
+    private val detailsVisibility
+        get() = if (hasDetails) View.VISIBLE else View.INVISIBLE
+
     private var wasOpened = false
     private var firstTime: Boolean = true
     private var hasDetails: Boolean = false
@@ -70,6 +85,8 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     init {
         val clickListener = View.OnClickListener { v ->
             if (v === stationLayout && hasDetails) {
+                detailsHint.visibility = View.INVISIBLE
+                detailsProgress.visibility = View.VISIBLE
                 this@MapBottomPanelWidget.listener.onShowMapDetail(line, station)
             } else if (v === beginButton) {
                 this@MapBottomPanelWidget.listener.onSelectBeginStation(line, station)
@@ -105,6 +122,11 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         if (!isOpened || line == null || station == null) return
         val state = SavedState(schemeName, station!!.uid)
         bundle.putParcelable(instanceStateKey, state)
+    }
+
+    fun detailsClosed() {
+        detailsProgress.visibility = View.INVISIBLE
+        detailsHint.visibility = detailsVisibility
     }
 
     fun show(line: MapSchemeLine, station: MapSchemeStation, showDetails: Boolean) {

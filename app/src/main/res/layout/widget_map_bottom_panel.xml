@@ -39,7 +39,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/route_layout"
+                app:layout_constraintEnd_toStartOf="@id/actions_barrier"
         />
 
         <TextView
@@ -49,21 +49,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/panel_bottom_sub_padding"
                 android:layout_marginTop="@dimen/panel_bottom_sub_padding"
-                android:layout_marginEnd="15dp"
+                android:layout_marginEnd="5dp"
                 app:layout_constraintTop_toTopOf="@id/station_layout"
                 app:layout_constraintBottom_toTopOf="@id/line"
                 app:layout_constraintStart_toStartOf="@id/station_layout"
-                app:layout_constraintEnd_toStartOf="@id/details_text"
+                app:layout_constraintEnd_toStartOf="@id/details_icon"
                 app:layout_constraintVertical_chainStyle="packed"
-                android:breakStrategy="high_quality"
-                android:hyphenationFrequency="full"
-                android:maxLines="2"
                 tools:text="Station"/>
 
         <ImageView
                 android:id="@+id/line_icon"
-                android:layout_width="@dimen/bottom_bar_line_icon_size"
-                android:layout_height="@dimen/bottom_bar_line_icon_size"
+                android:layout_width="@dimen/panel_bottom_line_icon_size"
+                android:layout_height="@dimen/panel_bottom_line_icon_size"
                 android:layout_marginTop="1dp"
                 android:src="@drawable/line_icon"
                 app:layout_constraintStart_toStartOf="@id/station"
@@ -77,28 +74,39 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                android:layout_marginEnd="15dp"
+                android:layout_marginEnd="5dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="@dimen/panel_bottom_sub_padding"
                 app:layout_constraintTop_toBottomOf="@id/station"
                 app:layout_constraintBottom_toBottomOf="@id/station_layout"
-                app:layout_constraintEnd_toStartOf="@id/details_text"
+                app:layout_constraintEnd_toStartOf="@id/details_icon"
                 app:layout_constraintStart_toEndOf="@id/line_icon"
-                android:breakStrategy="high_quality"
-                android:hyphenationFrequency="full"
-                android:maxLines="2"
                 tools:text="Line name"/>
 
-        <TextView
-                android:id="@+id/details_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="15dp"
+        <ImageView
+                android:id="@+id/details_icon"
+                android:layout_width="@dimen/panel_bottom_info_icon_size"
+                android:layout_height="@dimen/panel_bottom_info_icon_size"
+                android:layout_marginEnd="15dp"
+                android:src="@drawable/ic_station_info"
+                app:tint="@color/panel_background_button_icon"
                 app:layout_constraintEnd_toEndOf="@id/station_layout"
                 app:layout_constraintTop_toTopOf="@id/station_layout"
                 app:layout_constraintBottom_toBottomOf="@id/station_layout"
-                android:textColor="@color/panel_background_button_text"
-                android:text="@string/btn_flat_station_details"/>
+        />
+
+        <ProgressBar
+                android:id="@+id/details_loading"
+                android:visibility="invisible"
+                android:layout_width="@dimen/panel_bottom_info_icon_size"
+                android:layout_height="@dimen/panel_bottom_info_icon_size"
+                android:tint="@color/panel_background_button_icon"
+                app:layout_constraintStart_toStartOf="@id/details_icon"
+                app:layout_constraintEnd_toEndOf="@id/details_icon"
+                app:layout_constraintTop_toTopOf="@id/details_icon"
+                app:layout_constraintBottom_toBottomOf="@id/details_icon"
+        />
+
         <!-- / Station layout -->
 
         <!--<Button
@@ -115,127 +123,158 @@
                 android:layout_height="wrap_content"
                 android:text="@string/btn_flat_end"/>-->
 
-        <!-- Route layout -->
-        <View
-                android:id="@+id/route_layout"
-                android:background="@drawable/bottom_panel_sub_noripple"
-                android:layout_height="0dp"
-                android:layout_width="150dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/station_layout"
-                app:layout_constraintBottom_toBottomOf="@id/station_layout"
+        <!-- Route layout origin -->
+
+        <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/actions_barrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="start"
+                app:constraint_referenced_ids="action_end,action_start"
         />
 
         <View
                 android:id="@+id/action_start"
-                android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:background="@drawable/bottom_panel_action"
-                app:layout_constraintStart_toStartOf="@id/route_layout"
-                app:layout_constraintEnd_toEndOf="@id/route_layout"
-                app:layout_constraintTop_toTopOf="@id/route_layout"
+                android:layout_width="@dimen/panel_bottom_actions_width"
+                android:background="@drawable/bottom_panel_sub"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/station_layout"
                 app:layout_constraintBottom_toTopOf="@id/action_end"
         />
 
-        <View
-                android:id="@+id/action_end"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:background="@drawable/bottom_panel_action"
-                app:layout_constraintStart_toStartOf="@id/route_layout"
-                app:layout_constraintEnd_toEndOf="@id/route_layout"
-                app:layout_constraintTop_toBottomOf="@id/action_start"
-                app:layout_constraintBottom_toBottomOf="@id/route_layout"
-        />
-
-        <TextView
+        <!--<TextView
                 android:id="@+id/text_start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:layout_marginTop="@dimen/panel_bottom_actions_padding"
-                app:layout_constraintEnd_toEndOf="@id/route_layout"
+                app:layout_constraintEnd_toEndOf="@id/action_start"
                 app:layout_constraintStart_toEndOf="@id/text_start_line"
-                app:layout_constraintTop_toTopOf="@id/route_layout"
+                app:layout_constraintTop_toTopOf="@id/action_start"
                 app:layout_constraintBottom_toTopOf="@id/text_end"
                 app:layout_constraintVertical_chainStyle="spread_inside"
-                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintHorizontal_chainStyle="spread_inside"
                 android:textColor="@color/panel_background_button_text"
                 android:textSize="11sp"
                 android:text="START"
+        />-->
+
+        <ImageView
+                android:id="@+id/icon_start"
+                android:layout_width="@dimen/panel_bottom_actions_icon_size"
+                android:layout_height="@dimen/panel_bottom_actions_icon_size"
+                android:layout_marginEnd="10dp"
+                android:layout_marginTop="@dimen/panel_bottom_actions_padding"
+                android:src="@drawable/ic_loc_origin"
+                app:tint="@color/panel_background_button_icon"
+                app:layout_constraintEnd_toEndOf="@id/action_start"
+                app:layout_constraintStart_toEndOf="@id/text_start_station"
+                app:layout_constraintTop_toTopOf="@id/action_start"
+                app:layout_constraintBottom_toTopOf="@id/icon_end"
+                app:layout_constraintVertical_chainStyle="spread_inside"
+                app:layout_constraintHorizontal_chainStyle="spread_inside"
         />
 
         <TextView
-                android:id="@+id/text_start_line"
+                android:id="@+id/text_start_station"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
-                app:layout_constraintEnd_toStartOf="@id/text_start"
+                app:layout_constraintEnd_toStartOf="@id/icon_start"
                 app:layout_constraintStart_toEndOf="@id/line_icon_start"
-                app:layout_constraintTop_toTopOf="@id/text_start"
-                app:layout_constraintBottom_toBottomOf="@id/text_start"
-                style="@style/bottomPanelLine"
-                android:text="Line start"
+                app:layout_constraintTop_toTopOf="@id/icon_start"
+                app:layout_constraintBottom_toBottomOf="@id/icon_start"
+                style="@style/bottomPanelActionStation"
+                android:text="Station start"
         />
 
         <ImageView
                 android:id="@+id/line_icon_start"
-                android:layout_width="@dimen/bottom_bar_line_icon_size"
-                android:layout_height="@dimen/bottom_bar_line_icon_size"
+                android:layout_width="@dimen/panel_bottom_line_icon_size"
+                android:layout_height="@dimen/panel_bottom_line_icon_size"
                 android:layout_marginTop="1dp"
                 android:layout_marginHorizontal="10dp"
                 android:src="@drawable/line_icon"
-                app:layout_constraintStart_toStartOf="@id/route_layout"
-                app:layout_constraintEnd_toStartOf="@id/text_start_line"
-                app:layout_constraintTop_toTopOf="@id/text_start"
-                app:layout_constraintBottom_toBottomOf="@id/text_start"
+                app:layout_constraintStart_toStartOf="@id/action_start"
+                app:layout_constraintEnd_toStartOf="@id/text_start_station"
+                app:layout_constraintTop_toTopOf="@id/icon_start"
+                app:layout_constraintBottom_toBottomOf="@id/icon_start"
         />
 
-        <TextView
+        <!-- / Route layout origin -->
+
+        <!-- Route layout destination -->
+
+        <View
+                android:id="@+id/action_end"
+                android:layout_height="0dp"
+                android:layout_width="@dimen/panel_bottom_actions_width"
+                android:background="@drawable/bottom_panel_sub"
+                android:layout_marginTop="@dimen/panel_bottom_actions_h_spacing"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/station_layout"
+                app:layout_constraintTop_toBottomOf="@id/action_start"
+        />
+
+        <!--<TextView
                 android:id="@+id/text_end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:layout_marginBottom="@dimen/panel_bottom_actions_padding"
-                app:layout_constraintEnd_toEndOf="@id/route_layout"
+                app:layout_constraintEnd_toEndOf="@id/action_end"
                 app:layout_constraintStart_toEndOf="@id/text_end_line"
-                app:layout_constraintTop_toBottomOf="@id/text_start"
-                app:layout_constraintBottom_toBottomOf="@id/route_layout"
+                app:layout_constraintTop_toBottomOf="@id/icon_start"
+                app:layout_constraintBottom_toBottomOf="@id/action_end"
                 app:layout_constraintHorizontal_chainStyle="spread"
                 android:textColor="@color/panel_background_button_text"
                 android:textSize="11sp"
                 android:text="END"
+        />-->
+
+        <ImageView
+                android:id="@+id/icon_end"
+                android:layout_width="@dimen/panel_bottom_actions_icon_size"
+                android:layout_height="@dimen/panel_bottom_actions_icon_size"
+                android:layout_marginEnd="10dp"
+                android:layout_marginBottom="@dimen/panel_bottom_actions_padding"
+                android:src="@drawable/ic_loc_destination"
+                app:tint="@color/panel_background_button_icon"
+                app:layout_constraintEnd_toEndOf="@id/action_end"
+                app:layout_constraintStart_toEndOf="@id/text_end_station"
+                app:layout_constraintTop_toBottomOf="@id/icon_start"
+                app:layout_constraintBottom_toBottomOf="@id/action_end"
+                app:layout_constraintHorizontal_chainStyle="spread"
         />
 
         <TextView
-                android:id="@+id/text_end_line"
+                android:id="@+id/text_end_station"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
-                app:layout_constraintEnd_toStartOf="@id/text_end"
+                app:layout_constraintEnd_toStartOf="@id/icon_end"
                 app:layout_constraintStart_toEndOf="@id/line_icon_end"
-                app:layout_constraintTop_toTopOf="@id/text_end"
-                app:layout_constraintBottom_toBottomOf="@id/text_end"
-                style="@style/bottomPanelLine"
-                android:text="Line end"
+                app:layout_constraintTop_toTopOf="@id/icon_end"
+                app:layout_constraintBottom_toBottomOf="@id/icon_end"
+                style="@style/bottomPanelActionStation"
+                android:text="Station end"
         />
 
         <ImageView
                 android:id="@+id/line_icon_end"
-                android:layout_width="@dimen/bottom_bar_line_icon_size"
-                android:layout_height="@dimen/bottom_bar_line_icon_size"
+                android:layout_width="@dimen/panel_bottom_line_icon_size"
+                android:layout_height="@dimen/panel_bottom_line_icon_size"
                 android:layout_marginTop="1dp"
                 android:layout_marginHorizontal="10dp"
                 android:src="@drawable/line_icon"
-                app:layout_constraintStart_toStartOf="@id/route_layout"
-                app:layout_constraintEnd_toStartOf="@id/text_end_line"
-                app:layout_constraintTop_toTopOf="@id/text_end"
-                app:layout_constraintBottom_toBottomOf="@id/text_end"
+                app:layout_constraintStart_toStartOf="@id/action_end"
+                app:layout_constraintEnd_toStartOf="@id/text_end_station"
+                app:layout_constraintTop_toTopOf="@id/icon_end"
+                app:layout_constraintBottom_toBottomOf="@id/icon_end"
         />
 
-
-
-        <!-- / Route layout -->
+        <!-- / Route layout destination -->
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

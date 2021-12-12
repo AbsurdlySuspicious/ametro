@@ -277,6 +277,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                     )
                 ).execute()
             }
+            OPEN_STATION_DETAILS -> {
+                mapBottomPanel.detailsClosed()
+            }
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
