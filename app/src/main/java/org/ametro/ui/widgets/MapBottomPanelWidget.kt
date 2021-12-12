@@ -3,9 +3,6 @@ package org.ametro.ui.widgets
 import android.animation.Animator
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
-import org.ametro.R
 import org.ametro.app.Constants
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
@@ -18,12 +15,15 @@ class MapBottomPanelWidget(private val view: ViewGroup,
 
     private val stationTextView = binding.station
     private val lineTextView = binding.line
-    private val detailButton = binding.stationLayout
+    private val stationLayout = binding.stationLayout
+    private val detailsHint = binding.detailsText
     private val beginButton = binding.buttonBegin
     private val endButton = binding.buttonEnd
 
     private val hideAnimation = Runnable {
-        view.animate().setDuration(Constants.ANIMATION_DURATION).setListener(this@MapBottomPanelWidget)
+        view.animate()
+            .setDuration(Constants.ANIMATION_DURATION)
+            .setListener(this@MapBottomPanelWidget)
             .translationY(view.height.toFloat())
     }
 
@@ -31,7 +31,11 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         view.visibility = View.VISIBLE
         stationTextView.text = station!!.displayName
         lineTextView.text = line!!.displayName
-        view.animate().setDuration(Constants.ANIMATION_DURATION).setListener(this@MapBottomPanelWidget).translationY(0f)
+        detailsHint.visibility = if (hasDetails) View.VISIBLE else View.INVISIBLE
+        view.animate()
+            .setDuration(Constants.ANIMATION_DURATION)
+            .setListener(this@MapBottomPanelWidget)
+            .translationY(0f)
     }
 
     private var actionOnEndAnimation: Runnable? = null
@@ -39,12 +43,13 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         private set
 
     private var firstTime: Boolean = true
+    private var hasDetails: Boolean = false
     private var line: MapSchemeLine? = null
     private var station: MapSchemeStation? = null
 
     init {
         val clickListener = View.OnClickListener { v ->
-            if (v === detailButton) {
+            if (v === stationLayout && hasDetails) {
                 this@MapBottomPanelWidget.listener.onShowMapDetail(line, station)
             } else if (v === beginButton) {
                 this@MapBottomPanelWidget.listener.onSelectBeginStation(line, station)
@@ -53,23 +58,26 @@ class MapBottomPanelWidget(private val view: ViewGroup,
             }
         }
         view.setOnClickListener(clickListener)
-        detailButton.setOnClickListener(clickListener)
+        stationLayout.setOnClickListener(clickListener)
         beginButton.setOnClickListener(clickListener)
         endButton.setOnClickListener(clickListener)
     }
 
     fun show(line: MapSchemeLine, station: MapSchemeStation, showDetails: Boolean) {
-        detailButton.visibility = if (showDetails) View.VISIBLE else View.INVISIBLE
         if (isOpened && this.line === line && this.station === station) {
             return
         }
+
         this.line = line
         this.station = station
+        this.hasDetails = showDetails
+
         if (!isOpened && !firstTime) {
             isOpened = true
             showAnimation.run()
             return
         }
+
         isOpened = true
         firstTime = false
         actionOnEndAnimation = showAnimation
@@ -85,6 +93,7 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     }
 
     override fun onAnimationStart(animation: Animator) {}
+
     override fun onAnimationEnd(animation: Animator) {
         if (!isOpened) view.visibility = View.INVISIBLE
         if (actionOnEndAnimation != null) {
