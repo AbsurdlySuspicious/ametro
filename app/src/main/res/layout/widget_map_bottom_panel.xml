@@ -143,23 +143,6 @@
                 app:layout_constraintBottom_toTopOf="@id/action_end"
         />
 
-        <!--<TextView
-                android:id="@+id/text_start"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_marginTop="@dimen/panel_bottom_actions_padding"
-                app:layout_constraintEnd_toEndOf="@id/action_start"
-                app:layout_constraintStart_toEndOf="@id/text_start_line"
-                app:layout_constraintTop_toTopOf="@id/action_start"
-                app:layout_constraintBottom_toTopOf="@id/text_end"
-                app:layout_constraintVertical_chainStyle="spread_inside"
-                app:layout_constraintHorizontal_chainStyle="spread_inside"
-                android:textColor="@color/panel_background_button_text"
-                android:textSize="11sp"
-                android:text="START"
-        />-->
-
         <ImageView
                 android:id="@+id/icon_start"
                 android:layout_width="@dimen/panel_bottom_actions_icon_size"
@@ -175,7 +158,22 @@
         />
 
         <TextView
+                android:id="@+id/text_start_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toStartOf="@id/icon_start"
+                app:layout_constraintStart_toEndOf="@id/replace_icon_start"
+                app:layout_constraintTop_toTopOf="@id/icon_start"
+                app:layout_constraintBottom_toBottomOf="@id/icon_start"
+                android:gravity="center"
+                android:textColor="@color/panel_background_button_text"
+                android:text="@string/btn_flat_begin"
+        />
+
+        <TextView
                 android:id="@+id/text_start_station"
+                android:visibility="invisible"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
@@ -190,6 +188,7 @@
 
         <ImageView
                 android:id="@+id/replace_icon_start"
+                android:visibility="invisible"
                 android:layout_width="@dimen/panel_bottom_actions_left_icon_size"
                 android:layout_height="@dimen/panel_bottom_actions_left_icon_size"
                 android:layout_marginTop="1dp"
@@ -218,22 +217,6 @@
                 app:layout_constraintTop_toBottomOf="@id/action_start"
         />
 
-        <!--<TextView
-                android:id="@+id/text_end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_marginBottom="@dimen/panel_bottom_actions_padding"
-                app:layout_constraintEnd_toEndOf="@id/action_end"
-                app:layout_constraintStart_toEndOf="@id/text_end_line"
-                app:layout_constraintTop_toBottomOf="@id/icon_start"
-                app:layout_constraintBottom_toBottomOf="@id/action_end"
-                app:layout_constraintHorizontal_chainStyle="spread"
-                android:textColor="@color/panel_background_button_text"
-                android:textSize="11sp"
-                android:text="END"
-        />-->
-
         <ImageView
                 android:id="@+id/icon_end"
                 android:layout_width="@dimen/panel_bottom_actions_icon_size"
@@ -249,7 +232,22 @@
         />
 
         <TextView
+                android:id="@+id/text_end_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                app:layout_constraintEnd_toStartOf="@id/icon_end"
+                app:layout_constraintStart_toEndOf="@id/replace_icon_end"
+                app:layout_constraintTop_toTopOf="@id/icon_end"
+                app:layout_constraintBottom_toBottomOf="@id/icon_end"
+                android:gravity="center"
+                android:textColor="@color/panel_background_button_text"
+                android:text="@string/btn_flat_end"
+        />
+
+        <TextView
                 android:id="@+id/text_end_station"
+                android:visibility="invisible"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
@@ -264,6 +262,7 @@
 
         <ImageView
                 android:id="@+id/replace_icon_end"
+                android:visibility="invisible"
                 android:layout_width="@dimen/panel_bottom_actions_left_icon_size"
                 android:layout_height="@dimen/panel_bottom_actions_left_icon_size"
                 android:layout_marginTop="1dp"
