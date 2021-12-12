@@ -81,40 +81,27 @@ class MapBottomPanelWidget(private val view: ViewGroup,
     }
 
     fun restoreWindow() {
-        Log.i("MEME", "rw open $isOpened, was $wasOpened, line ${line?.name}, station ${station?.name}")
         if (!isOpened && wasOpened && line != null && station != null) {
-            Log.i("MEME", "rw fired")
             wasOpened = false
             show(line!!, station!!, hasDetails)
         }
     }
 
     fun restoreState(bundle: Bundle, container: MapContainer, scheme: MapScheme) {
-        Log.i("MEME", "rst begin (scheme ${scheme.name})")
         val state = bundle.getParcelable<SavedState>(instanceStateKey) ?: return
-        Log.i("MEME", "rst state $state")
         if (state.schemeName != scheme.name) return
-        Log.i("MEME", "rst scheme valid")
         val pack = ModelUtil.findStationByUid(scheme, state.stationUid.toLong()) ?: return
-        Log.i("MEME", "rst found station")
         val info: MapStationInformation? = container.findStationInformation(pack.first.name, pack.second.name)
-        Log.i("MEME", "rst info ${info?.mapFilePath}")
         this.line = pack.first
         this.station = pack.second
         this.hasDetails = info?.mapFilePath != null
         this.wasOpened = true
-        Log.i("MEME", "rst done")
     }
 
     fun saveState(bundle: Bundle, schemeName: String) {
-        Log.i("MEME", "sav begin (scheme $schemeName)")
-        Log.i("MEME", "sav op $isOpened, line ${line != null}, station ${station != null}")
         if (!isOpened || line == null || station == null) return
-        Log.i("MEME", "sav null checks ok")
         val state = SavedState(schemeName, station!!.uid)
-        Log.i("MEME", "sav state created")
         bundle.putParcelable(instanceStateKey, state)
-        Log.i("MEME", "sav done")
     }
 
     fun show(line: MapSchemeLine, station: MapSchemeStation, showDetails: Boolean) {
