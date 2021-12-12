@@ -28,6 +28,7 @@
             android:padding="@dimen/panel_bottom_padding"
     >
 
+        <!-- Station layout -->
         <View
                 android:id="@+id/station_layout"
                 android:background="@drawable/bottom_panel_sub"
@@ -39,6 +40,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/route_layout"
         />
+
         <View
                 android:id="@+id/station_layout_pad"
                 android:visibility="invisible"
@@ -50,6 +52,7 @@
                 app:layout_constraintStart_toStartOf="@id/station_layout"
                 app:layout_constraintEnd_toEndOf="@id/station_layout"
         />
+
         <TextView
                 android:id="@+id/station"
                 style="@style/bottomPanelStation"
@@ -99,6 +102,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/station_layout_pad"
                 android:textColor="@color/panel_background_button_text"
                 android:text="@string/btn_flat_station_details"/>
+        <!-- / Station layout -->
 
         <!--<Button
                 android:id="@+id/button_begin"
@@ -114,6 +118,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/btn_flat_end"/>-->
 
+        <!-- Route layout -->
         <View
                 android:id="@+id/route_layout"
                 android:background="@drawable/bottom_panel_sub"
@@ -123,6 +128,7 @@
                 app:layout_constraintTop_toTopOf="@id/station_layout"
                 app:layout_constraintBottom_toBottomOf="@id/station_layout"
         />
+
         <View
                 android:id="@+id/route_layout_pad"
                 android:visibility="invisible"
@@ -134,10 +140,11 @@
                 app:layout_constraintStart_toStartOf="@id/route_layout"
                 app:layout_constraintEnd_toEndOf="@id/route_layout"
         />
+
         <TextView
                 android:id="@+id/shit"
                 style="@style/bottomPanelLine"
-                android:visibility="visible"
+                android:visibility="gone"
                 android:layout_width="25dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="15dp"
@@ -147,6 +154,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/route_layout_pad"
                 app:layout_constraintStart_toStartOf="@id/route_layout_pad"
                 tools:text="aaaaaaaaaaaaaaaaaaaaaaaaaa"/>
+        <!-- / Route layout -->
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
