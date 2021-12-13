@@ -74,24 +74,26 @@ class MapBottomPanelWidget(
                 .screen(stationTintFg)
                 .toColorInt()
             val padding = Rect(
-                /* left   */ (density * 5f).toInt(),
+                /* left   */ (density * 6f).toInt(),
                 /* top    */ (density * 2f).toInt(),
-                /* right  */ (density * 5f).toInt(),
-                /* bottom */ (density * 6f).toInt()
+                /* right  */ (density * 1f).toInt(),
+                /* bottom */ (density * 2f).toInt()
             )
+            val rnd = density * 2.5f
 
             val draw = { width: Int, height: Int ->
                 val w = width.toFloat()
                 val h = height.toFloat()
-                val rnd = density * 2.5f
-                val off = density * 3f
+                val off = density * 5f
 
                 val bitmap = Bitmap
                     .createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
                 Canvas(bitmap).apply {
-                    drawRoundRect(RectF(0f, 0f, w, h), rnd, rnd, Paint().apply { color = bgColor })
-                    drawRoundRect(RectF(0f, 0f, w, h - off), rnd, rnd, Paint().apply { color = fgColor })
+                    // drawRoundRect(RectF(0f, 0f, w, h), rnd, rnd, Paint().apply { color = bgColor })
+                    // drawRoundRect(RectF(0f, 0f, w, h - off), rnd, rnd, Paint().apply { color = fgColor })
+                    drawRect(RectF(0f, 0f, w, h), Paint().apply { color = bgColor })
+                    drawRect(RectF(off, 0f, w, h), Paint().apply { color = fgColor })
                 }
 
                 bitmap
@@ -100,7 +102,8 @@ class MapBottomPanelWidget(
 
             val bg = PaintDrawable().apply {
                 val shaderMode = Shader.TileMode.CLAMP
-                shape = RectShape()
+                //shape = RectShape()
+                setCornerRadius(rnd)
                 setPadding(padding)
                 shaderFactory = object : ShapeDrawable.ShaderFactory() {
                     override fun resize(width: Int, height: Int): Shader {
