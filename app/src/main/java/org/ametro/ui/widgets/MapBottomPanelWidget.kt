@@ -16,6 +16,7 @@ import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
+import org.ametro.utils.misc.BottomSheetUtils
 import org.ametro.utils.misc.ColorUtils
 
 
@@ -42,9 +43,9 @@ class MapBottomPanelWidget(
 
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(sheetView: View, newState: Int) {
+            // Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
-                    Log.i("MEME", "sheet state HIDDEN")
                     if (pendingOpen) {
                         pendingOpen = false
                         showImpl()
@@ -53,22 +54,12 @@ class MapBottomPanelWidget(
                     }
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
-                    Log.i("MEME", "sheet state COLLAPSED")
                     updatePeekHeight(sheetView)
-                }
-                BottomSheetBehavior.STATE_DRAGGING -> {
-                    Log.i("MEME", "sheet state DRAGGING")
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
-                    Log.i("MEME", "sheet state EXPANDED")
                     updatePeekHeight(sheetView)
                 }
-                BottomSheetBehavior.STATE_HALF_EXPANDED -> {
-                    Log.i("MEME", "sheet state HALF_EXPANDED")
-                }
-                BottomSheetBehavior.STATE_SETTLING -> {
-                    Log.i("MEME", "sheet state SETTLING")
-                }
+                else -> {}
             }
         }
 
