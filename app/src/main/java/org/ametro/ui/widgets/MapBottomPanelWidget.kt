@@ -74,9 +74,9 @@ class MapBottomPanelWidget(
                 .screen(stationTintFg)
                 .toColorInt()
             val padding = Rect(
-                /* left   */ (density * 6f).toInt(),
+                /* left   */ (density * 10f).toInt(),
                 /* top    */ (density * 2f).toInt(),
-                /* right  */ (density * 1f).toInt(),
+                /* right  */ (density * 0f).toInt(),
                 /* bottom */ (density * 2f).toInt()
             )
             val rnd = density * 2.5f
@@ -90,10 +90,16 @@ class MapBottomPanelWidget(
                     .createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
                 Canvas(bitmap).apply {
+                    // bottom depth
                     // drawRoundRect(RectF(0f, 0f, w, h), rnd, rnd, Paint().apply { color = bgColor })
                     // drawRoundRect(RectF(0f, 0f, w, h - off), rnd, rnd, Paint().apply { color = fgColor })
-                    drawRect(RectF(0f, 0f, w, h), Paint().apply { color = bgColor })
-                    drawRect(RectF(off, 0f, w, h), Paint().apply { color = fgColor })
+
+                    // left no depth
+                    // drawRect(RectF(0f, 0f, w, h), Paint().apply { color = bgColor })
+                    // drawRect(RectF(off, 0f, w, h), Paint().apply { color = fgColor })
+
+                    // left no bg
+                    drawRoundRect(RectF(0f, 0f, off, h), rnd, rnd, Paint().apply { color = bgColor })
                 }
 
                 bitmap
@@ -102,8 +108,8 @@ class MapBottomPanelWidget(
 
             val bg = PaintDrawable().apply {
                 val shaderMode = Shader.TileMode.CLAMP
-                //shape = RectShape()
-                setCornerRadius(rnd)
+                shape = RectShape()
+                //setCornerRadius(rnd)
                 setPadding(padding)
                 shaderFactory = object : ShapeDrawable.ShaderFactory() {
                     override fun resize(width: Int, height: Int): Shader {

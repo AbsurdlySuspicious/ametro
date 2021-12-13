@@ -13,9 +13,4 @@
         <item name="android:hyphenationFrequency">full</item>
         <item name="android:maxLines">2</item>
     </style>
-
-    <style name="bottomPanelActionStation" parent="bottomPanelStation">
-        <item name="android:gravity">center</item>
-        <item name="android:textSize">12sp</item>
-    </style>
 </resources>
