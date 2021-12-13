@@ -54,16 +54,14 @@ class MapBottomPanelWidget(
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
                     Log.i("MEME", "sheet state COLLAPSED")
-                    if (openTriggered) {
-                        openTriggered = false
-                        bottomSheet.setPeekHeight(sheetView.height, true)
-                    }
+                    updatePeekHeight(sheetView)
                 }
                 BottomSheetBehavior.STATE_DRAGGING -> {
                     Log.i("MEME", "sheet state DRAGGING")
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     Log.i("MEME", "sheet state EXPANDED")
+                    updatePeekHeight(sheetView)
                 }
                 BottomSheetBehavior.STATE_HALF_EXPANDED -> {
                     Log.i("MEME", "sheet state HALF_EXPANDED")
@@ -90,6 +88,13 @@ class MapBottomPanelWidget(
             isDraggable = true
             state = BottomSheetBehavior.STATE_HIDDEN
             addBottomSheetCallback(bottomSheetCallback)
+        }
+    }
+
+    private fun updatePeekHeight(sheetView: View) {
+        if (openTriggered) {
+            openTriggered = false
+            bottomSheet.setPeekHeight(sheetView.height, true)
         }
     }
 
@@ -229,7 +234,7 @@ class MapBottomPanelWidget(
         bottomSheet.apply {
             setPeekHeight(view.height, true)
             if (state == BottomSheetBehavior.STATE_HIDDEN)
-                state = BottomSheetBehavior.STATE_COLLAPSED
+                state = BottomSheetBehavior.STATE_EXPANDED
         }
     }
 
