@@ -18,9 +18,10 @@ import android.app.Activity
 import android.content.Context
 import androidx.loader.content.AsyncTaskLoader
 import android.util.Pair
+import androidx.multidex.MultiDexApplication
 import org.ametro.utils.Lazy
 
-class ApplicationEx() : Application() {
+class ApplicationEx : MultiDexApplication() {
     private var appSettingsProvider: Lazy<ApplicationSettingsProvider>? = null
     private var countryFlagProvider: Lazy<IconProvider>? = null
     private var remoteMapCatalogProvider: Lazy<RemoteMapCatalogProvider>? = null
