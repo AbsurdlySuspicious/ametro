@@ -15,6 +15,7 @@
     <color name="panel_background_button_icon">#56000000</color>
     <color name="panel_sub_replace_icon">#4A4A4A</color>
     <color name="panel_sub_background">#f5f5f5</color>
+    <color name="panel_actions_station_tint">#66FFFFFF</color>
 
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
@@ -58,6 +59,7 @@
         <item name="android:textSize">14sp</item>
         <item name="android:ellipsize">end</item>
         <item name="android:textColor">@color/secondary_disabled_text</item>
+
     </style>
 
     <style name="drawerItemText" parent="@style/TextAppearance.AppCompat.Medium">

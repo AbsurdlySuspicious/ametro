@@ -1,6 +1,7 @@
 package org.ametro.ui.widgets
 
 import android.animation.Animator
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
@@ -8,6 +9,10 @@ import android.os.Parcelable
 import android.view.View
 import android.view.ViewGroup
 import android.util.Pair
+import android.widget.TextView
+import androidx.core.graphics.BlendModeColorFilterCompat
+import androidx.core.graphics.BlendModeCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import kotlinx.parcelize.Parcelize
 import org.ametro.R
 import org.ametro.app.ApplicationEx
@@ -19,12 +24,16 @@ import org.ametro.model.entities.MapScheme
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.model.entities.MapStationInformation
+import org.ametro.utils.misc.ColorUtils
 
 class MapBottomPanelWidget(private val view: ViewGroup,
-                           binding: WidgetMapBottomPanelBinding,
+                           private val binding: WidgetMapBottomPanelBinding,
                            private val app: ApplicationEx,
                            private val listener: IMapBottomPanelEventListener) :
     Animator.AnimatorListener {
+
+    private val routeStationTint =
+        view.context.resources.getColor(R.color.panel_actions_station_tint)
 
     private val stationTextView = binding.station
     private val lineTextView = binding.line
@@ -44,10 +53,35 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         }
     }
 
+    private fun viewVisible(visible: Boolean): Int {
+        return if (visible) View.VISIBLE else View.INVISIBLE
+    }
+
+    private fun routeStation(info: Pair<MapSchemeLine, MapSchemeStation>?,
+                             hint: View,
+                             replaceIcon: View,
+                             station: TextView) {
+        val selected = info != null
+        hint.visibility = viewVisible(!selected)
+        replaceIcon.visibility = viewVisible(selected)
+        station.visibility = viewVisible(selected)
+        if (selected) {
+            station.text = info!!.second.displayName
+            val bg = (station.background as GradientDrawable)
+            val color = ColorUtils
+                .fromColorInt(info.first.lineColor)
+                .multiply(routeStationTint)
+                .toColorInt()
+            bg.setColor(color)
+            //bg.setColor(info.first.lineColor)
+            //bg.setColorFilter(routeStationTint, PorterDuff.Mode.MULTIPLY)
+        }
+    }
+
     private val hideAnimation = Runnable {
         app.bottomPanelOpen = false
         app.bottomPanelStation = null
-        
+
         view.animate()
             .setDuration(Constants.ANIMATION_DURATION)
             .setListener(this@MapBottomPanelWidget)
@@ -61,6 +95,20 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         detailsProgress.visibility = View.INVISIBLE
         detailsHint.visibility = detailsVisibility
         (lineIcon.drawable as GradientDrawable).setColor(line!!.lineColor)
+
+        routeStation(
+            app.routeStart,
+            binding.textStartHint,
+            binding.replaceIconStart,
+            binding.textStartStation
+        )
+
+        routeStation(
+            app.routeEnd,
+            binding.textEndHint,
+            binding.replaceIconEnd,
+            binding.textEndStation
+        )
 
         app.bottomPanelOpen = true
         app.bottomPanelStation = Pair(line, station)
@@ -76,7 +124,7 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         private set
 
     private val detailsVisibility
-        get() = if (hasDetails) View.VISIBLE else View.INVISIBLE
+        get() = viewVisible(hasDetails)
 
     private var wasOpened = false
     private var firstTime: Boolean = true
