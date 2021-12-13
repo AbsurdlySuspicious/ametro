@@ -1,11 +1,11 @@
 package org.ametro.ui.widgets
 
-import android.animation.Animator
 import android.graphics.*
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
+import android.util.Log
 import android.util.Pair
 import android.view.View
 import android.widget.TextView
@@ -13,7 +13,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
-import org.ametro.app.Constants
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
@@ -22,16 +21,16 @@ import org.ametro.utils.misc.ColorUtils
 
 class MapBottomPanelWidget(
     private val view: ConstraintLayout,
-    private val binding: WidgetMapBottomPanelBinding,
     private val app: ApplicationEx,
     private val listener: IMapBottomPanelEventListener
-) :
-    Animator.AnimatorListener {
+) {
 
     private val density = view.context.resources.displayMetrics.density
     private val stationTintFg = ColorUtils.fromColorInt(Color.parseColor("#a9a9a9"))
     private val stationTintBg = ColorUtils.fromColorInt(Color.parseColor("#2a2a2a"))
 
+    private val binding = WidgetMapBottomPanelBinding.bind(view)
+    private val bottomSheet = BottomSheetBehavior.from(view)
     private val stationTextView = binding.station
     private val lineTextView = binding.line
     private val stationLayout = binding.stationLayout
@@ -41,18 +40,37 @@ class MapBottomPanelWidget(
     private val beginButton = binding.actionStart
     private val endButton = binding.actionEnd
 
-    private val bottomSheet = BottomSheetBehavior.from(view).apply {
-        /*state = BottomSheetBehavior.STATE_HIDDEN
-        isHideable = true
-        isDraggable = true
-        addBottomSheetCallback(bottomSheetCallback)*/
-    }
-
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
+        override fun onStateChanged(sheetView: View, newState: Int) {
             when (newState) {
-                BottomSheetBehavior.STATE_HIDDEN -> hide()
-                else -> {}
+                BottomSheetBehavior.STATE_HIDDEN -> {
+                    Log.i("MEME", "sheet state HIDDEN")
+                    if (pendingOpen) {
+                        pendingOpen = false
+                        showImpl()
+                    } else {
+                        hideCleanup()
+                    }
+                }
+                BottomSheetBehavior.STATE_COLLAPSED -> {
+                    Log.i("MEME", "sheet state COLLAPSED")
+                    if (openTriggered) {
+                        openTriggered = false
+                        bottomSheet.setPeekHeight(sheetView.height, true)
+                    }
+                }
+                BottomSheetBehavior.STATE_DRAGGING -> {
+                    Log.i("MEME", "sheet state DRAGGING")
+                }
+                BottomSheetBehavior.STATE_EXPANDED -> {
+                    Log.i("MEME", "sheet state EXPANDED")
+                }
+                BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                    Log.i("MEME", "sheet state HALF_EXPANDED")
+                }
+                BottomSheetBehavior.STATE_SETTLING -> {
+                    Log.i("MEME", "sheet state SETTLING")
+                }
             }
         }
 
@@ -65,6 +83,13 @@ class MapBottomPanelWidget(
         detailsProgress.indeterminateDrawable.mutate().apply {
             setColorFilter(progressTint, PorterDuff.Mode.SRC_IN)
             detailsProgress.indeterminateDrawable = this
+        }
+
+        bottomSheet.apply {
+            isHideable = true
+            isDraggable = true
+            state = BottomSheetBehavior.STATE_HIDDEN
+            addBottomSheetCallback(bottomSheetCallback)
         }
     }
 
@@ -141,17 +166,42 @@ class MapBottomPanelWidget(
         }
     }
 
-    private val hideAnimation = Runnable {
-        bottomSheet.apply {
-            if (state != BottomSheetBehavior.STATE_HIDDEN)
-                state = BottomSheetBehavior.STATE_HIDDEN
-        }
+    val isOpened: Boolean
+        get() = bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN
 
-        app.bottomPanelOpen = false
-        app.bottomPanelStation = null
+    private var pendingOpen: Boolean = false
+    private var openTriggered: Boolean = false
+    private var hasDetails: Boolean = false
+    private var line: MapSchemeLine? = null
+    private var station: MapSchemeStation? = null
+
+    private val detailsVisibility
+        get() = viewVisible(hasDetails)
+
+    init {
+        val clickListener = View.OnClickListener { v ->
+            if (v === stationLayout && hasDetails) {
+                detailsHint.visibility = View.INVISIBLE
+                detailsProgress.visibility = View.VISIBLE
+                this@MapBottomPanelWidget.listener.onShowMapDetail(line, station)
+            } else if (v === beginButton) {
+                this@MapBottomPanelWidget.listener.onSelectBeginStation(line, station)
+            } else if (v === endButton) {
+                this@MapBottomPanelWidget.listener.onSelectEndStation(line, station)
+            }
+        }
+        view.setOnClickListener(clickListener)
+        stationLayout.setOnClickListener(clickListener)
+        beginButton.setOnClickListener(clickListener)
+        endButton.setOnClickListener(clickListener)
     }
 
-    private val showAnimation = Runnable {
+    fun detailsClosed() {
+        detailsProgress.visibility = View.INVISIBLE
+        detailsHint.visibility = detailsVisibility
+    }
+
+    private fun showImpl() {
         view.visibility = View.VISIBLE
         stationTextView.text = station!!.displayName
         lineTextView.text = line!!.displayName
@@ -183,42 +233,6 @@ class MapBottomPanelWidget(
         }
     }
 
-    private var actionOnEndAnimation: Runnable? = null
-    var isOpened: Boolean = false
-        private set
-
-    private val detailsVisibility
-        get() = viewVisible(hasDetails)
-
-    private var wasOpened = false
-    private var firstTime: Boolean = true
-    private var hasDetails: Boolean = false
-    private var line: MapSchemeLine? = null
-    private var station: MapSchemeStation? = null
-
-    init {
-        val clickListener = View.OnClickListener { v ->
-            if (v === stationLayout && hasDetails) {
-                detailsHint.visibility = View.INVISIBLE
-                detailsProgress.visibility = View.VISIBLE
-                this@MapBottomPanelWidget.listener.onShowMapDetail(line, station)
-            } else if (v === beginButton) {
-                this@MapBottomPanelWidget.listener.onSelectBeginStation(line, station)
-            } else if (v === endButton) {
-                this@MapBottomPanelWidget.listener.onSelectEndStation(line, station)
-            }
-        }
-        view.setOnClickListener(clickListener)
-        stationLayout.setOnClickListener(clickListener)
-        beginButton.setOnClickListener(clickListener)
-        endButton.setOnClickListener(clickListener)
-    }
-
-    fun detailsClosed() {
-        detailsProgress.visibility = View.INVISIBLE
-        detailsHint.visibility = detailsVisibility
-    }
-
     fun show(line: MapSchemeLine, station: MapSchemeStation, showDetails: Boolean) {
         if (isOpened && this.line === line && this.station === station) {
             return
@@ -227,40 +241,36 @@ class MapBottomPanelWidget(
         this.line = line
         this.station = station
         this.hasDetails = showDetails
-        this.wasOpened = false
+        this.openTriggered = true
 
-        if (!isOpened && !firstTime) {
-            isOpened = true
-            showAnimation.run()
-            return
+        if (isOpened) {
+            pendingOpen = true
+            hideCleanup()
+            hideImpl()
+        } else {
+            pendingOpen = false
+            showImpl()
         }
+    }
 
-        isOpened = true
-        firstTime = false
-        actionOnEndAnimation = showAnimation
-        hideAnimation.run()
+    private fun hideImpl() {
+        bottomSheet.apply {
+            if (state != BottomSheetBehavior.STATE_HIDDEN)
+                state = BottomSheetBehavior.STATE_HIDDEN
+        }
+    }
+
+    private fun hideCleanup() {
+        app.bottomPanelOpen = false
+        app.bottomPanelStation = null
     }
 
     fun hide() {
-        if (!isOpened) {
-            return
-        }
-        isOpened = false
-        hideAnimation.run()
+        pendingOpen = false
+        hideCleanup()
+        hideImpl()
     }
 
-    override fun onAnimationStart(animation: Animator) {}
-
-    override fun onAnimationEnd(animation: Animator) {
-        if (!isOpened) view.visibility = View.INVISIBLE
-        if (actionOnEndAnimation != null) {
-            actionOnEndAnimation!!.run()
-            actionOnEndAnimation = null
-        }
-    }
-
-    override fun onAnimationCancel(animation: Animator) {}
-    override fun onAnimationRepeat(animation: Animator) {}
     interface IMapBottomPanelEventListener {
         fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?)
         fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?)

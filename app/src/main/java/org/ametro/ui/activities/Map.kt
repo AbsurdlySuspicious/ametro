@@ -84,12 +84,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         app = ApplicationEx.getInstanceActivity(this)
 
         mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
-        mapBottomPanel = MapBottomPanelWidget(
-            binding.includeBottomPanel.mapBottomPanel,
-            binding.includeBottomPanel,
-            app,
-            this
-        )
+        mapBottomPanel = MapBottomPanelWidget(findViewById(R.id.map_bottom_panel), app, this)
 
         mapSelectionIndicators = MapSelectionIndicatorsWidget(
             this,
