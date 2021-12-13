@@ -72,7 +72,7 @@ class MapBottomPanelWidget(
                 info!!.first.lineColor
             val fgColor = ColorUtils
                 .fromColorInt(bgColor)
-                .multiply(routeStationTint)
+                .screen(routeStationTint)
                 .toColorInt()
             val padding = Rect(
                 /* left   */ (density * 5f).toInt(),
@@ -91,9 +91,8 @@ class MapBottomPanelWidget(
                     .createBitmap(width, height, Bitmap.Config.ARGB_8888)
 
                 Canvas(bitmap).apply {
-                    //drawRect(RectF(0f, 0f, w, h), Paint().apply { color = bgColor })
-                    drawRect(RectF(0f, 0f, w, h), Paint().apply { color = fgColor })
-                    //drawRect(RectF(0f, 0f, w, h - off), Paint().apply { color = fgColor })
+                    drawRoundRect(RectF(0f, 0f, w, h), rnd, rnd, Paint().apply { color = bgColor })
+                    drawRoundRect(RectF(0f, 0f, w, h - off), rnd, rnd, Paint().apply { color = fgColor })
                 }
 
                 bitmap
@@ -102,8 +101,7 @@ class MapBottomPanelWidget(
 
             val bg = PaintDrawable().apply {
                 val shaderMode = Shader.TileMode.CLAMP
-                //shape = RectShape()
-                setCornerRadius(density * 2.5f)
+                shape = RectShape()
                 setPadding(padding)
                 shaderFactory = object : ShapeDrawable.ShaderFactory() {
                     override fun resize(width: Int, height: Int): Shader {
@@ -113,7 +111,7 @@ class MapBottomPanelWidget(
             }
 
             station.text = info.second.displayName
-            station.background = bg
+            station.setBackgroundDrawable(bg)
         }
     }
 

@@ -15,6 +15,7 @@
     </style>
 
     <style name="bottomPanelActionStation" parent="bottomPanelStation">
+        <item name="android:gravity">center</item>
         <item name="android:textSize">12sp</item>
     </style>
 </resources>

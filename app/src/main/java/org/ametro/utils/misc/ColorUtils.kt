@@ -27,16 +27,29 @@ data class ColorUtils(
                 /**/ ((b * 255.0f + 0.5f).toInt())
     }
 
-    fun multiply(other: ColorUtils): ColorUtils {
+    private inline fun applyAll(other: ColorUtils, 
+                                f: (Float, Float) -> Float): ColorUtils {
         return ColorUtils(
-            a * other.a,
-            r * other.r,
-            g * other.g,
-            b * other.b
+            f(a, other.a),
+            f(r, other.r),
+            f(g, other.g),
+            f(b, other.b)
         )
+    }
+
+    fun multiply(other: ColorUtils): ColorUtils {
+        return applyAll(other) { a, b -> a * b }
     }
 
     fun multiply(@ColorInt other: Int): ColorUtils {
         return multiply(fromColorInt(other))
+    }
+
+    fun screen(other: ColorUtils): ColorUtils {
+        return applyAll(other) { a, b -> 1f - (1f - a) * (1f - b) }
+    }
+
+    fun screen(@ColorInt other: Int): ColorUtils {
+        return screen(fromColorInt(other))
     }
 }

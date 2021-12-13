@@ -251,7 +251,6 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
-                android:background="@drawable/station_color_bg"
                 app:layout_constraintEnd_toStartOf="@id/icon_end"
                 app:layout_constraintStart_toEndOf="@id/replace_icon_end"
                 app:layout_constraintTop_toTopOf="@id/icon_end"
