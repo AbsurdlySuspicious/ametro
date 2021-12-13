@@ -8,13 +8,15 @@
         android:id="@+id/map_bottom_panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+
         android:layout_marginEnd="@dimen/panel_margin_left_right"
         android:layout_marginLeft="@dimen/panel_margin_left_right"
         android:layout_marginRight="@dimen/panel_margin_left_right"
         android:layout_marginStart="@dimen/panel_margin_left_right"
-        android:visibility="invisible"
-        tools:visibility="visible"
+
+        style="?attr/bottomSheetStyle"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+
         android:minHeight="100dp"
         android:background="@android:color/background_light"
         android:padding="@dimen/panel_bottom_padding"

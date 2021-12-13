@@ -52,14 +52,12 @@
                 />
 
                 <include android:id="@+id/include_top_panel" layout="@layout/widget_map_top_panel"/>
-                <include android:id="@+id/include_bottom_panel" layout="@layout/widget_map_bottom_panel"/>
             </RelativeLayout>
 
             <include android:id="@+id/include_empty_map" layout="@layout/widget_empty_map"/>
         </LinearLayout>
 
-
-
+        <include android:id="@+id/include_bottom_panel" layout="@layout/widget_map_bottom_panel"/>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
     <ListView

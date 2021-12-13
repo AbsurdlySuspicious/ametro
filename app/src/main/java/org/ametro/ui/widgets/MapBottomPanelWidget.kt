@@ -6,11 +6,11 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
-import android.util.Log
 import android.util.Pair
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
@@ -21,7 +21,7 @@ import org.ametro.utils.misc.ColorUtils
 
 
 class MapBottomPanelWidget(
-    private val view: ViewGroup,
+    private val view: ConstraintLayout,
     private val binding: WidgetMapBottomPanelBinding,
     private val app: ApplicationEx,
     private val listener: IMapBottomPanelEventListener
@@ -40,6 +40,24 @@ class MapBottomPanelWidget(
     private val lineIcon = binding.lineIcon
     private val beginButton = binding.actionStart
     private val endButton = binding.actionEnd
+
+    private val bottomSheet = BottomSheetBehavior.from(view).apply {
+        /*state = BottomSheetBehavior.STATE_HIDDEN
+        isHideable = true
+        isDraggable = true
+        addBottomSheetCallback(bottomSheetCallback)*/
+    }
+
+    private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
+        override fun onStateChanged(bottomSheet: View, newState: Int) {
+            when (newState) {
+                BottomSheetBehavior.STATE_HIDDEN -> hide()
+                else -> {}
+            }
+        }
+
+        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+    }
 
     init {
         val progressTint =
@@ -124,13 +142,13 @@ class MapBottomPanelWidget(
     }
 
     private val hideAnimation = Runnable {
+        bottomSheet.apply {
+            if (state != BottomSheetBehavior.STATE_HIDDEN)
+                state = BottomSheetBehavior.STATE_HIDDEN
+        }
+
         app.bottomPanelOpen = false
         app.bottomPanelStation = null
-
-        view.animate()
-            .setDuration(Constants.ANIMATION_DURATION)
-            .setListener(this@MapBottomPanelWidget)
-            .translationY(view.height.toFloat())
     }
 
     private val showAnimation = Runnable {
@@ -158,10 +176,11 @@ class MapBottomPanelWidget(
         app.bottomPanelOpen = true
         app.bottomPanelStation = Pair(line, station)
 
-        view.animate()
-            .setDuration(Constants.ANIMATION_DURATION)
-            .setListener(this@MapBottomPanelWidget)
-            .translationY(0f)
+        bottomSheet.apply {
+            setPeekHeight(view.height, true)
+            if (state == BottomSheetBehavior.STATE_HIDDEN)
+                state = BottomSheetBehavior.STATE_COLLAPSED
+        }
     }
 
     private var actionOnEndAnimation: Runnable? = null

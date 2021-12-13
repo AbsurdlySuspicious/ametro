@@ -15,6 +15,9 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
@@ -81,7 +84,6 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         app = ApplicationEx.getInstanceActivity(this)
 
         mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
-
         mapBottomPanel = MapBottomPanelWidget(
             binding.includeBottomPanel.mapBottomPanel,
             binding.includeBottomPanel,
