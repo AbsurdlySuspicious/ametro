@@ -28,12 +28,9 @@ class MapBottomPanelWidget(
 ) :
     Animator.AnimatorListener {
 
-    private val resources =
-        view.context.resources
-    private val routeStationTint =
-        resources.getColor(R.color.panel_actions_station_tint)
-    private val density =
-        view.context.resources.displayMetrics.density
+    private val density = view.context.resources.displayMetrics.density
+    private val stationTintFg = ColorUtils.fromColorInt(Color.parseColor("#a9a9a9"))
+    private val stationTintBg = ColorUtils.fromColorInt(Color.parseColor("#2a2a2a"))
 
     private val stationTextView = binding.station
     private val lineTextView = binding.line
@@ -68,11 +65,13 @@ class MapBottomPanelWidget(
         replaceIcon.visibility = viewVisible(selected)
         station.visibility = viewVisible(selected)
         if (selected) {
-            val bgColor =
-                info!!.first.lineColor
-            val fgColor = ColorUtils
-                .fromColorInt(bgColor)
-                .screen(routeStationTint)
+            val lineColor = ColorUtils
+                .fromColorInt(info!!.first.lineColor)
+            val bgColor = lineColor
+                .screen(stationTintBg)
+                .toColorInt()
+            val fgColor = lineColor
+                .screen(stationTintFg)
                 .toColorInt()
             val padding = Rect(
                 /* left   */ (density * 5f).toInt(),
