@@ -5,7 +5,6 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
-import android.util.Log
 import android.util.Pair
 import android.view.View
 import android.widget.TextView
@@ -16,7 +15,6 @@ import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
-import org.ametro.utils.misc.BottomSheetUtils
 import org.ametro.utils.misc.ColorUtils
 
 
@@ -68,7 +66,7 @@ class MapBottomPanelWidget(
 
     init {
         val progressTint =
-            view.context.resources.getColor(R.color.panel_background_button_icon)
+            view.context.resources.getColor(R.color.panel_secondary_icon)
         detailsProgress.indeterminateDrawable.mutate().apply {
             setColorFilter(progressTint, PorterDuff.Mode.SRC_IN)
             detailsProgress.indeterminateDrawable = this
