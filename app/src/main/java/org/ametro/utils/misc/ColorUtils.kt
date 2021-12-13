@@ -29,10 +29,10 @@ data class ColorUtils(
 
     fun multiply(other: ColorUtils): ColorUtils {
         return ColorUtils(
-            a * other.a / 255f,
-            r * other.r / 255f,
-            g * other.g / 255f,
-            b * other.b / 255f
+            a * other.a,
+            r * other.r,
+            g * other.g,
+            b * other.b
         )
     }
 

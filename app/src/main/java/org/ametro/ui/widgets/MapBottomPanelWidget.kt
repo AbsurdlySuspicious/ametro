@@ -1,39 +1,39 @@
 package org.ametro.ui.widgets
 
 import android.animation.Animator
-import android.graphics.Color
-import android.graphics.PorterDuff
+import android.graphics.*
 import android.graphics.drawable.GradientDrawable
-import android.os.Bundle
-import android.os.Parcelable
+import android.graphics.drawable.PaintDrawable
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.RectShape
+import android.util.Log
+import android.util.Pair
 import android.view.View
 import android.view.ViewGroup
-import android.util.Pair
 import android.widget.TextView
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
-import androidx.core.graphics.drawable.DrawableCompat
-import kotlinx.parcelize.Parcelize
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
 import org.ametro.databinding.WidgetMapBottomPanelBinding
-import org.ametro.model.MapContainer
-import org.ametro.model.ModelUtil
-import org.ametro.model.entities.MapScheme
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
-import org.ametro.model.entities.MapStationInformation
 import org.ametro.utils.misc.ColorUtils
 
-class MapBottomPanelWidget(private val view: ViewGroup,
-                           private val binding: WidgetMapBottomPanelBinding,
-                           private val app: ApplicationEx,
-                           private val listener: IMapBottomPanelEventListener) :
+
+class MapBottomPanelWidget(
+    private val view: ViewGroup,
+    private val binding: WidgetMapBottomPanelBinding,
+    private val app: ApplicationEx,
+    private val listener: IMapBottomPanelEventListener
+) :
     Animator.AnimatorListener {
 
+    private val resources =
+        view.context.resources
     private val routeStationTint =
-        view.context.resources.getColor(R.color.panel_actions_station_tint)
+        resources.getColor(R.color.panel_actions_station_tint)
+    private val density =
+        view.context.resources.displayMetrics.density
 
     private val stationTextView = binding.station
     private val lineTextView = binding.line
@@ -57,24 +57,63 @@ class MapBottomPanelWidget(private val view: ViewGroup,
         return if (visible) View.VISIBLE else View.INVISIBLE
     }
 
-    private fun routeStation(info: Pair<MapSchemeLine, MapSchemeStation>?,
-                             hint: View,
-                             replaceIcon: View,
-                             station: TextView) {
+    private fun routeStation(
+        info: Pair<MapSchemeLine, MapSchemeStation>?,
+        hint: View,
+        replaceIcon: View,
+        station: TextView
+    ) {
         val selected = info != null
         hint.visibility = viewVisible(!selected)
         replaceIcon.visibility = viewVisible(selected)
         station.visibility = viewVisible(selected)
         if (selected) {
-            station.text = info!!.second.displayName
-            val bg = (station.background as GradientDrawable)
-            val color = ColorUtils
-                .fromColorInt(info.first.lineColor)
+            val bgColor =
+                info!!.first.lineColor
+            val fgColor = ColorUtils
+                .fromColorInt(bgColor)
                 .multiply(routeStationTint)
                 .toColorInt()
-            bg.setColor(color)
-            //bg.setColor(info.first.lineColor)
-            //bg.setColorFilter(routeStationTint, PorterDuff.Mode.MULTIPLY)
+            val padding = Rect(
+                /* left   */ (density * 5f).toInt(),
+                /* top    */ (density * 2f).toInt(),
+                /* right  */ (density * 5f).toInt(),
+                /* bottom */ (density * 6f).toInt()
+            )
+
+            val draw = { width: Int, height: Int ->
+                val w = width.toFloat()
+                val h = height.toFloat()
+                val rnd = density * 2.5f
+                val off = density * 3f
+
+                val bitmap = Bitmap
+                    .createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
+                Canvas(bitmap).apply {
+                    //drawRect(RectF(0f, 0f, w, h), Paint().apply { color = bgColor })
+                    drawRect(RectF(0f, 0f, w, h), Paint().apply { color = fgColor })
+                    //drawRect(RectF(0f, 0f, w, h - off), Paint().apply { color = fgColor })
+                }
+
+                bitmap
+            }
+
+
+            val bg = PaintDrawable().apply {
+                val shaderMode = Shader.TileMode.CLAMP
+                //shape = RectShape()
+                setCornerRadius(density * 2.5f)
+                setPadding(padding)
+                shaderFactory = object : ShapeDrawable.ShaderFactory() {
+                    override fun resize(width: Int, height: Int): Shader {
+                        return BitmapShader(draw(width, height), shaderMode, shaderMode)
+                    }
+                }
+            }
+
+            station.text = info.second.displayName
+            station.background = bg
         }
     }
 
