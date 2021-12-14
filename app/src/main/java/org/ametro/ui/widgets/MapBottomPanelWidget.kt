@@ -11,6 +11,7 @@ import android.util.Pair
 import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
@@ -208,8 +209,8 @@ class MapBottomPanelWidget(
                     testView.layoutParams.height = to
                     after()
                 }
-                interpolator = AccelerateDecelerateInterpolator()
-                duration = 500
+                interpolator = DecelerateInterpolator()
+                duration = 300
                 start()
             }
         }
