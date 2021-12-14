@@ -15,17 +15,23 @@ class RemoteMapCatalogProvider(
     private val cache: IMapServiceCache,
     private val localizationProvider: MapInfoLocalizationProvider
 ) {
+    private val downloadAttempts = 4
+
     fun getMapCatalog(forceUpdate: Boolean): MapCatalog? {
         if (!forceUpdate && cache.hasValidCache()) {
             return loadCatalog(false)
         }
-        try {
-            cache.refreshCache()
-        } catch (ex: Exception) {
-            Log.e(
-                Constants.LOG,
-                "Cannot refresh remote map catalog cache: forceUpdate $forceUpdate, exception $ex"
-            )
+        for (a in 1..downloadAttempts) {
+            try {
+                cache.refreshCache()
+                break
+            } catch (ex: Exception) {
+                Log.e(
+                    Constants.LOG,
+                    "Cannot refresh remote map catalog cache: attempt $a of $downloadAttempts, " +
+                            "forceUpdate $forceUpdate, exception $ex"
+                )
+            }
         }
         return loadCatalog(true)
     }
