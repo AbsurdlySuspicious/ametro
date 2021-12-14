@@ -1,5 +1,15 @@
 package org.ametro.utils.misc
 
+import android.util.Pair
+
+fun <A, B> convertPair(p: kotlin.Pair<A, B>): Pair<A, B> {
+    return Pair(p.first, p.second)
+}
+
+fun <A, B> convertPair(p: Pair<A, B>): kotlin.Pair<A, B> {
+    return kotlin.Pair(p.first, p.second)
+}
+
 inline fun <T, reified R> Array<T>.mapArray(noinline mapper: (T) -> R): Array<R> {
     val out = arrayOfNulls<R>(this.size)
     this.asSequence()

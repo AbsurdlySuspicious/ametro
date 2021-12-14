@@ -1,6 +1,5 @@
 package org.ametro.app
 
-import android.app.Application
 import org.ametro.providers.IconProvider
 import org.ametro.catalog.RemoteMapCatalogProvider
 import org.ametro.catalog.service.IMapServiceCache
@@ -16,10 +15,24 @@ import org.ametro.catalog.service.MapServiceCache
 import org.ametro.catalog.service.ServiceTransport
 import android.app.Activity
 import android.content.Context
+import android.os.Bundle
+import android.os.Parcelable
 import androidx.loader.content.AsyncTaskLoader
 import android.util.Pair
 import androidx.multidex.MultiDexApplication
+import kotlinx.parcelize.Parcelize
 import org.ametro.utils.Lazy
+import org.ametro.utils.misc.*
+
+@Parcelize
+data class SavedState(
+    val enabledTransports: MutableList<String>?,
+    val posCenter: kotlin.Pair<PointF, Float>?,
+    val routeStart: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
+    val routeEnd: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
+    val bottomPanelOpen: Boolean,
+    val bottomPanelStation: kotlin.Pair<MapSchemeLine, MapSchemeStation>?
+): Parcelable
 
 class ApplicationEx : MultiDexApplication() {
     private var appSettingsProvider: Lazy<ApplicationSettingsProvider>? = null
@@ -28,6 +41,8 @@ class ApplicationEx : MultiDexApplication() {
     private var mapServiceCache: Lazy<IMapServiceCache>? = null
     private var localMapCatalogManager: Lazy<MapCatalogManager>? = null
     private var localizedMapInfoProvider: Lazy<MapInfoLocalizationProvider>? = null
+    private var isNew: Boolean = false
+    private val bundleKey: String = "application-ex-state"
     var container: MapContainer? = null
         private set
     var schemeName: String? = null
@@ -43,6 +58,32 @@ class ApplicationEx : MultiDexApplication() {
     var bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>? = null
 
     // todo save (all of above) to instance state too
+
+    fun checkIsNew(): Boolean {
+        return isNew.also { isNew = false }
+    }
+
+    fun saveState(savedInstanceState: Bundle) {
+        val state = SavedState(
+            enabledTransports = enabledTransports?.toMutableList(),
+            posCenter = centerPositionAndScale?.let { convertPair(it) },
+            routeStart = routeStart?.let { convertPair(it) },
+            routeEnd = routeEnd?.let { convertPair(it) },
+            bottomPanelOpen = bottomPanelOpen,
+            bottomPanelStation = bottomPanelStation?.let { convertPair(it) }
+        )
+        savedInstanceState.putParcelable(bundleKey, state)
+    }
+
+    fun restoreState(savedInstanceState: Bundle?) {
+        val state = savedInstanceState?.getParcelable<SavedState>(bundleKey) ?: return
+        enabledTransports = state.enabledTransports?.toTypedArray()
+        centerPositionAndScale = state.posCenter?.let { convertPair(it) }
+        routeStart = state.routeStart?.let { convertPair(it) }
+        routeEnd = state.routeEnd?.let { convertPair(it) }
+        bottomPanelStation = state.bottomPanelStation?.let { convertPair(it) }
+        bottomPanelOpen = state.bottomPanelOpen
+    }
 
     override fun onCreate() {
         super.onCreate()
