@@ -10,6 +10,7 @@ import android.util.Log
 import android.util.Pair
 import android.view.View
 import android.view.ViewAnimationUtils
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
@@ -179,6 +180,7 @@ class MapBottomPanelWidget(
         get() = viewVisible(hasDetails)
 
     var testAnim: Boolean = false
+
     init {
         val clickListener = View.OnClickListener { v ->
             if (v === stationLayout && hasDetails) {
@@ -199,15 +201,15 @@ class MapBottomPanelWidget(
         val testAnimator = { testView: View, from: Int, to: Int, after: () -> Unit ->
             ValueAnimator.ofInt(from, to).apply {
                 addUpdateListener {
-                    testView.layoutParams = testView.layoutParams.apply {
-                        height = animatedValue as Int
-                    }
+                    testView.layoutParams.height = animatedValue as Int
+                    testView.requestLayout()
                 }
                 doOnEnd {
-                    testView.layoutParams = testView.layoutParams
-                        .apply { height = to }
+                    testView.layoutParams.height = to
                     after()
                 }
+                interpolator = AccelerateDecelerateInterpolator()
+                duration = 500
                 start()
             }
         }
