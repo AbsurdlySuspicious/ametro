@@ -1,5 +1,6 @@
 package org.ametro.ui.widgets
 
+import android.animation.ValueAnimator
 import android.graphics.*
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.PaintDrawable
@@ -8,8 +9,11 @@ import android.graphics.drawable.shapes.RectShape
 import android.util.Log
 import android.util.Pair
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
@@ -43,7 +47,7 @@ class MapBottomPanelWidget(
 
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(sheetView: View, newState: Int) {
-            // Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
+            Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
                     if (pendingOpen) {
@@ -54,7 +58,7 @@ class MapBottomPanelWidget(
                     }
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
-                    updatePeekHeight(sheetView)
+                    // updatePeekHeight(sheetView)
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     updatePeekHeight(sheetView)
@@ -174,6 +178,7 @@ class MapBottomPanelWidget(
     private val detailsVisibility
         get() = viewVisible(hasDetails)
 
+    var testAnim: Boolean = false
     init {
         val clickListener = View.OnClickListener { v ->
             if (v === stationLayout && hasDetails) {
@@ -190,6 +195,39 @@ class MapBottomPanelWidget(
         stationLayout.setOnClickListener(clickListener)
         beginButton.setOnClickListener(clickListener)
         endButton.setOnClickListener(clickListener)
+
+        val testAnimator = { testView: View, from: Int, to: Int, after: () -> Unit ->
+            ValueAnimator.ofInt(from, to).apply {
+                addUpdateListener {
+                    testView.layoutParams = testView.layoutParams.apply {
+                        height = animatedValue as Int
+                    }
+                }
+                doOnEnd {
+                    testView.layoutParams = testView.layoutParams
+                        .apply { height = to }
+                    after()
+                }
+                start()
+            }
+        }
+
+        binding.testButton.setOnClickListener {
+            val testView = binding.test
+            if (testAnim) {
+                testAnimator(testView, testView.measuredHeight, 1) {
+                    testView.visibility = View.INVISIBLE
+                    binding.testButton.text = "G"
+                    testAnim = false
+                }
+            } else {
+                testView.visibility = View.VISIBLE
+                testAnimator(testView, 1, binding.testInside.height) {
+                    binding.testButton.text = "V"
+                    testAnim = true
+                }
+            }
+        }
     }
 
     fun detailsClosed() {
