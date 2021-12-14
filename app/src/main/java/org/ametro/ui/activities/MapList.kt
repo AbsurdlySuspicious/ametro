@@ -36,6 +36,7 @@ class MapList : AppCompatActivity(), IMapListEventListener, IMapInstallerEventLi
     private var progressDialog: ProgressDialog? = null
 
     private var outdatedMaps: Array<MapInfo>? = null
+    private var waitingForActivityResult: Boolean = false
 
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +85,8 @@ class MapList : AppCompatActivity(), IMapListEventListener, IMapInstallerEventLi
     }
 
     override fun onAddMap() {
+        if (waitingForActivityResult) return
+        waitingForActivityResult = true
         startActivityForResult(Intent(this, CityList::class.java), ADD_ACTION)
     }
 
@@ -118,6 +121,7 @@ class MapList : AppCompatActivity(), IMapListEventListener, IMapInstallerEventLi
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        waitingForActivityResult = false
         when (requestCode) {
             ADD_ACTION -> {
                 listFragment.forceUpdate()

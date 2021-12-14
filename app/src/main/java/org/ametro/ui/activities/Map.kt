@@ -58,6 +58,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     private var scheme: MapScheme? = null
     private var schemeName: String? = null
     private var currentDelay: MapDelay? = null
+    private var waitingForActivityResult: Boolean = false
 
     private lateinit var binding: ActivityMapViewBinding
     private lateinit var mapSelectionIndicators: MapSelectionIndicatorsWidget
@@ -93,7 +94,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         )
 
         settingsProvider = app.applicationSettingsProvider
-        binding.includeEmptyMap.mapEmptyPanel.setOnClickListener { onOpenMaps() }
+        binding.includeEmptyMap.mapEmptyPanel.setOnClickListener {
+            if (!waitingForActivityResult) onOpenMaps()
+        }
         testMenuOptionsProcessor = TestMenuOptionsProcessor(this)
 
         navigationController = NavigationController(
@@ -252,6 +255,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        waitingForActivityResult = false
         when (requestCode) {
             OPEN_MAPS_ACTION -> if (resultCode == RESULT_OK) {
                 val localMapCatalogManager = app.getLocalMapCatalogManager()
@@ -356,6 +360,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onOpenMaps(): Boolean {
         mapBottomPanel.hide()
         startActivityForResult(Intent(this, MapList::class.java), OPEN_MAPS_ACTION)
+        waitingForActivityResult = true
         return true
     }
 
@@ -399,7 +404,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?) {
-        if (station == null) return
+        if (waitingForActivityResult || station == null) return
+        waitingForActivityResult = true
         val intent = Intent(this, StationDetails::class.java)
         intent.putExtra(Constants.LINE_NAME, line?.name ?: "")
         intent.putExtra(Constants.STATION_NAME, station.name)
