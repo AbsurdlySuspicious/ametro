@@ -9,17 +9,11 @@ import android.graphics.drawable.shapes.RectShape
 import android.util.Log
 import android.util.Pair
 import android.view.View
-import android.view.ViewAnimationUtils
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
-import androidx.core.view.updateMargins
 import androidx.core.widget.NestedScrollView
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
@@ -69,6 +63,8 @@ class MapBottomPanelWidget(
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
                     // updatePeekHeight(sheetView)
+                    runOnCollapse?.run()
+                    runOnCollapse = null
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     updatePeekHeight(sheetView)
@@ -181,6 +177,7 @@ class MapBottomPanelWidget(
 
     private var pendingOpen: Boolean = false
     private var openTriggered: Boolean = false
+    private var runOnCollapse: Runnable? = null
     private var hasDetails: Boolean = false
     private var line: MapSchemeLine? = null
     private var station: MapSchemeStation? = null
@@ -233,32 +230,39 @@ class MapBottomPanelWidget(
                 duration = 300
             }
 
-            TransitionManager
-                .beginDelayedTransition(coordinator, sheetTransition)
-
             if (testAnim) {
                 testAnim = false
 
-                clView.translationY = tHeight.toFloat()
-                (clView.layoutParams as FrameLayout.LayoutParams)
-                    .topMargin = 0
-                clView.requestLayout()
+                clView.animate()
+                    .translationY(-tHeight.toFloat())
+                    .setInterpolator(DecelerateInterpolator())
+                    .setDuration(150)
+
+                runOnCollapse = Runnable {
+                    clView.translationY = 0f
+                    (clView.layoutParams as FrameLayout.LayoutParams)
+                        .topMargin = 0
+                    clView.requestLayout()
+                }
+                bottomSheet.state = BottomSheetBehavior.STATE_COLLAPSED
             } else {
                 testAnim = true
+
+                TransitionManager
+                    .beginDelayedTransition(coordinator, sheetTransition)
 
                 (clView.layoutParams as FrameLayout.LayoutParams)
                     .topMargin = tHeight
                 clView.requestLayout()
                 clView.translationY = -tHeight.toFloat()
+
+                TransitionManager.endTransitions(view)
+
+                clView.animate()
+                    .translationY(0f)
+                    .setInterpolator(DecelerateInterpolator())
+                    .setDuration(150)
             }
-
-            TransitionManager.endTransitions(view)
-
-            clView.animate()
-                .translationY(0f)
-                .setInterpolator(DecelerateInterpolator())
-                .setDuration(150)
-                .withEndAction {}
         }
     }
 
