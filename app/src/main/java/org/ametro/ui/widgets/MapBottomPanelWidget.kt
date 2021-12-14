@@ -16,8 +16,13 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
+import androidx.core.view.updateMargins
+import androidx.core.widget.NestedScrollView
+import androidx.transition.AutoTransition
+import androidx.transition.TransitionManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
@@ -29,7 +34,8 @@ import org.ametro.utils.misc.ColorUtils
 
 
 class MapBottomPanelWidget(
-    private val view: FrameLayout,
+    private val view: NestedScrollView,
+    private val coordinator: CoordinatorLayout,
     private val app: ApplicationEx,
     private val listener: IMapBottomPanelEventListener
 ) {
@@ -218,27 +224,41 @@ class MapBottomPanelWidget(
         }
 
         binding.testButton.setOnClickListener {
-            val testView = binding.test
-            val tHeight = binding.testInside.height
-            Log.i("MEME", "ti height $tHeight, " +
-                    "f height ${testView.height}, " +
-                    "c height ${view.height}")
+            val clView = binding.cl
+            val tHeight = binding.test.height
+
+            val sheetTransition = AutoTransition().apply {
+                addTarget(view)
+                interpolator = DecelerateInterpolator()
+                duration = 300
+            }
+
+            TransitionManager
+                .beginDelayedTransition(coordinator, sheetTransition)
+
             if (testAnim) {
                 testAnim = false
-                binding.cl.animate()
-                    .translationY(0f)
-                    .setInterpolator(DecelerateInterpolator())
-                    .withEndAction {
-                        testView.visibility = View.INVISIBLE
-                    }
+
+                clView.translationY = tHeight.toFloat()
+                (clView.layoutParams as FrameLayout.LayoutParams)
+                    .topMargin = 0
+                clView.requestLayout()
             } else {
                 testAnim = true
-                testView.visibility = View.VISIBLE
-                binding.cl.animate()
-                    .translationY(tHeight.toFloat())
-                    .setInterpolator(DecelerateInterpolator())
-                    .withEndAction {}
+
+                (clView.layoutParams as FrameLayout.LayoutParams)
+                    .topMargin = tHeight
+                clView.requestLayout()
+                clView.translationY = -tHeight.toFloat()
             }
+
+            TransitionManager.endTransitions(view)
+
+            clView.animate()
+                .translationY(0f)
+                .setInterpolator(DecelerateInterpolator())
+                .setDuration(150)
+                .withEndAction {}
         }
     }
 
