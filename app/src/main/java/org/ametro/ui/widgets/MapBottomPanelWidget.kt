@@ -179,7 +179,7 @@ class MapBottomPanelWidget(
     private val detailsVisibility
         get() = viewVisible(hasDetails)
 
-    var testAnim: Boolean = true
+    var testAnim: Boolean = false
 
     init {
         val clickListener = View.OnClickListener { v ->
@@ -215,7 +215,7 @@ class MapBottomPanelWidget(
         }
 
         binding.testButton.setOnClickListener {
-            val testView = binding.testInside
+            val testView = binding.test
             if (testAnim) {
                 testAnimator(testView, testView.measuredHeight, 1) {
                     testView.visibility = View.INVISIBLE
@@ -224,7 +224,7 @@ class MapBottomPanelWidget(
                 }
             } else {
                 testView.visibility = View.VISIBLE
-                testAnimator(testView, 1, binding.test.height) {
+                testAnimator(testView, 1, binding.testInside.height) {
                     binding.testButton.text = "V"
                     testAnim = true
                 }

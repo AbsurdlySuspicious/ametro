@@ -38,7 +38,7 @@
             android:id="@+id/test_button"
             android:layout_width="40dp"
             android:layout_height="45dp"
-            android:text="V"
+            android:text="G"
             app:layout_constraintTop_toTopOf="@id/station_layout"
             app:layout_constraintStart_toStartOf="@id/station_layout"
     />
@@ -46,12 +46,13 @@
     <FrameLayout
             android:id="@+id/test"
             android:layout_width="0dp"
-            android:layout_height="80dp"
+            android:layout_height="0.1dp"
             android:layout_marginTop="@dimen/panel_bottom_drag_spacing"
             app:layout_constraintTop_toBottomOf="@id/drag"
             app:layout_constraintBottom_toTopOf="@id/station_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible"
     >
         <View
                 android:id="@+id/test_inside"
