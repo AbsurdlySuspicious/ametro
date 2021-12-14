@@ -12,6 +12,8 @@ import android.view.View
 import android.view.ViewAnimationUtils
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
@@ -27,7 +29,7 @@ import org.ametro.utils.misc.ColorUtils
 
 
 class MapBottomPanelWidget(
-    private val view: ConstraintLayout,
+    private val view: FrameLayout,
     private val app: ApplicationEx,
     private val listener: IMapBottomPanelEventListener
 ) {
@@ -217,18 +219,25 @@ class MapBottomPanelWidget(
 
         binding.testButton.setOnClickListener {
             val testView = binding.test
+            val tHeight = binding.testInside.height
+            Log.i("MEME", "ti height $tHeight, " +
+                    "f height ${testView.height}, " +
+                    "c height ${view.height}")
             if (testAnim) {
-                testAnimator(testView, testView.measuredHeight, 1) {
-                    testView.visibility = View.INVISIBLE
-                    binding.testButton.text = "G"
-                    testAnim = false
-                }
+                testAnim = false
+                binding.cl.animate()
+                    .translationY(0f)
+                    .setInterpolator(DecelerateInterpolator())
+                    .withEndAction {
+                        testView.visibility = View.INVISIBLE
+                    }
             } else {
+                testAnim = true
                 testView.visibility = View.VISIBLE
-                testAnimator(testView, 1, binding.testInside.height) {
-                    binding.testButton.text = "V"
-                    testAnim = true
-                }
+                binding.cl.animate()
+                    .translationY(tHeight.toFloat())
+                    .setInterpolator(DecelerateInterpolator())
+                    .withEndAction {}
             }
         }
     }
