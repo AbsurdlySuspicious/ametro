@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PointF
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -15,9 +14,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
@@ -42,15 +38,16 @@ import org.ametro.ui.tasks.MapLoadAsyncTask.IMapLoadingEventListener
 import org.ametro.ui.testing.DebugToast
 import org.ametro.ui.testing.TestMenuOptionsProcessor
 import org.ametro.ui.views.MultiTouchMapView
-import org.ametro.ui.widgets.MapBottomPanelWidget
-import org.ametro.ui.widgets.MapBottomPanelWidget.IMapBottomPanelEventListener
+import org.ametro.ui.widgets.MapBottomPanelSheet
+import org.ametro.ui.widgets.MapBottomPanelStation
+import org.ametro.ui.widgets.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
 import org.ametro.ui.widgets.MapTopPanelWidget
 import org.ametro.utils.StringUtils
 import java.util.*
 
-class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener, IMapBottomPanelEventListener,
+class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener, MapBottomPanelStationListener,
     IMapSelectionEventListener {
 
     private var enabledTransportsSet: MutableSet<String?>? = null
@@ -62,7 +59,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
     private lateinit var binding: ActivityMapViewBinding
     private lateinit var mapSelectionIndicators: MapSelectionIndicatorsWidget
-    private lateinit var mapBottomPanel: MapBottomPanelWidget
+    private lateinit var mapBottomSheet: MapBottomPanelSheet
+    private lateinit var mapBottomStation: MapBottomPanelStation
     private lateinit var mapTopPanel: MapTopPanelWidget
     private val mapPanelView: View
         get() = binding.mapPanel
@@ -85,7 +83,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         app = ApplicationEx.getInstanceActivity(this)
 
         mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
-        mapBottomPanel = MapBottomPanelWidget(binding.includeBottomPanel.mapBottomPanel, app, this)
+        mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app)
+        mapBottomStation = MapBottomPanelStation(mapBottomSheet, this)
 
         mapSelectionIndicators = MapSelectionIndicatorsWidget(
             this,
@@ -151,12 +150,12 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 onRouteSelectionComplete(routeStart!!.second, routeEnd!!.second)
             }
 
-            if (!mapBottomPanel.isOpened && app.bottomPanelOpen) run {
+            if (!mapBottomStation.isOpened && app.bottomPanelOpen) run {
                 val station = app.bottomPanelStation ?: return@run
                 val hasDetails = container!!
                     .findStationInformation(station.first.name, station.second.name)
                     ?.mapFilePath != null
-                mapBottomPanel.show(station.first, station.second, hasDetails)
+                mapBottomStation.show(station.first, station.second, hasDetails)
             }
         } else {
             app.clearCurrentMapViewState()
@@ -220,7 +219,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                         .findStationInformation(stationInfo.first.name, stationInfo.second.name)
                     val p = PointF(selectedStation[0]!!.position.x, selectedStation[0]!!.position.y)
                     mapView!!.setCenterPositionAndScale(p, mapView!!.scale, true)
-                    mapBottomPanel.show(
+                    mapBottomStation.show(
                         stationInfo.first,
                         stationInfo.second,
                         stationInformation?.mapFilePath != null
@@ -244,8 +243,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onBackPressed() {
         if (navigationController.isDrawerOpen) {
             navigationController.closeDrawer()
-        } else if (mapBottomPanel.isOpened) {
-            mapBottomPanel.hide()
+        } else if (mapBottomStation.isOpened) {
+            mapBottomStation.hide()
         } else if (mapSelectionIndicators.hasSelection()) {
             mapSelectionIndicators.clearSelection()
             app.clearRoute()
@@ -271,7 +270,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 ).execute()
             }
             OPEN_STATION_DETAILS -> {
-                mapBottomPanel.detailsClosed()
+                mapBottomStation.detailsClosed()
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
@@ -334,12 +333,12 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             ModelUtil.findTouchedStation(scheme, mapView!!.touchPoint)?.let { stationInfo ->
                 val stationInformation = container!!
                     .findStationInformation(stationInfo.first.name, stationInfo.second.name)
-                mapBottomPanel.show(
+                mapBottomStation.show(
                     stationInfo.first,
                     stationInfo.second,
                     stationInformation?.mapFilePath != null
                 )
-            } ?: mapBottomPanel.hide()
+            } ?: mapBottomStation.hide()
         }
         mapContainerView.removeAllViews()
         mapContainerView.addView(mapView)
@@ -358,14 +357,14 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onOpenMaps(): Boolean {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         startActivityForResult(Intent(this, MapList::class.java), OPEN_MAPS_ACTION)
         waitingForActivityResult = true
         return true
     }
 
     override fun onOpenSettings(): Boolean {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         startActivityForResult(Intent(this, SettingsList::class.java), OPEN_SETTINGS_ACTION)
         return true
     }
@@ -376,7 +375,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onChangeScheme(schemeName: String): Boolean {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         MapLoadAsyncTask(this, this, container, schemeName, enabledTransportsSet!!.toTypedArray()).execute()
         return true
     }
@@ -414,7 +413,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?) {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         mapSelectionIndicators.setBeginStation(station)
         if (line != null && station != null) {
             app.setRouteStart(line, station)
@@ -422,7 +421,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onSelectEndStation(line: MapSchemeLine?, station: MapSchemeStation?) {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         mapSelectionIndicators.setEndStation(station)
         if (line != null && station != null) {
             app.setRouteEnd(line, station)
