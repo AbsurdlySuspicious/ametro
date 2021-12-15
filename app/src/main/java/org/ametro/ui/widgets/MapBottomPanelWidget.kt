@@ -1,26 +1,60 @@
 package org.ametro.ui.widgets
 
+import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
-import android.util.Log
 import android.util.Pair
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
-import org.ametro.databinding.WidgetItemBotStationBinding
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
-import org.ametro.utils.misc.BottomSheetUtils
 import org.ametro.utils.misc.ColorUtils
 
+class Holder(view: View, val binding: ViewBinding): RecyclerView.ViewHolder(view)
+
+class Adapter(context: Context): RecyclerView.Adapter<Holder>() {
+    companion object {
+        private const val TYPE_ROUTE = 1
+        private const val TYPE_STATION_SELECT = 2
+    }
+
+    private val inflater = LayoutInflater.from(context)
+    private lateinit var recyclerView: RecyclerView
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        this.recyclerView = recyclerView
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        TODO()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
+        TODO("Not yet implemented")
+    }
+
+    override fun onBindViewHolder(holder: Holder, position: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getItemCount(): Int {
+        TODO("Not yet implemented")
+    }
+
+}
 
 class MapBottomPanelWidget(
     private val view: NestedScrollView,
