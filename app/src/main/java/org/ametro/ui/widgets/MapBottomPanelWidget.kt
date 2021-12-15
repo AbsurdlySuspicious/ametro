@@ -10,9 +10,11 @@ import android.util.Pair
 import android.view.View
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
+import org.ametro.databinding.WidgetItemBotStationBinding
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
@@ -21,7 +23,7 @@ import org.ametro.utils.misc.ColorUtils
 
 
 class MapBottomPanelWidget(
-    private val view: ConstraintLayout,
+    private val view: NestedScrollView,
     private val app: ApplicationEx,
     private val listener: IMapBottomPanelEventListener
 ) {
@@ -30,8 +32,9 @@ class MapBottomPanelWidget(
     private val stationTintFg = ColorUtils.fromColorInt(Color.parseColor("#a9a9a9"))
     private val stationTintBg = ColorUtils.fromColorInt(Color.parseColor("#2a2a2a"))
 
-    private val binding = WidgetMapBottomPanelBinding.bind(view)
     private val bottomSheet = BottomSheetBehavior.from(view)
+    private val bindingParent = WidgetMapBottomPanelBinding.bind(view)
+    private val binding = bindingParent.includeBotStation
     private val stationTextView = binding.station
     private val lineTextView = binding.line
     private val stationLayout = binding.stationLayout
