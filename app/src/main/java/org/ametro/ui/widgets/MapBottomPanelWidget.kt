@@ -11,47 +11,98 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
+import org.ametro.databinding.WidgetItemBotStationBinding
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.misc.ColorUtils
 
-class Holder(view: View, val binding: ViewBinding): RecyclerView.ViewHolder(view)
+private interface AdapterBinder<V: View, B: ViewBinding> {
+    fun bindItem(view: V, bind: B)
+}
 
-class Adapter(context: Context): RecyclerView.Adapter<Holder>() {
+private abstract class BaseItem(
+    val viewType: Int,
+    val priority: Int
+)
+
+private object RouteItem: BaseItem(Adapter.TYPE_ROUTE, 1)
+private object StationItem: BaseItem(Adapter.TYPE_STATION, 2)
+
+private class Holder(val viewType: Int, view: View, val binding: ViewBinding) : RecyclerView.ViewHolder(view)
+
+private class Adapter(context: Context) : RecyclerView.Adapter<Holder>() {
     companion object {
-        private const val TYPE_ROUTE = 1
-        private const val TYPE_STATION_SELECT = 2
+        const val TYPE_ROUTE = 1
+        const val TYPE_STATION = 2
     }
 
     private val inflater = LayoutInflater.from(context)
     private lateinit var recyclerView: RecyclerView
+
+    private val itemList: MutableList<BaseItem> = mutableListOf()
+
+    var showRoute: Boolean = false
+        set(value) { field = value; refreshList() }
+    var routeBinder: AdapterBinder<ViewGroup, ViewBinding>? = null
+    var showStation: Boolean = false
+        set(value) { field = value; refreshList() }
+    var stationBinder: AdapterBinder<ConstraintLayout, WidgetItemBotStationBinding>? = null
+
+    private fun refreshList() {
+        if (showRoute)
+            itemList.add(RouteItem)
+        else
+            itemList.removeAll { it.viewType == TYPE_ROUTE }
+
+        if (showStation)
+            itemList.add(StationItem)
+        else
+            itemList.removeAll { it.viewType == TYPE_STATION }
+
+        itemList.sortBy { it.priority }
+        this.notifyDataSetChanged()
+    }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         this.recyclerView = recyclerView
     }
 
+    override fun getItemCount(): Int {
+        return itemList.size
+    }
+
     override fun getItemViewType(position: Int): Int {
-        TODO()
+        return itemList[position].viewType
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        TODO("Not yet implemented")
+        return when (viewType) {
+            TYPE_STATION -> {
+                val bind = WidgetItemBotStationBinding.inflate(inflater, parent, false)
+                Holder(viewType, bind.root, bind)
+            }
+            TYPE_ROUTE -> TODO()
+            else -> throw Exception("Unknown view $viewType")
+        }
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getItemCount(): Int {
-        TODO("Not yet implemented")
+        when (holder.viewType) {
+            TYPE_STATION -> stationBinder?.bindItem(
+                holder.itemView as ConstraintLayout,
+                holder.binding as WidgetItemBotStationBinding
+            )
+            TYPE_ROUTE -> TODO()
+        }
     }
 
 }
@@ -60,7 +111,7 @@ class MapBottomPanelWidget(
     private val view: NestedScrollView,
     private val app: ApplicationEx,
     private val listener: IMapBottomPanelEventListener
-) {
+): AdapterBinder<ConstraintLayout, WidgetItemBotStationBinding> {
 
     private val density = view.context.resources.displayMetrics.density
     private val stationTintFg = ColorUtils.fromColorInt(Color.parseColor("#a9a9a9"))
@@ -307,5 +358,9 @@ class MapBottomPanelWidget(
         fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?)
         fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?)
         fun onSelectEndStation(line: MapSchemeLine?, station: MapSchemeStation?)
+    }
+
+    override fun bindItem(view: ConstraintLayout, bind: WidgetItemBotStationBinding) {
+        TODO("Not yet implemented")
     }
 }
