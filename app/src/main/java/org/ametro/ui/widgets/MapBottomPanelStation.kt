@@ -310,8 +310,10 @@ class MapBottomPanelStation(
         sheet.addSheetStateCallbackPre { sheetView, newState ->
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
-                    if (sheet.pendingOpen != MapBottomPanelSheet.PENDING_OPEN_NO)
+                    if (sheet.pendingOpen != MapBottomPanelSheet.PENDING_OPEN_NO) {
                         hideCleanup()
+                        detachItem()
+                    }
                 }
                 else -> {}
             }
@@ -472,9 +474,9 @@ class MapBottomPanelStation(
 
         val prep = {
             hideCleanup()
-            showImpl()
             if (!adapter.showStation)
                 adapter.showStation = true
+            showImpl()
         }
 
         if (adapter.showRoute && sheet.isOpened) {
@@ -486,6 +488,10 @@ class MapBottomPanelStation(
         }
     }
 
+    private fun detachItem() {
+        adapter.showStation = false
+    }
+
     private fun hideCleanup() {
         sheet.app.bottomPanelOpen = false
         sheet.app.bottomPanelStation = null
@@ -495,7 +501,7 @@ class MapBottomPanelStation(
         hideCleanup()
 
         val after = {
-            adapter.showStation = false
+            detachItem()
         }
 
         if (adapter.showRoute)
