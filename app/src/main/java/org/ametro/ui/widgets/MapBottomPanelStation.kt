@@ -122,6 +122,7 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
     }
 
     private var animFwd = true
+    private var initHeight = -1
     private val density = context.resources.displayMetrics.density
 
     override fun onBindViewHolder(holder: PanelHolder, position: Int) {
@@ -135,10 +136,18 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
                 val binding = holder.binding as WidgetItemSizeTestBinding
                 binding.testView.setOnClickListener {
                     // Toast.makeText(binding.root.context, "Meme", Toast.LENGTH_SHORT).show()
-                    val v = binding.testContainer
+                    val otherHolder = recyclerView.findViewHolderForLayoutPosition(
+                        itemList.indexOfFirst { it.viewType == TYPE_STATION }
+                    ) as PanelHolder
+                    val otherBinding = otherHolder.binding as WidgetItemBotStationBinding
+
+                    if (animFwd || initHeight < 0)
+                        initHeight = otherBinding.itemBotStation.height
+
+                    val v = otherBinding.itemBotStation
                     val f = density * 40f
                     val af = { p: Float ->
-                        v.layoutParams.height = (f + (f * p)).toInt()
+                        v.layoutParams.height = (initHeight + (f * p)).toInt()
                         v.requestLayout()
                     }
 
