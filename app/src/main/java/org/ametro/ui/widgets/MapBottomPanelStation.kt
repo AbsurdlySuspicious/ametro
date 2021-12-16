@@ -196,6 +196,7 @@ class MapBottomPanelSheet(
         recycler.apply {
             adapter = this@MapBottomPanelSheet.adapter
             layoutManager = LinearLayoutManager(sheetView.context)
+            overScrollMode = View.OVER_SCROLL_NEVER
             setHasFixedSize(true)
         }
     }
@@ -225,7 +226,7 @@ class MapBottomPanelSheet(
 
     fun panelHide(after: (() -> Unit)? = null) {
         if (!isOpened)
-            after?.let{ it() }
+            after?.let { it() }
         else {
             pendingSheetAction = after
             panelHideImpl(PENDING_OPEN_NO)
@@ -237,7 +238,7 @@ class MapBottomPanelSheet(
             if (collapse) BottomSheetBehavior.STATE_COLLAPSED
             else BottomSheetBehavior.STATE_EXPANDED
         if (bottomSheet.state == newState)
-            after?.let{ it() }
+            after?.let { it() }
         else {
             pendingSheetAction = after
             bottomSheet.state = newState
