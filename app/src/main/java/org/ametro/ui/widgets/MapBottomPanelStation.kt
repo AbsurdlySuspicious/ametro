@@ -44,7 +44,7 @@ private abstract class BaseItem(
 
 private object RouteItem : BaseItem(PanelAdapter.TYPE_ROUTE, 1)
 private object StationItem : BaseItem(PanelAdapter.TYPE_STATION, 2)
-private object TestItem : BaseItem(PanelAdapter.TYPE_TEST, 1)
+private object TestItem : BaseItem(PanelAdapter.TYPE_TEST, 3)
 
 class PanelHolder(val viewType: Int, view: View, val binding: ViewBinding) : RecyclerView.ViewHolder(view)
 
