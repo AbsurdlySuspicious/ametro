@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:id="@+id/route_page"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:minHeight="70dp"
+        android:paddingHorizontal="@dimen/panel_bottom_padding_route_h"
+>
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/route_time_sec"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            tools:text="1:40"
+            app:fontFamily="@font/roboto_regular"
+            android:textSize="35sp"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time_sec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/route_time"
+            tools:text=":35"
+            app:fontFamily="@font/roboto_light"
+            android:textSize="22sp"
+    />
+
+    <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/stations_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="top"
+            app:constraint_referenced_ids="station_start, station_end"
+    />
+
+    <ImageView
+            android:id="@+id/icon_start"
+            android:layout_width="@dimen/panel_bottom_route_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_icon_size"
+            android:src="@drawable/ic_loc_origin"
+            app:tint="@color/panel_secondary_icon"
+            app:layout_constraintTop_toTopOf="@id/stations_barrier"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+    />
+
+    <ImageView
+            android:id="@+id/line_icon_start"
+            android:layout_width="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_marginStart="@dimen/panel_bottom_route_line_icon_margin"
+            android:src="@drawable/line_icon"
+            app:layout_constraintStart_toEndOf="@id/icon_start"
+            app:layout_constraintTop_toTopOf="@id/icon_start"
+            app:layout_constraintBottom_toBottomOf="@id/icon_start"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/station_start"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/panel_bottom_route_station_name_margin"
+            app:layout_constraintTop_toTopOf="@id/icon_start"
+            app:layout_constraintBottom_toBottomOf="@id/icon_start"
+            app:layout_constraintStart_toEndOf="@id/line_icon_start"
+            app:layout_constraintEnd_toStartOf="@id/icon_end"
+            style="@style/bottomPanelRouteStation"
+            tools:text="Station start"
+    />
+
+    <ImageView
+            android:id="@+id/icon_end"
+            android:layout_width="@dimen/panel_bottom_route_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_icon_size"
+            android:src="@drawable/ic_loc_destination"
+            app:tint="@color/panel_secondary_icon"
+            app:layout_constraintTop_toTopOf="@id/stations_barrier"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/route_time"
+            app:layout_constraintHorizontal_bias="0.50"
+    />
+
+    <ImageView
+            android:id="@+id/line_icon_end"
+            android:layout_width="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_marginStart="@dimen/panel_bottom_route_line_icon_margin"
+            android:src="@drawable/line_icon"
+            app:layout_constraintStart_toEndOf="@id/icon_end"
+            app:layout_constraintTop_toTopOf="@id/icon_end"
+            app:layout_constraintBottom_toBottomOf="@id/icon_end"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/station_end"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/panel_bottom_route_station_name_margin"
+            app:layout_constraintTop_toTopOf="@id/icon_end"
+            app:layout_constraintBottom_toBottomOf="@id/icon_end"
+            app:layout_constraintStart_toEndOf="@id/line_icon_end"
+            app:layout_constraintEnd_toStartOf="@id/route_time"
+            style="@style/bottomPanelRouteStation"
+            tools:text="Station end"
+    />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
