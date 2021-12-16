@@ -296,6 +296,7 @@ class MapBottomPanelStation(
     private val stationTintFg = ColorUtils.fromColorInt(Color.parseColor("#a9a9a9"))
     private val stationTintBg = ColorUtils.fromColorInt(Color.parseColor("#2a2a2a"))
 
+    private var doOnBind: (() -> Unit)? = null
     private var binding: WidgetItemBotStationBinding? = null
     private val stationTextView get() = binding!!.station
     private val lineTextView get() = binding!!.line
@@ -310,7 +311,7 @@ class MapBottomPanelStation(
         sheet.addSheetStateCallbackPre { sheetView, newState ->
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
-                    if (sheet.pendingOpen != MapBottomPanelSheet.PENDING_OPEN_NO) {
+                    if (sheet.pendingOpen == MapBottomPanelSheet.PENDING_OPEN_NO) {
                         hideCleanup()
                         detachItem()
                     }
@@ -345,6 +346,11 @@ class MapBottomPanelStation(
         stationLayout.setOnClickListener(clickListener)
         beginButton.setOnClickListener(clickListener)
         endButton.setOnClickListener(clickListener)
+
+        doOnBind?.let {
+            it()
+            doOnBind = null
+        }
     }
 
     private fun viewVisible(visible: Boolean): Int {
@@ -437,7 +443,10 @@ class MapBottomPanelStation(
     }
 
     private fun showImpl() {
-        binding ?: return
+        if (binding == null) {
+            doOnBind = { showImpl() }
+            return
+        }
 
         stationTextView.text = station!!.displayName
         lineTextView.text = line!!.displayName
