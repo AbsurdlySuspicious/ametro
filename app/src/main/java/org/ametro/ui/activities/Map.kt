@@ -38,9 +38,9 @@ import org.ametro.ui.tasks.MapLoadAsyncTask.IMapLoadingEventListener
 import org.ametro.ui.testing.DebugToast
 import org.ametro.ui.testing.TestMenuOptionsProcessor
 import org.ametro.ui.views.MultiTouchMapView
-import org.ametro.ui.widgets.MapBottomPanelSheet
-import org.ametro.ui.widgets.MapBottomPanelStation
-import org.ametro.ui.widgets.MapBottomPanelStation.MapBottomPanelStationListener
+import org.ametro.ui.bottom_panel.MapBottomPanelSheet
+import org.ametro.ui.bottom_panel.MapBottomPanelStation
+import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
 import org.ametro.ui.widgets.MapTopPanelWidget
