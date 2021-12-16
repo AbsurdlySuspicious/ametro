@@ -151,10 +151,10 @@ class MapBottomPanelSheet(
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(sheetView: View, newState: Int) {
             // Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
+            sheetStateCallbacksPre
+                .forEach { it(sheetView, newState) }
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
-                    sheetStateCallbacksPre
-                        .forEach { it(sheetView, newState) }
                     runPendingSheetAction()
                     if (pendingOpen != PENDING_OPEN_NO) {
                         bottomSheet.state = when (pendingOpen) {
