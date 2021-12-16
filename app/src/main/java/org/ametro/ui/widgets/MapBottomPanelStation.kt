@@ -11,10 +11,12 @@ import android.util.Pair
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.animation.doOnEnd
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -27,6 +29,7 @@ import org.ametro.databinding.WidgetItemSizeTestBinding
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
+import org.ametro.utils.misc.AnimUtils
 import org.ametro.utils.misc.BottomSheetUtils
 import org.ametro.utils.misc.ColorUtils
 
@@ -41,7 +44,7 @@ private abstract class BaseItem(
 
 private object RouteItem : BaseItem(PanelAdapter.TYPE_ROUTE, 1)
 private object StationItem : BaseItem(PanelAdapter.TYPE_STATION, 2)
-private object TestItem : BaseItem(PanelAdapter.TYPE_TEST, 3)
+private object TestItem : BaseItem(PanelAdapter.TYPE_TEST, 1)
 
 class PanelHolder(val viewType: Int, view: View, val binding: ViewBinding) : RecyclerView.ViewHolder(view)
 
@@ -79,7 +82,8 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
         else
             itemList.removeAll { it.viewType == TYPE_STATION }
 
-        itemList.add(TestItem)
+        if (!itemList.contains(TestItem))
+            itemList.add(TestItem)
 
         itemList.sortBy { it.priority }
         this.notifyDataSetChanged()
@@ -117,6 +121,9 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
         }
     }
 
+    private var animFwd = true
+    private val density = context.resources.displayMetrics.density
+
     override fun onBindViewHolder(holder: PanelHolder, position: Int) {
         when (holder.viewType) {
             TYPE_STATION -> stationBinder?.bindItem(
@@ -127,7 +134,25 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
             TYPE_TEST -> {
                 val binding = holder.binding as WidgetItemSizeTestBinding
                 binding.testView.setOnClickListener {
-                    Toast.makeText(binding.root.context, "Meme", Toast.LENGTH_SHORT).show()
+                    // Toast.makeText(binding.root.context, "Meme", Toast.LENGTH_SHORT).show()
+                    val v = binding.testContainer
+                    val f = density * 40f
+                    val af = { p: Float ->
+                        v.layoutParams.height = (f + (f * p)).toInt()
+                        v.requestLayout()
+                    }
+
+                    Log.i("MEME", "animFwd $animFwd")
+
+                    AnimUtils
+                        .getValueAnimator(animFwd, 300, DecelerateInterpolator(), af)
+                        .apply {
+                            doOnEnd {
+                                if (animFwd) af(1f) else af(0f)
+                                animFwd = !animFwd
+                            }
+                            start()
+                        }
                 }
             }
         }
