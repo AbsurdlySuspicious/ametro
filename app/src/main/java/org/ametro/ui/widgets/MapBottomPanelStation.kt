@@ -11,6 +11,7 @@ import android.util.Pair
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
@@ -138,6 +139,8 @@ class MapBottomPanelSheet(
     private val binding = WidgetMapBottomPanelBinding.bind(sheetView)
     private val recycler = binding.recycler
 
+    private val topPadViews = listOf(binding.drag)
+
     private var sheetStateCallbacksPre: MutableList<(View, Int) -> Unit> = mutableListOf()
     private var pendingSheetAction: (() -> Unit)? = null
 
@@ -210,7 +213,11 @@ class MapBottomPanelSheet(
     private fun updatePeekHeight(height: Int) {
         if (openTriggered) {
             openTriggered = false
-            bottomSheet.setPeekHeight(height, true)
+            val pad = topPadViews.fold(0) { acc, view ->
+                val params = view.layoutParams as LinearLayout.LayoutParams
+                acc + view.height + params.topMargin + params.bottomMargin
+            }
+            bottomSheet.setPeekHeight(pad + height, true)
         }
     }
 
