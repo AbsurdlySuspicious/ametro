@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetItemBotStationBinding
+import org.ametro.databinding.WidgetItemSizeTestBinding
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
@@ -39,6 +41,7 @@ private abstract class BaseItem(
 
 private object RouteItem : BaseItem(PanelAdapter.TYPE_ROUTE, 1)
 private object StationItem : BaseItem(PanelAdapter.TYPE_STATION, 2)
+private object TestItem : BaseItem(PanelAdapter.TYPE_TEST, 3)
 
 class PanelHolder(val viewType: Int, view: View, val binding: ViewBinding) : RecyclerView.ViewHolder(view)
 
@@ -46,6 +49,7 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
     companion object {
         const val TYPE_ROUTE = 1
         const val TYPE_STATION = 2
+        const val TYPE_TEST = 3
     }
 
     private val inflater = LayoutInflater.from(context)
@@ -75,6 +79,8 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
         else
             itemList.removeAll { it.viewType == TYPE_STATION }
 
+        itemList.add(TestItem)
+
         itemList.sortBy { it.priority }
         this.notifyDataSetChanged()
     }
@@ -103,6 +109,10 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
                 PanelHolder(viewType, bind.root, bind)
             }
             TYPE_ROUTE -> TODO()
+            TYPE_TEST -> {
+                val bind = WidgetItemSizeTestBinding.inflate(inflater, parent, false)
+                PanelHolder(viewType, bind.root, bind)
+            }
             else -> throw Exception("Unknown view $viewType")
         }
     }
@@ -114,6 +124,12 @@ class PanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>() {
                 holder.binding as WidgetItemBotStationBinding
             )
             TYPE_ROUTE -> TODO()
+            TYPE_TEST -> {
+                val binding = holder.binding as WidgetItemSizeTestBinding
+                binding.testView.setOnClickListener {
+                    Toast.makeText(binding.root.context, "Meme", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
