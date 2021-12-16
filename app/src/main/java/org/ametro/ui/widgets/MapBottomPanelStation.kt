@@ -262,6 +262,7 @@ class MapBottomPanelSheet(
                     val pending =
                         if (collapsed) PENDING_OPEN_COLLAPSE
                         else PENDING_OPEN_EXPAND
+                    openTriggered = true
                     pendingSheetAction = prepare
                     panelHideImpl(pending)
                 }
