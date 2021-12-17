@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.lifecycle.Lifecycle
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
@@ -108,6 +109,11 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             ApplicationEx.getInstanceActivity(this).getCountryFlagProvider(),
             ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
         )
+    }
+
+    private fun ifNotResuming(action: () -> Unit) {
+        if (lifecycle.currentState == Lifecycle.State.RESUMED)
+            action()
     }
 
     override fun onPause() {
@@ -416,7 +422,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?) {
-        mapBottomStation.hide()
+        ifNotResuming {
+            mapBottomStation.hide()
+        }
         if (line != null && station != null) {
             mapSelectionIndicators.setBeginStation(Pair(line, station))
             app.setRouteStart(line, station)
@@ -426,7 +434,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onSelectEndStation(line: MapSchemeLine?, station: MapSchemeStation?) {
-        mapBottomStation.hide()
+        ifNotResuming {
+            mapBottomStation.hide()
+        }
         if (line != null && station != null) {
             mapSelectionIndicators.setEndStation(Pair(line, station))
             app.setRouteEnd(line, station)
@@ -505,8 +515,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onRouteSelectionCleared() {
-        mapView?.let {
-            it.highlightsElements(null)
+        mapView?.highlightsElements(null)
+        ifNotResuming {
             mapBottomRoute.hide()
         }
     }
