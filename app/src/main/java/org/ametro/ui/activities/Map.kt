@@ -256,7 +256,6 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             mapBottomStation.hide()
         } else if (mapSelectionIndicators.hasSelection()) {
             mapSelectionIndicators.clearSelection()
-            app.clearRoute()
         } else {
             super.onBackPressed()
         }
@@ -523,6 +522,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onRouteSelectionCleared() {
         mapView?.highlightsElements(null)
         ifNotResuming {
+            app.clearRoute()
             mapBottomRoute.hide()
         }
     }
