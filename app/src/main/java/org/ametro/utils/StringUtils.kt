@@ -42,4 +42,13 @@ object StringUtils {
             String.format("%02d:%02d:%02d", hours, minutes, seconds)
         } else String.format("%02d:%02d", minutes, seconds)
     }
+
+    fun humanReadableTimeRoute(totalSeconds: Int): Pair<String, String> {
+        val seconds = totalSeconds % 60
+        val minutes = totalSeconds / 60 % 60
+        val hours = totalSeconds / 60 / 60
+        val timeString = "%01d:$02d".format(hours, minutes)
+        val secondsString = ":%02d".format(seconds)
+        return Pair(timeString, secondsString)
+    }
 }
