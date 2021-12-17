@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
+import java.util.*
+import kotlin.collections.ArrayDeque
 
 class MapBottomPanelSheet(
     val sheetView: NestedScrollView,
@@ -31,13 +33,19 @@ class MapBottomPanelSheet(
     private val topPadViews = listOf(binding.drag)
 
     private var sheetStateCallbacksPre: MutableList<(View, Int) -> Unit> = mutableListOf()
-    private var pendingSheetAction: (() -> Unit)? = null
+    private val pendingSheetActions = ArrayDeque<Pair<Int, () -> Unit>>()
 
-    private fun runPendingSheetAction() {
-        pendingSheetAction?.let {
-            it()
-            pendingSheetAction = null
+    private fun runPendingSheetActions(state: Int) {
+        var action = pendingSheetActions.removeLastOrNull()
+        while (action != null) {
+            if (state == action.first) action.second()
+            else pendingSheetActions.addFirst(action)
+            action = pendingSheetActions.removeLastOrNull()
         }
+    }
+
+    private fun queueSheetAction(state: Int, action: (() -> Unit)?) {
+        action?.let{ pendingSheetActions.addFirst(Pair(state, it)) }
     }
 
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
@@ -47,7 +55,7 @@ class MapBottomPanelSheet(
                 .forEach { it(sheetView, newState) }
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
-                    runPendingSheetAction()
+                    runPendingSheetActions(newState)
                     if (pendingOpen != PENDING_OPEN_NO) {
                         bottomSheet.state = when (pendingOpen) {
                             PENDING_OPEN_EXPAND -> BottomSheetBehavior.STATE_EXPANDED
@@ -58,11 +66,11 @@ class MapBottomPanelSheet(
                     }
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
-                    runPendingSheetAction()
+                    runPendingSheetActions(newState)
                     updatePeekHeightTopmost()
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
-                    runPendingSheetAction()
+                    runPendingSheetActions(newState)
                     updatePeekHeightTopmost()
                 }
                 else -> {}
@@ -129,7 +137,7 @@ class MapBottomPanelSheet(
         if (!isOpened || !isHideable)
             after?.let { it() }
         else {
-            pendingSheetAction = after
+            queueSheetAction(BottomSheetBehavior.STATE_HIDDEN, after)
             panelHideImpl(PENDING_OPEN_NO)
         }
     }
@@ -141,7 +149,7 @@ class MapBottomPanelSheet(
         if (bottomSheet.state == newState)
             after?.let { it() }
         else {
-            pendingSheetAction = after
+            queueSheetAction(newState, after)
             bottomSheet.state = newState
         }
     }
@@ -158,12 +166,17 @@ class MapBottomPanelSheet(
         } else {
             when (openedBehavior) {
                 OPENED_REOPEN -> {
-                    val pending =
-                        if (collapsed) PENDING_OPEN_COLLAPSE
-                        else PENDING_OPEN_EXPAND
-                    openTriggered = true
-                    pendingSheetAction = prepare
-                    panelHideImpl(pending)
+                    if (bottomSheet.state != newState) {
+                        val pending =
+                            if (collapsed) PENDING_OPEN_COLLAPSE
+                            else PENDING_OPEN_EXPAND
+                        openTriggered = true
+                        queueSheetAction(BottomSheetBehavior.STATE_HIDDEN, prepare)
+                        panelHideImpl(pending)
+                    } else {
+                        prepare()
+                        updatePeekHeightTopmost()
+                    }
                 }
                 OPENED_CHANGE_VIEW -> {
                     prepare()

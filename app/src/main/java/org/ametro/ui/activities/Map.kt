@@ -51,8 +51,8 @@ import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.convertPair
 import java.util.*
 
-class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener, MapBottomPanelStationListener,
-    IMapSelectionEventListener {
+class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener,
+    IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener {
 
     private var enabledTransportsSet: MutableSet<String?>? = null
     private var container: MapContainer? = null
@@ -88,7 +88,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
         mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app)
         mapBottomStation = MapBottomPanelStation(mapBottomSheet, this)
-        mapBottomRoute = MapBottomPanelRoute(mapBottomSheet)
+        mapBottomRoute = MapBottomPanelRoute(mapBottomSheet, this)
 
         mapSelectionIndicators = MapSelectionIndicatorsWidget(
             this,
@@ -410,6 +410,11 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onDelayChanged(delay: MapDelay): Boolean {
         currentDelay = delay
         return true
+    }
+
+    override fun onPanelHidden() {
+        mapSelectionIndicators.clearSelection()
+        // todo save last route and restore on back press
     }
 
     override fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?) {

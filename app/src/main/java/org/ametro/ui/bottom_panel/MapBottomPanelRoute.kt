@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.databinding.WidgetBotRoutePageBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
@@ -65,34 +66,36 @@ class RoutePagerAdapter(private val context: Context) :
         RecyclerView.ViewHolder(binding.root)
 }
 
-class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet) :
+class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val listener: MapBottomPanelRouteListener) :
     PanelAdapterBinder<LinearLayout, WidgetItemBotRouteBinding> {
 
     private val adapter = RoutePagerAdapter(sheet.sheetView.context)
 
     init {
+        sheet.addSheetStateCallbackPre { _, state ->
+            when (state) {
+                BottomSheetBehavior.STATE_HIDDEN ->
+                    if (sheet.adapter.showRoute) {
+                        listener.onPanelHidden()
+                    }
+            }
+        }
         sheet.adapter.routeBinder = this
     }
 
     fun show(routes: ArrayList<RoutePagerItem>) {
-        sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, false) {
+        sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, true) {
             adapter.replaceItems(routes)
-            sheet.isHideable = false
             sheet.adapter.showRoute = true
         }
     }
 
     fun hide() {
-        if (!sheet.adapter.showRoute)
-            return
-
         val after = {
             sheet.adapter.showRoute = false
         }
 
-        sheet.isHideable = true
-
-        if (sheet.adapter.showStation)
+        if (!sheet.adapter.showRoute || sheet.adapter.showStation)
             after()
         else
             sheet.panelHide(after)
@@ -100,5 +103,9 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet) :
 
     override fun bindItem(view: LinearLayout, bind: WidgetItemBotRouteBinding) {
         bind.pager.adapter = adapter
+    }
+
+    interface MapBottomPanelRouteListener {
+        fun onPanelHidden()
     }
 }
