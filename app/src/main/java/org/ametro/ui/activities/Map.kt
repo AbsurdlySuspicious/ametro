@@ -471,7 +471,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             }
         }
 
-        mapView!!.highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(routes[0], scheme))
+        mapView!!.highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(routes[0], scheme!!))
         mapTopPanel.show(
             String.format(
                 getString(R.string.msg_from_to),
