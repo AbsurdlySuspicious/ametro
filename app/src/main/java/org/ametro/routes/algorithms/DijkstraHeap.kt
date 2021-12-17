@@ -16,10 +16,12 @@ object DijkstraHeap {
 
         while (!queue.isEmpty()) {
             val currentItem = queue.poll()!!
-            if (currentItem.priority != distances[currentItem.value]) {
+            if (currentItem.priority != distances[currentItem.value])
                 continue
-            }
+
             for (edge in graph.edges[currentItem.value]) {
+                if (edge.used) continue
+
                 val distance = distances[currentItem.value] + edge.weight
                 if (distances[edge.end] > distance) {
                     distances[edge.end] = distance
@@ -33,14 +35,15 @@ object DijkstraHeap {
     }
 
     class Result(val distances: LongArray, val predecessors: IntArray)
-    class Edge(val start: Int, val end: Int, val weight: Int)
+    class Edge(val start: Int, val end: Int, val weight: Int,
+               val transfer: Boolean, var used: Boolean = false)
     class EdgeList : ArrayList<Edge>()
 
     class TransportGraph(val count: Int) {
         val edges: Array<EdgeList> = Array(count) { EdgeList() }
 
-        fun addEdge(start: Int, end: Int, weight: Int) {
-            edges[start].add(Edge(start, end, weight))
+        fun addEdge(start: Int, end: Int, weight: Int, transfer: Boolean) {
+            edges[start].add(Edge(start, end, weight, transfer))
         }
     }
 

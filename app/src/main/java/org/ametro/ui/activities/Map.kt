@@ -429,15 +429,14 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onRouteSelectionComplete(begin: MapSchemeStation, end: MapSchemeStation) {
-        val routes = MapRouteProvider.findRoutes(
-            MapRouteQueryParameters(
-                container,
-                enabledTransportsSet,
-                currentDelayIndex,
-                mapSelectionIndicators.getBeginStation()!!.uid,
-                mapSelectionIndicators.getEndStation()!!.uid
-            )
+        val routeParams = MapRouteQueryParameters(
+            container,
+            enabledTransportsSet,
+            currentDelayIndex,
+            mapSelectionIndicators.getBeginStation()!!.uid,
+            mapSelectionIndicators.getEndStation()!!.uid
         )
+        val routes = MapRouteProvider.findRoutes(routeParams, maxRoutes = 5)
 
         if (routes.isEmpty()) {
             mapView!!.highlightsElements(null)
@@ -449,7 +448,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             return
         }
 
-        run { // DEBUG
+        run {
+            // DEBUG
             fun rl(t: String) {
                 Log.i("MEME", t)
             }
