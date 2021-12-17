@@ -8,10 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
-import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.ArrayDeque
 
 class MapBottomPanelSheet(
     val sheetView: NestedScrollView,
@@ -79,11 +76,11 @@ class MapBottomPanelSheet(
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
                     runPendingSheetActions(newState)
-                    updatePeekHeightTopmost()
+                    updatePeekHeightTopmostImpl()
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     runPendingSheetActions(newState)
-                    updatePeekHeightTopmost()
+                    updatePeekHeightTopmostImpl()
                 }
                 else -> {}
             }
@@ -115,7 +112,11 @@ class MapBottomPanelSheet(
         }
     }
 
-    private fun updatePeekHeightTopmost() {
+    fun updatePeekHeightTopmost() = queueState {
+        updatePeekHeightTopmostImpl()
+    }
+
+    private fun updatePeekHeightTopmostImpl() {
         updatePeekHeight(adapter.topmostHeight())
     }
 
@@ -184,12 +185,12 @@ class MapBottomPanelSheet(
                         panelHideImpl(pending)
                     } else {
                         prepare()
-                        updatePeekHeightTopmost()
+                        updatePeekHeightTopmostImpl()
                     }
                 }
                 OPENED_CHANGE_VIEW -> {
                     prepare()
-                    updatePeekHeightTopmost()
+                    updatePeekHeightTopmostImpl()
                     bottomSheet.state = newState
                 }
                 OPENED_IGNORE -> {}

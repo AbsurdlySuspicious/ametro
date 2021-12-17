@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
+import android.util.Log
 import android.util.Pair
 import android.view.View
 import android.widget.TextView
@@ -240,15 +241,12 @@ class MapBottomPanelStation(
 
     fun hide() {
         hideCleanup()
-
-        val after = {
-            detachItem()
+        if (sheet.adapter.showStation) {
+            if (sheet.adapter.showRoute)
+                sheet.panelExpandCollapse(true) { detachItem() }
+            else
+                sheet.panelHide { detachItem() }
         }
-
-        if (adapter.showRoute)
-            sheet.panelExpandCollapse(true, after)
-        else
-            sheet.panelHide(after)
     }
 
     interface MapBottomPanelStationListener {
