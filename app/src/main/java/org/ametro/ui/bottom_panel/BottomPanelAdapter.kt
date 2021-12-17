@@ -4,9 +4,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.databinding.WidgetItemBotStationBinding
 
 interface PanelAdapterBinder<V : View, B : ViewBinding> {
@@ -38,7 +40,7 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
         set(value) {
             field = value; refreshList()
         }
-    var routeBinder: PanelAdapterBinder<ViewGroup, ViewBinding>? = null
+    var routeBinder: PanelAdapterBinder<LinearLayout, WidgetItemBotRouteBinding>? = null
     var showStation: Boolean = false
         set(value) {
             field = value; refreshList()
@@ -46,15 +48,15 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
     var stationBinder: PanelAdapterBinder<ConstraintLayout, WidgetItemBotStationBinding>? = null
 
     private fun refreshList() {
+        itemList
+            .removeAll { it.viewType == TYPE_ROUTE }
         if (showRoute)
             itemList.add(RouteItem)
-        else
-            itemList.removeAll { it.viewType == TYPE_ROUTE }
 
+        itemList
+            .removeAll { it.viewType == TYPE_STATION }
         if (showStation)
             itemList.add(StationItem)
-        else
-            itemList.removeAll { it.viewType == TYPE_STATION }
 
         itemList.sortBy { it.priority }
         this.notifyDataSetChanged()
@@ -83,7 +85,10 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
                 val bind = WidgetItemBotStationBinding.inflate(inflater, parent, false)
                 PanelHolder(viewType, bind.root, bind)
             }
-            TYPE_ROUTE -> TODO()
+            TYPE_ROUTE -> {
+                val bind = WidgetItemBotRouteBinding.inflate(inflater, parent, false)
+                PanelHolder(viewType, bind.root, bind)
+            }
             else -> throw Exception("Unknown view $viewType")
         }
     }
@@ -94,7 +99,10 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
                 holder.itemView as ConstraintLayout,
                 holder.binding as WidgetItemBotStationBinding
             )
-            TYPE_ROUTE -> TODO()
+            TYPE_ROUTE -> routeBinder?.bindItem(
+                holder.itemView as LinearLayout,
+                holder.binding as WidgetItemBotRouteBinding
+            )
         }
     }
 

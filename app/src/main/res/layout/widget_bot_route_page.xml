@@ -7,7 +7,8 @@
 
         android:id="@+id/route_page"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        tools:layout_height="wrap_content"
 
         android:minHeight="70dp"
         android:paddingHorizontal="@dimen/panel_bottom_padding_route_h"

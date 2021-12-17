@@ -74,6 +74,9 @@ class MapBottomPanelSheet(
 
     val isOpened: Boolean
         get() = bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN
+    var isHideable: Boolean
+        get() = bottomSheet.isHideable
+        set(value) { bottomSheet.isHideable = value }
 
     var pendingOpen: Int = PENDING_OPEN_NO
         private set
@@ -123,7 +126,7 @@ class MapBottomPanelSheet(
     }
 
     fun panelHide(after: (() -> Unit)? = null) {
-        if (!isOpened)
+        if (!isOpened || !isHideable)
             after?.let { it() }
         else {
             pendingSheetAction = after

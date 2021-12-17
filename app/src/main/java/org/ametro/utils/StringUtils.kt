@@ -47,7 +47,7 @@ object StringUtils {
         val seconds = totalSeconds % 60
         val minutes = totalSeconds / 60 % 60
         val hours = totalSeconds / 60 / 60
-        val timeString = "%01d:$02d".format(hours, minutes)
+        val timeString = "%01d:%02d".format(hours, minutes)
         val secondsString = ":%02d".format(seconds)
         return Pair(timeString, secondsString)
     }

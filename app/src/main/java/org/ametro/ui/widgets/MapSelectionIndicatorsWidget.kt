@@ -4,6 +4,7 @@ import android.graphics.Matrix
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import org.ametro.model.entities.MapPoint
+import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.ui.views.MultiTouchMapView.IViewportChangedListener
 import kotlin.math.roundToInt
@@ -16,14 +17,14 @@ class MapSelectionIndicatorsWidget(
 
     private val viewMatrix = Matrix()
 
-    private var beginStation: MapSchemeStation? = null
-    private var endStation: MapSchemeStation? = null
+    private var beginStation: Pair<MapSchemeLine, MapSchemeStation>? = null
+    private var endStation: Pair<MapSchemeLine, MapSchemeStation>? = null
 
-    fun getBeginStation(): MapSchemeStation? {
+    fun getBeginStation(): Pair<MapSchemeLine, MapSchemeStation>? {
         return beginStation
     }
 
-    fun setBeginStation(station: MapSchemeStation?) {
+    fun setBeginStation(station: Pair<MapSchemeLine, MapSchemeStation>?) {
         if (endStation === station) {
             if (beginStation != null && endStation != null) {
                 listener.onRouteSelectionCleared()
@@ -37,11 +38,11 @@ class MapSelectionIndicatorsWidget(
         }
     }
 
-    fun getEndStation(): MapSchemeStation? {
+    fun getEndStation(): Pair<MapSchemeLine, MapSchemeStation>? {
         return endStation
     }
 
-    fun setEndStation(station: MapSchemeStation?) {
+    fun setEndStation(station: Pair<MapSchemeLine, MapSchemeStation>?) {
         if (beginStation === station) {
             if (beginStation != null && endStation != null) {
                 listener.onRouteSelectionCleared()
@@ -74,13 +75,13 @@ class MapSelectionIndicatorsWidget(
     private fun updateIndicatorsPositionAndState() {
         if (beginStation != null) {
             beginIndicator.visibility = View.VISIBLE
-            setViewPosition(beginIndicator, beginStation!!.position)
+            setViewPosition(beginIndicator, beginStation!!.second.position)
         } else {
             beginIndicator.visibility = View.INVISIBLE
         }
         if (endStation != null) {
             endIndicator.visibility = View.VISIBLE
-            setViewPosition(endIndicator, endStation!!.position)
+            setViewPosition(endIndicator, endStation!!.second.position)
         } else {
             endIndicator.visibility = View.INVISIBLE
         }
@@ -97,7 +98,7 @@ class MapSelectionIndicatorsWidget(
     }
 
     interface IMapSelectionEventListener {
-        fun onRouteSelectionComplete(begin: MapSchemeStation, end: MapSchemeStation)
+        fun onRouteSelectionComplete(begin: Pair<MapSchemeLine, MapSchemeStation>, end: Pair<MapSchemeLine, MapSchemeStation>)
         fun onRouteSelectionCleared()
     }
 }

@@ -31,6 +31,7 @@ import org.ametro.routes.MapRouteProvider
 import org.ametro.routes.RouteUtils
 import org.ametro.routes.entities.MapRouteQueryParameters
 import org.ametro.ui.adapters.StationSearchAdapter
+import org.ametro.ui.bottom_panel.MapBottomPanelRoute
 import org.ametro.ui.navigation.INavigationControllerListener
 import org.ametro.ui.navigation.NavigationController
 import org.ametro.ui.tasks.MapLoadAsyncTask
@@ -41,10 +42,12 @@ import org.ametro.ui.views.MultiTouchMapView
 import org.ametro.ui.bottom_panel.MapBottomPanelSheet
 import org.ametro.ui.bottom_panel.MapBottomPanelStation
 import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
+import org.ametro.ui.bottom_panel.RoutePagerItem
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
 import org.ametro.ui.widgets.MapTopPanelWidget
 import org.ametro.utils.StringUtils
+import org.ametro.utils.misc.convertPair
 import java.util.*
 
 class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener, MapBottomPanelStationListener,
@@ -61,7 +64,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     private lateinit var mapSelectionIndicators: MapSelectionIndicatorsWidget
     private lateinit var mapBottomSheet: MapBottomPanelSheet
     private lateinit var mapBottomStation: MapBottomPanelStation
-    private lateinit var mapTopPanel: MapTopPanelWidget
+    private lateinit var mapBottomRoute: MapBottomPanelRoute
     private val mapPanelView: View
         get() = binding.mapPanel
     private val mapContainerView: ViewGroup
@@ -82,9 +85,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
         app = ApplicationEx.getInstanceActivity(this)
 
-        mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
         mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app)
         mapBottomStation = MapBottomPanelStation(mapBottomSheet, this)
+        mapBottomRoute = MapBottomPanelRoute(mapBottomSheet)
 
         mapSelectionIndicators = MapSelectionIndicatorsWidget(
             this,
@@ -147,7 +150,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             }
 
             if (selectedStations == 2) {
-                onRouteSelectionComplete(routeStart!!.second, routeEnd!!.second)
+                onRouteSelectionComplete(convertPair(routeStart!!), convertPair(routeEnd!!))
             }
 
             if (!mapBottomStation.isOpened && app.bottomPanelOpen) run {
@@ -414,35 +417,48 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
     override fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?) {
         mapBottomStation.hide()
-        mapSelectionIndicators.setBeginStation(station)
         if (line != null && station != null) {
+            mapSelectionIndicators.setBeginStation(Pair(line, station))
             app.setRouteStart(line, station)
+        } else {
+            mapSelectionIndicators.setBeginStation(null)
         }
     }
 
     override fun onSelectEndStation(line: MapSchemeLine?, station: MapSchemeStation?) {
         mapBottomStation.hide()
-        mapSelectionIndicators.setEndStation(station)
         if (line != null && station != null) {
+            mapSelectionIndicators.setEndStation(Pair(line, station))
             app.setRouteEnd(line, station)
+        } else {
+            mapSelectionIndicators.setEndStation(null)
         }
     }
 
-    override fun onRouteSelectionComplete(begin: MapSchemeStation, end: MapSchemeStation) {
+    override fun onRouteSelectionComplete(
+        begin: Pair<MapSchemeLine, MapSchemeStation>,
+        end: Pair<MapSchemeLine, MapSchemeStation>
+    ) {
         val routeParams = MapRouteQueryParameters(
             container,
             enabledTransportsSet,
             currentDelayIndex,
-            mapSelectionIndicators.getBeginStation()!!.uid,
-            mapSelectionIndicators.getEndStation()!!.uid
+            begin.second.uid,
+            end.second.uid
         )
+
         val routes = MapRouteProvider.findRoutes(routeParams, maxRoutes = 5)
 
         if (routes.isEmpty()) {
             mapView!!.highlightsElements(null)
-            mapTopPanel.hide()
+            mapBottomRoute.hide()
             Toast.makeText(
-                this, String.format(getString(R.string.msg_no_route_found), begin.displayName, end.displayName),
+                this,
+                String.format(
+                    getString(R.string.msg_no_route_found),
+                    begin.second.displayName,
+                    end.second.displayName
+                ),
                 Toast.LENGTH_LONG
             ).show()
             return
@@ -471,21 +487,27 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             }
         }
 
-        mapView!!.highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(routes[0], scheme!!))
-        mapTopPanel.show(
-            String.format(
-                getString(R.string.msg_from_to),
-                begin.displayName,
-                end.displayName,
-                StringUtils.humanReadableTime(routes[0].delay)
+        val panelRoutes = ArrayList<RoutePagerItem>(routes.size)
+
+        routes.mapTo(panelRoutes) {
+            val time =
+                StringUtils.humanReadableTimeRoute(it.delay)
+            RoutePagerItem(
+                time = time.first,
+                timeSeconds = time.second,
+                routeStart = begin,
+                routeEnd = end
             )
-        )
+        }
+
+        mapView!!.highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(routes[0], scheme!!))
+        mapBottomRoute.show(panelRoutes)
     }
 
     override fun onRouteSelectionCleared() {
         mapView?.let {
             it.highlightsElements(null)
-            mapTopPanel.hide()
+            mapBottomRoute.hide()
         }
     }
 
