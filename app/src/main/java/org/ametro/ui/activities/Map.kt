@@ -266,6 +266,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         waitingForActivityResult = false
         when (requestCode) {
             OPEN_MAPS_ACTION -> if (resultCode == RESULT_OK) {
+                app.clearCurrentMapViewState()
                 val localMapCatalogManager = app.getLocalMapCatalogManager()
                 MapLoadAsyncTask(
                     this, this, MapContainer(
