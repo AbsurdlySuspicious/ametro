@@ -438,6 +438,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 mapSelectionIndicators.getEndStation()!!.uid
             )
         )
+
         if (routes.isEmpty()) {
             mapView!!.highlightsElements(null)
             mapTopPanel.hide()
@@ -447,6 +448,29 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             ).show()
             return
         }
+
+        run { // DEBUG
+            fun rl(t: String) {
+                Log.i("MEME", t)
+            }
+
+            fun rs(uid: Int): String {
+                val m = ModelUtil.findStationByUid(scheme!!, uid.toLong())
+                return "${m.first.displayName}, ${m.second.displayName} ($uid)"
+            }
+
+            rl("-- route update --")
+
+            for ((i, route) in routes.withIndex()) {
+                val routeDelay = StringUtils.humanReadableTime(route.delay)
+                rl("route $i: $routeDelay")
+                for (p in route.parts) {
+                    val partDelay = StringUtils.humanReadableTime(p.delay.toInt())
+                    rl("  ${rs(p.from)} -> ${rs(p.to)}: $partDelay")
+                }
+            }
+        }
+
         mapView!!.highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(routes[0], scheme))
         mapTopPanel.show(
             String.format(
