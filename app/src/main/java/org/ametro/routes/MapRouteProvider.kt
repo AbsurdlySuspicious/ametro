@@ -12,6 +12,7 @@ import java.util.*
 object MapRouteProvider {
     fun findRoutes(parameters: MapRouteQueryParameters, maxRoutes: Int): ArrayList<MapRoute> {
         val results = arrayListOf<MapRoute>()
+        var lastResult: DijkstraHeap.Result? = null
         val graph = TransportGraph(parameters.stationCount)
         createGraphEdges(graph, parameters)
 
@@ -19,6 +20,9 @@ object MapRouteProvider {
             val r = DijkstraHeap.dijkstra(graph, parameters.beginStationUid)
             if (r.predecessors[parameters.endStationUid] == DijkstraHeap.NO_WAY)
                 break
+            if (r.same(lastResult))
+                continue
+            lastResult = r
             results.add(convertToMapRouteAndMarkUsed(r, parameters.endStationUid, graph))
         }
 

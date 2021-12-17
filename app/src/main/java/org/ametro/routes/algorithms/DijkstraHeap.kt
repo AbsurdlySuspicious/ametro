@@ -34,10 +34,18 @@ object DijkstraHeap {
         return Result(distances, predecessors)
     }
 
-    class Result(val distances: LongArray, val predecessors: IntArray)
-    class Edge(val start: Int, val end: Int, val weight: Int,
+    data class Edge(val start: Int, val end: Int, val weight: Int,
                val transfer: Boolean, var used: Boolean = false)
     class EdgeList : ArrayList<Edge>()
+
+    class Result(val distances: LongArray, val predecessors: IntArray) {
+        fun same(other: Result?): Boolean {
+            if (other == null) return false
+            if (!distances.contentEquals(other.distances)) return false
+            if (!predecessors.contentEquals(other.predecessors)) return false
+            return true
+        }
+    }
 
     class TransportGraph(val count: Int) {
         val edges: Array<EdgeList> = Array(count) { EdgeList() }
