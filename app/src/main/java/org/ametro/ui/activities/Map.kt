@@ -86,7 +86,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
         app = ApplicationEx.getInstanceActivity(this)
 
-        mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app)
+        mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app, this)
         mapBottomStation = MapBottomPanelStation(mapBottomSheet, this)
         mapBottomRoute = MapBottomPanelRoute(mapBottomSheet, this)
 

@@ -1,5 +1,6 @@
 package org.ametro.ui.bottom_panel
 
+import android.app.Activity
 import android.view.View
 import android.widget.LinearLayout
 import androidx.core.widget.NestedScrollView
@@ -8,11 +9,14 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.collections.ArrayDeque
 
 class MapBottomPanelSheet(
     val sheetView: NestedScrollView,
-    val app: ApplicationEx
+    val app: ApplicationEx,
+    private val activity: Activity
 ) {
     companion object {
         const val PENDING_OPEN_NO = 0
@@ -33,19 +37,27 @@ class MapBottomPanelSheet(
     private val topPadViews = listOf(binding.drag)
 
     private var sheetStateCallbacksPre: MutableList<(View, Int) -> Unit> = mutableListOf()
-    private val pendingSheetActions = ArrayDeque<Pair<Int, () -> Unit>>()
+    private val pendingSheetActions = ConcurrentLinkedQueue<Pair<Int, () -> Unit>>()
 
     private fun runPendingSheetActions(state: Int) {
-        var action = pendingSheetActions.removeLastOrNull()
+        var action = pendingSheetActions.poll()
         while (action != null) {
-            if (state == action.first) action.second()
-            else pendingSheetActions.addFirst(action)
-            action = pendingSheetActions.removeLastOrNull()
+            val actState = action.first
+            if (state == actState || actState < 0) action.second()
+            else pendingSheetActions.offer(action)
+            action = pendingSheetActions.poll()
         }
     }
 
     private fun queueSheetAction(state: Int, action: (() -> Unit)?) {
-        action?.let{ pendingSheetActions.addFirst(Pair(state, it)) }
+        action?.let{ pendingSheetActions.offer(Pair(state, it)) }
+    }
+
+    private fun queueState(f: () -> Unit) {
+        if (bottomSheet.state == BottomSheetBehavior.STATE_SETTLING)
+            queueSheetAction(-1, f)
+        else
+            f()
     }
 
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
@@ -82,9 +94,6 @@ class MapBottomPanelSheet(
 
     val isOpened: Boolean
         get() = bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN
-    var isHideable: Boolean
-        get() = bottomSheet.isHideable
-        set(value) { bottomSheet.isHideable = value }
 
     var pendingOpen: Int = PENDING_OPEN_NO
         private set
@@ -133,8 +142,8 @@ class MapBottomPanelSheet(
         }
     }
 
-    fun panelHide(after: (() -> Unit)? = null) {
-        if (!isOpened || !isHideable)
+    fun panelHide(after: (() -> Unit)? = null) = queueState {
+        if (!isOpened)
             after?.let { it() }
         else {
             queueSheetAction(BottomSheetBehavior.STATE_HIDDEN, after)
@@ -142,7 +151,7 @@ class MapBottomPanelSheet(
         }
     }
 
-    fun panelExpandCollapse(collapse: Boolean, after: (() -> Unit)? = null) {
+    fun panelExpandCollapse(collapse: Boolean, after: (() -> Unit)? = null) = queueState {
         val newState =
             if (collapse) BottomSheetBehavior.STATE_COLLAPSED
             else BottomSheetBehavior.STATE_EXPANDED
@@ -154,7 +163,7 @@ class MapBottomPanelSheet(
         }
     }
 
-    fun panelShow(openedBehavior: Int, collapsed: Boolean, prepare: () -> Unit) {
+    fun panelShow(openedBehavior: Int, collapsed: Boolean, prepare: () -> Unit) = queueState {
         val newState =
             if (collapsed) BottomSheetBehavior.STATE_COLLAPSED
             else BottomSheetBehavior.STATE_EXPANDED
