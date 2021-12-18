@@ -140,24 +140,19 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         if (mapView != null && container != null) {
             val routeStart = app.routeStart
             val routeEnd = app.routeEnd
-            var selectedStations = 0
+
+            mapSelectionIndicators.clearSelection()
 
             app.centerPositionAndScale?.let {
                 mapView!!.setCenterPositionAndScale(it.first, it.second, false)
             }
 
             routeStart?.let {
-                onSelectBeginStation(it.first, it.second)
-                selectedStations++
+                mapSelectionIndicators.setBeginStation(convertPair(it))
             }
 
             routeEnd?.let {
-                onSelectEndStation(it.first, it.second)
-                selectedStations++
-            }
-
-            if (selectedStations == 2) {
-                onRouteSelectionComplete(convertPair(routeStart!!), convertPair(routeEnd!!))
+                mapSelectionIndicators.setEndStation(convertPair(it))
             }
 
             if (!mapBottomStation.isOpened && app.bottomPanelOpen) run {
