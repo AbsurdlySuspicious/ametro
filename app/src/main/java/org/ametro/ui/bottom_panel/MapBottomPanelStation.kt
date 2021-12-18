@@ -6,7 +6,6 @@ import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
 import android.util.Log
-import android.util.Pair
 import android.view.View
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -203,7 +202,7 @@ class MapBottomPanelStation(
         )
 
         sheet.app.bottomPanelOpen = true
-        sheet.app.bottomPanelStation = Pair(line, station)
+        sheet.app.bottomPanelStation = Pair(line!!, station!!)
     }
 
     fun show(line: MapSchemeLine, station: MapSchemeStation, showDetails: Boolean) {

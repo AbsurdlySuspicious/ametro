@@ -120,7 +120,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onPause() {
         super.onPause()
         mapView?.let {
-            app.centerPositionAndScale = it.centerPositionAndScale
+            app.centerPositionAndScale = convertPair(it.centerPositionAndScale)
         }
     }
 
@@ -148,11 +148,11 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             }
 
             routeStart?.let {
-                mapSelectionIndicators.setBeginStation(convertPair(it))
+                mapSelectionIndicators.setBeginStation(it)
             }
 
             routeEnd?.let {
-                mapSelectionIndicators.setEndStation(convertPair(it))
+                mapSelectionIndicators.setEndStation(it)
             }
 
             if (!mapBottomStation.isOpened && app.bottomPanelOpen) run {

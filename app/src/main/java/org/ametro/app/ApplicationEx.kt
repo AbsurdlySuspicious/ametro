@@ -18,7 +18,6 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.loader.content.AsyncTaskLoader
-import android.util.Pair
 import androidx.multidex.MultiDexApplication
 import kotlinx.parcelize.Parcelize
 import org.ametro.utils.Lazy
@@ -68,12 +67,12 @@ class ApplicationEx : MultiDexApplication() {
     fun saveState(savedInstanceState: Bundle) {
         val state = SavedState(
             enabledTransports = enabledTransports?.toMutableList(),
-            posCenter = centerPositionAndScale?.let { convertPair(it) },
-            routeStart = routeStart?.let { convertPair(it) },
-            routeEnd = routeEnd?.let { convertPair(it) },
+            posCenter = centerPositionAndScale,
+            routeStart = routeStart,
+            routeEnd = routeEnd,
             selectedRoute = selectedRoute,
             bottomPanelOpen = bottomPanelOpen,
-            bottomPanelStation = bottomPanelStation?.let { convertPair(it) }
+            bottomPanelStation = bottomPanelStation,
         )
         savedInstanceState.putParcelable(bundleKey, state)
     }
@@ -81,11 +80,11 @@ class ApplicationEx : MultiDexApplication() {
     fun restoreState(savedInstanceState: Bundle?) {
         val state = savedInstanceState?.getParcelable<SavedState>(bundleKey) ?: return
         enabledTransports = state.enabledTransports?.toTypedArray()
-        centerPositionAndScale = state.posCenter?.let { convertPair(it) }
-        routeStart = state.routeStart?.let { convertPair(it) }
-        routeEnd = state.routeEnd?.let { convertPair(it) }
+        centerPositionAndScale = state.posCenter
+        routeStart = state.routeStart
+        routeEnd = state.routeEnd
         selectedRoute = state.selectedRoute
-        bottomPanelStation = state.bottomPanelStation?.let { convertPair(it) }
+        bottomPanelStation = state.bottomPanelStation
         bottomPanelOpen = state.bottomPanelOpen
     }
 
