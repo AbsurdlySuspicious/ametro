@@ -19,6 +19,7 @@ import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
 import org.ametro.app.Constants
+import org.ametro.app.SavedRoute
 import org.ametro.databinding.ActivityMapViewBinding
 import org.ametro.model.MapContainer
 import org.ametro.model.ModelUtil
@@ -132,36 +133,37 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         super.onRestoreInstanceState(savedInstanceState)
     }
 
+    private fun restoreRoute(route: SavedRoute, ignoreStation: Boolean) {
+        app.centerPositionAndScale?.let {
+            mapView!!.setCenterPositionAndScale(it.first, it.second, false)
+        }
+
+        route.routeStart?.let {
+            mapSelectionIndicators.setBeginStation(it)
+        }
+
+        route.routeEnd?.let {
+            mapSelectionIndicators.setEndStation(it)
+        }
+
+        if (!ignoreStation && !mapBottomStation.isOpened && app.bottomPanelOpen) run {
+            val station = app.bottomPanelStation ?: return@run
+            val hasDetails = container!!
+                .findStationInformation(station.first.name, station.second.name)
+                ?.mapFilePath != null
+            mapBottomStation.show(station.first, station.second, hasDetails)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
 
         initMapViewState()
 
         if (mapView != null && container != null) {
-            val routeStart = app.routeStart
-            val routeEnd = app.routeEnd
-
+            val route = app.currentRoute
             mapSelectionIndicators.clearSelection()
-
-            app.centerPositionAndScale?.let {
-                mapView!!.setCenterPositionAndScale(it.first, it.second, false)
-            }
-
-            routeStart?.let {
-                mapSelectionIndicators.setBeginStation(it)
-            }
-
-            routeEnd?.let {
-                mapSelectionIndicators.setEndStation(it)
-            }
-
-            if (!mapBottomStation.isOpened && app.bottomPanelOpen) run {
-                val station = app.bottomPanelStation ?: return@run
-                val hasDetails = container!!
-                    .findStationInformation(station.first.name, station.second.name)
-                    ?.mapFilePath != null
-                mapBottomStation.show(station.first, station.second, hasDetails)
-            }
+            restoreRoute(route, ignoreStation = false)
         } else {
             app.clearCurrentMapViewState()
             settingsProvider.currentMap?.let {
@@ -246,15 +248,16 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onBackPressed() {
-        if (navigationController.isDrawerOpen) {
+        if (navigationController.isDrawerOpen)
             navigationController.closeDrawer()
-        } else if (mapBottomStation.isOpened) {
+        else if (mapBottomStation.isOpened)
             mapBottomStation.hide()
-        } else if (mapSelectionIndicators.hasSelection()) {
+        else if (mapSelectionIndicators.hasSelection())
             mapSelectionIndicators.clearSelection()
-        } else {
+        else if (app.restorePrevRoute())
+            restoreRoute(app.currentRoute, ignoreStation = true)
+        else
             super.onBackPressed()
-        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -409,7 +412,6 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
     override fun onPanelHidden() {
         mapSelectionIndicators.clearSelection()
-        // todo save last route and restore on back press
     }
 
     override fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?) {
@@ -519,14 +521,14 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         }
 
         val initRoute =
-            app.selectedRoute.let { if (it > 0) it else 0 }
+            app.currentRoute.selectedRoute.let { if (it > 0) it else 0 }
         highlightRoute(routes[initRoute])
 
         mapBottomRoute.setPage(initRoute, false)
         mapBottomRoute.setSlideCallback { pos ->
             routes.getOrNull(pos)?.let {
                 highlightRoute(it)
-                app.selectedRoute = pos
+                app.currentRoute.selectedRoute = pos
             }
         }
         mapBottomRoute.show(panelRoutes)

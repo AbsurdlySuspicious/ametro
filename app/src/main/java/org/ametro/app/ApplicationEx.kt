@@ -24,14 +24,22 @@ import org.ametro.utils.Lazy
 import org.ametro.utils.misc.*
 
 @Parcelize
+data class SavedRoute(
+    var routeStart: Pair<MapSchemeLine, MapSchemeStation>? = null,
+    var routeEnd: Pair<MapSchemeLine, MapSchemeStation>? = null,
+    var selectedRoute: Int = -1
+): Parcelable {
+    val isUnset: Boolean
+        get() = routeStart == null && routeEnd == null
+}
+
+@Parcelize
 data class SavedState(
     val enabledTransports: MutableList<String>?,
-    val posCenter: kotlin.Pair<PointF, Float>?,
-    val routeStart: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
-    val routeEnd: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
-    val selectedRoute: Int,
+    val posCenter: Pair<PointF, Float>?,
+    val route: SavedRoute,
     val bottomPanelOpen: Boolean,
-    val bottomPanelStation: kotlin.Pair<MapSchemeLine, MapSchemeStation>?
+    val bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>?
 ): Parcelable
 
 class ApplicationEx : MultiDexApplication() {
@@ -50,11 +58,12 @@ class ApplicationEx : MultiDexApplication() {
     var enabledTransports: Array<String>? = null
         private set
     var centerPositionAndScale: Pair<PointF, Float>? = null
-    var routeStart: Pair<MapSchemeLine, MapSchemeStation>? = null
+
+    var currentRoute = SavedRoute()
         private set
-    var routeEnd: Pair<MapSchemeLine, MapSchemeStation>? = null
+    var previousRoute: SavedRoute? = null
         private set
-    var selectedRoute: Int = -1
+
     var bottomPanelOpen: Boolean = false
     var bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>? = null
 
@@ -68,9 +77,7 @@ class ApplicationEx : MultiDexApplication() {
         val state = SavedState(
             enabledTransports = enabledTransports?.toMutableList(),
             posCenter = centerPositionAndScale,
-            routeStart = routeStart,
-            routeEnd = routeEnd,
-            selectedRoute = selectedRoute,
+            route = currentRoute,
             bottomPanelOpen = bottomPanelOpen,
             bottomPanelStation = bottomPanelStation,
         )
@@ -81,9 +88,7 @@ class ApplicationEx : MultiDexApplication() {
         val state = savedInstanceState?.getParcelable<SavedState>(bundleKey) ?: return
         enabledTransports = state.enabledTransports?.toTypedArray()
         centerPositionAndScale = state.posCenter
-        routeStart = state.routeStart
-        routeEnd = state.routeEnd
-        selectedRoute = state.selectedRoute
+        currentRoute = state.route
         bottomPanelStation = state.bottomPanelStation
         bottomPanelOpen = state.bottomPanelOpen
     }
@@ -155,25 +160,33 @@ class ApplicationEx : MultiDexApplication() {
         schemeName = null
         enabledTransports = null
         centerPositionAndScale = null
-        clearRoute()
+        currentRoute = SavedRoute()
+        previousRoute = null
     }
 
     fun clearRoute() {
-        routeStart = null
-        routeEnd = null
-        selectedRoute = -1
+        if (currentRoute.isUnset) return
+        previousRoute = currentRoute
+        currentRoute = SavedRoute()
+    }
+
+    fun restorePrevRoute(): Boolean {
+        currentRoute = previousRoute ?: return false
+        previousRoute = null
+        if (currentRoute.isUnset) return false
+        return true
     }
 
     fun resetSelectedRoute() {
-        selectedRoute = -1
+        currentRoute.selectedRoute = -1
     }
 
     fun setRouteStart(line: MapSchemeLine, station: MapSchemeStation) {
-        routeStart = Pair(line, station)
+        currentRoute.routeStart = Pair(line, station)
     }
 
     fun setRouteEnd(line: MapSchemeLine, station: MapSchemeStation) {
-        routeEnd = Pair(line, station)
+        currentRoute.routeEnd = Pair(line, station)
     }
 
     companion object {

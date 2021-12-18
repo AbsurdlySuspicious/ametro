@@ -188,14 +188,14 @@ class MapBottomPanelStation(
         (lineIcon.drawable as GradientDrawable).setColor(line!!.lineColor)
 
         routeStation(
-            sheet.app.routeStart,
+            sheet.app.currentRoute.routeStart,
             binding!!.textStartHint,
             binding!!.replaceIconStart,
             binding!!.textStartStation
         )
 
         routeStation(
-            sheet.app.routeEnd,
+            sheet.app.currentRoute.routeEnd,
             binding!!.textEndHint,
             binding!!.replaceIconEnd,
             binding!!.textEndStation
