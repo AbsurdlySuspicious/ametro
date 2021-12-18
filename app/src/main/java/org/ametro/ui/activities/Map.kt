@@ -425,6 +425,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?) {
         ifNotResuming {
             mapBottomStation.hide()
+            app.resetSelectedRoute()
         }
         if (line != null && station != null) {
             mapSelectionIndicators.setBeginStation(Pair(line, station))
@@ -437,6 +438,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     override fun onSelectEndStation(line: MapSchemeLine?, station: MapSchemeStation?) {
         ifNotResuming {
             mapBottomStation.hide()
+            app.resetSelectedRoute()
         }
         if (line != null && station != null) {
             mapSelectionIndicators.setEndStation(Pair(line, station))
@@ -516,9 +518,16 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             )
         }
 
-        highlightRoute(routes[0])
+        val initRoute =
+            app.selectedRoute.let { if (it > 0) it else 0 }
+        highlightRoute(routes[initRoute])
+
+        mapBottomRoute.setPage(initRoute, false)
         mapBottomRoute.setSlideCallback { pos ->
-            routes.getOrNull(pos)?.let { highlightRoute(it) }
+            routes.getOrNull(pos)?.let {
+                highlightRoute(it)
+                app.selectedRoute = pos
+            }
         }
         mapBottomRoute.show(panelRoutes)
     }

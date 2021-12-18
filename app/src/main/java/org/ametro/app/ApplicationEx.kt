@@ -30,6 +30,7 @@ data class SavedState(
     val posCenter: kotlin.Pair<PointF, Float>?,
     val routeStart: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
     val routeEnd: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
+    val selectedRoute: Int,
     val bottomPanelOpen: Boolean,
     val bottomPanelStation: kotlin.Pair<MapSchemeLine, MapSchemeStation>?
 ): Parcelable
@@ -54,6 +55,7 @@ class ApplicationEx : MultiDexApplication() {
         private set
     var routeEnd: Pair<MapSchemeLine, MapSchemeStation>? = null
         private set
+    var selectedRoute: Int = -1
     var bottomPanelOpen: Boolean = false
     var bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>? = null
 
@@ -69,6 +71,7 @@ class ApplicationEx : MultiDexApplication() {
             posCenter = centerPositionAndScale?.let { convertPair(it) },
             routeStart = routeStart?.let { convertPair(it) },
             routeEnd = routeEnd?.let { convertPair(it) },
+            selectedRoute = selectedRoute,
             bottomPanelOpen = bottomPanelOpen,
             bottomPanelStation = bottomPanelStation?.let { convertPair(it) }
         )
@@ -81,6 +84,7 @@ class ApplicationEx : MultiDexApplication() {
         centerPositionAndScale = state.posCenter?.let { convertPair(it) }
         routeStart = state.routeStart?.let { convertPair(it) }
         routeEnd = state.routeEnd?.let { convertPair(it) }
+        selectedRoute = state.selectedRoute
         bottomPanelStation = state.bottomPanelStation?.let { convertPair(it) }
         bottomPanelOpen = state.bottomPanelOpen
     }
@@ -158,6 +162,11 @@ class ApplicationEx : MultiDexApplication() {
     fun clearRoute() {
         routeStart = null
         routeEnd = null
+        selectedRoute = -1
+    }
+
+    fun resetSelectedRoute() {
+        selectedRoute = -1
     }
 
     fun setRouteStart(line: MapSchemeLine, station: MapSchemeStation) {

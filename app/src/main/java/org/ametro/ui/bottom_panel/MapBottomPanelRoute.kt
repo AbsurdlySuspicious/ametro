@@ -67,7 +67,9 @@ class RoutePagerAdapter(context: Context) :
 class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val listener: MapBottomPanelRouteListener) :
     PanelAdapterBinder {
 
+    private var binding: WidgetItemBotRouteBinding? = null
     private var slideHandler: ((Int) -> Unit)? = null
+    private var currentPage: Int = 0
     private val adapter = RoutePagerAdapter(sheet.sheetView.context)
 
     init {
@@ -104,6 +106,11 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         slideHandler = f
     }
 
+    fun setPage(i: Int, smooth: Boolean = false) {
+        currentPage = i
+        binding?.pager?.setCurrentItem(i, smooth)
+    }
+
     private val pageChangedCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
             slideHandler?.let { it(position) }
@@ -114,18 +121,21 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         bind as WidgetItemBotRouteBinding
 
     override fun bindItem(bind: ViewBinding) {
-        val binding = castBind(bind)
-        binding.pager.adapter = adapter
+        binding = castBind(bind)
+        binding!!.pager.adapter = adapter
     }
 
     override fun attachItem(holder: PanelHolder) {
-        val binding = castBind(holder.binding)
-        binding.pager.registerOnPageChangeCallback(pageChangedCallback)
+        binding = castBind(holder.binding)
+        binding!!.pager.apply {
+            setCurrentItem(currentItem, false)
+            registerOnPageChangeCallback(pageChangedCallback)
+        }
     }
 
     override fun detachItem(holder: PanelHolder) {
-        val binding = castBind(holder.binding)
-        binding.pager.unregisterOnPageChangeCallback(pageChangedCallback)
+        castBind(holder.binding)
+            .pager.unregisterOnPageChangeCallback(pageChangedCallback)
     }
 
     interface MapBottomPanelRouteListener {
