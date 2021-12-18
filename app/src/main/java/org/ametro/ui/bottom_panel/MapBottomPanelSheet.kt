@@ -47,7 +47,7 @@ class MapBottomPanelSheet(
     }
 
     private fun queueSheetAction(state: Int, action: (() -> Unit)?) {
-        action?.let{ pendingSheetActions.offer(Pair(state, it)) }
+        action?.let { pendingSheetActions.offer(Pair(state, it)) }
     }
 
     private fun queueState(f: () -> Unit) {
@@ -176,17 +176,12 @@ class MapBottomPanelSheet(
         } else {
             when (openedBehavior) {
                 OPENED_REOPEN -> {
-                    if (bottomSheet.state != newState) {
-                        val pending =
-                            if (collapsed) PENDING_OPEN_COLLAPSE
-                            else PENDING_OPEN_EXPAND
-                        openTriggered = true
-                        queueSheetAction(BottomSheetBehavior.STATE_HIDDEN, prepare)
-                        panelHideImpl(pending)
-                    } else {
-                        prepare()
-                        updatePeekHeightTopmostImpl()
-                    }
+                    val pending =
+                        if (collapsed) PENDING_OPEN_COLLAPSE
+                        else PENDING_OPEN_EXPAND
+                    openTriggered = true
+                    queueSheetAction(BottomSheetBehavior.STATE_HIDDEN, prepare)
+                    panelHideImpl(pending)
                 }
                 OPENED_CHANGE_VIEW -> {
                     prepare()

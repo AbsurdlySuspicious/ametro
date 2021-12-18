@@ -85,7 +85,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     }
 
     fun show(routes: ArrayList<RoutePagerItem>) {
-        sheet.panelShow(MapBottomPanelSheet.OPENED_REOPEN, true) {
+        sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, true) {
             adapter.replaceItems(routes)
             sheet.adapter.showRoute = true
         }
