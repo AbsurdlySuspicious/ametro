@@ -113,6 +113,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     private val pageChangedCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageSelected(position: Int) {
+            currentPage = position
             slideHandler?.let { it(position) }
         }
     }
@@ -128,7 +129,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     override fun attachItem(holder: PanelHolder) {
         binding = castBind(holder.binding)
         binding!!.pager.apply {
-            setCurrentItem(currentItem, false)
+            setCurrentItem(currentPage, false)
             registerOnPageChangeCallback(pageChangedCallback)
         }
     }
