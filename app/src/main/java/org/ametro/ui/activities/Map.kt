@@ -56,6 +56,9 @@ import java.util.*
 class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener,
     IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener {
 
+    private var backPressTime = 0L
+    private var backPressCount = 0
+
     private var enabledTransportsSet: MutableSet<String?>? = null
     private var container: MapContainer? = null
     private var scheme: MapScheme? = null
@@ -248,6 +251,20 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onBackPressed() {
+        val currentPress = System.currentTimeMillis()
+        val delta = currentPress - backPressTime
+        backPressTime = currentPress
+        Log.i("MEME2", "bpc pre $backPressCount, delta $delta")
+
+        if (delta < 200)
+            backPressCount += 1
+        else
+            backPressCount = 0
+
+
+        if (backPressCount >= 2)
+            return super.onBackPressed()
+
         if (navigationController.isDrawerOpen)
             navigationController.closeDrawer()
         else if (mapBottomStation.isOpened)
