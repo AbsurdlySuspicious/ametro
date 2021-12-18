@@ -10,6 +10,7 @@ import android.util.Pair
 import android.view.View
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.databinding.WidgetItemBotStationBinding
@@ -20,7 +21,7 @@ import org.ametro.utils.misc.ColorUtils
 class MapBottomPanelStation(
     private val sheet: MapBottomPanelSheet,
     private val listener: MapBottomPanelStationListener
-) : PanelAdapterBinder<ConstraintLayout, WidgetItemBotStationBinding> {
+) : PanelAdapterBinder {
 
     private val adapter = sheet.adapter
     private val context = sheet.sheetView.context
@@ -55,8 +56,8 @@ class MapBottomPanelStation(
         adapter.stationBinder = this
     }
 
-    override fun bindItem(view: ConstraintLayout, bind: WidgetItemBotStationBinding) {
-        binding = bind
+    override fun bindItem(bind: ViewBinding) {
+        binding = bind as WidgetItemBotStationBinding
 
         val progressTint =
             context.resources.getColor(R.color.panel_secondary_icon)

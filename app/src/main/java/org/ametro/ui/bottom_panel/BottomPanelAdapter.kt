@@ -11,8 +11,10 @@ import androidx.viewbinding.ViewBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.databinding.WidgetItemBotStationBinding
 
-interface PanelAdapterBinder<V : View, B : ViewBinding> {
-    fun bindItem(view: V, bind: B)
+interface PanelAdapterBinder {
+    fun bindItem(bind: ViewBinding)
+    fun attachItem(holder: PanelHolder) {}
+    fun detachItem(holder: PanelHolder) {}
 }
 
 private abstract class BaseItem(
@@ -40,12 +42,12 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
         set(value) {
             field = value; refreshList()
         }
-    var routeBinder: PanelAdapterBinder<LinearLayout, WidgetItemBotRouteBinding>? = null
+    var routeBinder: PanelAdapterBinder? = null
     var showStation: Boolean = false
         set(value) {
             field = value; refreshList()
         }
-    var stationBinder: PanelAdapterBinder<ConstraintLayout, WidgetItemBotStationBinding>? = null
+    var stationBinder: PanelAdapterBinder? = null
 
     private fun refreshList() {
         itemList
@@ -80,30 +82,27 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PanelHolder {
-        return when (viewType) {
-            TYPE_STATION -> {
-                val bind = WidgetItemBotStationBinding.inflate(inflater, parent, false)
-                PanelHolder(viewType, bind.root, bind)
-            }
-            TYPE_ROUTE -> {
-                val bind = WidgetItemBotRouteBinding.inflate(inflater, parent, false)
-                PanelHolder(viewType, bind.root, bind)
-            }
+        val bind = when (viewType) {
+            TYPE_STATION -> WidgetItemBotStationBinding.inflate(inflater, parent, false)
+            TYPE_ROUTE -> WidgetItemBotRouteBinding.inflate(inflater, parent, false)
             else -> throw Exception("Unknown view $viewType")
         }
+        return PanelHolder(viewType, bind.root, bind)
     }
 
-    override fun onBindViewHolder(holder: PanelHolder, position: Int) {
-        when (holder.viewType) {
-            TYPE_STATION -> stationBinder?.bindItem(
-                holder.itemView as ConstraintLayout,
-                holder.binding as WidgetItemBotStationBinding
-            )
-            TYPE_ROUTE -> routeBinder?.bindItem(
-                holder.itemView as LinearLayout,
-                holder.binding as WidgetItemBotRouteBinding
-            )
+    private fun <R> invokeBinder(viewType: Int, action: (PanelAdapterBinder?) -> R): R =
+        when (viewType) {
+            TYPE_STATION -> action(stationBinder)
+            TYPE_ROUTE -> action(routeBinder)
+            else -> throw Exception("Unknown view $viewType")
         }
-    }
 
+    override fun onBindViewHolder(holder: PanelHolder, position: Int): Unit =
+        invokeBinder(holder.viewType) { it?.bindItem(holder.binding) }
+
+    override fun onViewAttachedToWindow(holder: PanelHolder): Unit =
+        invokeBinder(holder.viewType) { it?.attachItem(holder) }
+
+    override fun onViewDetachedFromWindow(holder: PanelHolder): Unit =
+        invokeBinder(holder.viewType) { it?.detachItem(holder) }
 }

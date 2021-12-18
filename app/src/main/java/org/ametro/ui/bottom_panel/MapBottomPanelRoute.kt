@@ -3,15 +3,13 @@ package org.ametro.ui.bottom_panel
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import org.ametro.R
 import org.ametro.databinding.WidgetBotRoutePageBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.model.entities.MapSchemeLine
@@ -24,7 +22,7 @@ data class RoutePagerItem(
     val routeEnd: Pair<MapSchemeLine, MapSchemeStation>
 )
 
-class RoutePagerAdapter(private val context: Context) :
+class RoutePagerAdapter(context: Context) :
     RecyclerView.Adapter<RoutePagerAdapter.PageHolder>() {
 
     private val inflater = LayoutInflater.from(context)
@@ -67,8 +65,9 @@ class RoutePagerAdapter(private val context: Context) :
 }
 
 class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val listener: MapBottomPanelRouteListener) :
-    PanelAdapterBinder<LinearLayout, WidgetItemBotRouteBinding> {
+    PanelAdapterBinder {
 
+    private var slideHandler: ((Int) -> Unit)? = null
     private val adapter = RoutePagerAdapter(sheet.sheetView.context)
 
     init {
@@ -101,8 +100,32 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
             sheet.panelHide(after)
     }
 
-    override fun bindItem(view: LinearLayout, bind: WidgetItemBotRouteBinding) {
-        bind.pager.adapter = adapter
+    fun setSlideCallback(f: (Int) -> Unit) {
+        slideHandler = f
+    }
+
+    private val pageChangedCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageSelected(position: Int) {
+            slideHandler?.let { it(position) }
+        }
+    }
+
+    private fun castBind(bind: ViewBinding) =
+        bind as WidgetItemBotRouteBinding
+
+    override fun bindItem(bind: ViewBinding) {
+        val binding = castBind(bind)
+        binding.pager.adapter = adapter
+    }
+
+    override fun attachItem(holder: PanelHolder) {
+        val binding = castBind(holder.binding)
+        binding.pager.registerOnPageChangeCallback(pageChangedCallback)
+    }
+
+    override fun detachItem(holder: PanelHolder) {
+        val binding = castBind(holder.binding)
+        binding.pager.unregisterOnPageChangeCallback(pageChangedCallback)
     }
 
     interface MapBottomPanelRouteListener {

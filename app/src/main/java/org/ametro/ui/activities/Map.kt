@@ -30,6 +30,7 @@ import org.ametro.model.serialization.MapSerializationException
 import org.ametro.providers.TransportIconsProvider
 import org.ametro.routes.MapRouteProvider
 import org.ametro.routes.RouteUtils
+import org.ametro.routes.entities.MapRoute
 import org.ametro.routes.entities.MapRouteQueryParameters
 import org.ametro.ui.adapters.StationSearchAdapter
 import org.ametro.ui.bottom_panel.MapBottomPanelRoute
@@ -450,6 +451,11 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         }
     }
 
+    private fun highlightRoute(route: MapRoute) {
+        mapView!!
+            .highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(route, scheme!!))
+    }
+
     override fun onRouteSelectionComplete(
         begin: Pair<MapSchemeLine, MapSchemeStation>,
         end: Pair<MapSchemeLine, MapSchemeStation>
@@ -515,7 +521,10 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             )
         }
 
-        mapView!!.highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(routes[0], scheme!!))
+        highlightRoute(routes[0])
+        mapBottomRoute.setSlideCallback { pos ->
+            routes.getOrNull(pos)?.let { highlightRoute(it) }
+        }
         mapBottomRoute.show(panelRoutes)
     }
 
