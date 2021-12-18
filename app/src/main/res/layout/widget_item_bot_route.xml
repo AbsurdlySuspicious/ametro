@@ -19,4 +19,30 @@
             android:layout_height="wrap_content"
     />
 
+    <!--<com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+            android:id="@+id/dots"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="8dp"
+            app:dotsColor="@color/panel_dots"
+            app:dotsStrokeColor="@color/panel_dots_inactive"
+            app:dotsSize="6dp"
+            app:dotsStrokeWidth="3dp"
+            app:dotsSpacing="4dp"
+    />-->
+
+    <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+            android:id="@+id/dots"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="8dp"
+            app:dotsColor="@color/panel_dots_inactive"
+            app:selectedDotColor="@color/panel_dots"
+            app:dotsSize="6dp"
+            app:dotsWidthFactor="2.5"
+            app:dotsSpacing="4dp"
+    />
+
 </LinearLayout>

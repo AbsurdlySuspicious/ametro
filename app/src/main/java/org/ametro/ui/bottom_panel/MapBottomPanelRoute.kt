@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.tabs.TabLayoutMediator
 import org.ametro.databinding.WidgetBotRoutePageBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.model.entities.MapSchemeLine
@@ -123,20 +124,26 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     override fun bindItem(bind: ViewBinding) {
         binding = castBind(bind)
-        binding!!.pager.adapter = adapter
+        binding!!.also {
+            it.pager.adapter = adapter
+        }
     }
 
     override fun attachItem(holder: PanelHolder) {
         binding = castBind(holder.binding)
-        binding!!.pager.apply {
-            setCurrentItem(currentPage, false)
-            registerOnPageChangeCallback(pageChangedCallback)
+        binding!!.also {
+            it.pager.setCurrentItem(currentPage, false)
+            it.pager.registerOnPageChangeCallback(pageChangedCallback)
+            it.dots.setViewPager2(it.pager)
+            it.dots.refreshDots()
         }
     }
 
     override fun detachItem(holder: PanelHolder) {
-        castBind(holder.binding)
-            .pager.unregisterOnPageChangeCallback(pageChangedCallback)
+        castBind(holder.binding).also {
+            it.pager.unregisterOnPageChangeCallback(pageChangedCallback)
+            it.dots.pager?.removeOnPageChangeListener()
+        }
     }
 
     interface MapBottomPanelRouteListener {

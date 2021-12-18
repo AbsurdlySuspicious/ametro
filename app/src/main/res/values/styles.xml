@@ -13,6 +13,8 @@
 
     <color name="panel_secondary_text">#80000000</color>
     <color name="panel_secondary_icon">#56000000</color>
+    <color name="panel_dots">#ABABAB</color>
+    <color name="panel_dots_inactive">#D0D0D0</color>
     <color name="panel_sub_replace_icon">#4A4A4A</color>
     <color name="panel_sub_background">#0D000000</color>
     <color name="panel_background">#FFFFFF</color>
