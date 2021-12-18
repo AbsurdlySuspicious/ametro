@@ -16,14 +16,26 @@ object MapRouteProvider {
         val graph = TransportGraph(parameters.stationCount)
         createGraphEdges(graph, parameters)
 
-        for (i in 0 until maxRoutes) {
+        var routeI = 0
+        while (routeI < maxRoutes) {
+            routeI++
             val r = DijkstraHeap.dijkstra(graph, parameters.beginStationUid)
+
             if (r.predecessors[parameters.endStationUid] == DijkstraHeap.NO_WAY)
                 break
+
             if (r.same(lastResult))
                 continue
             lastResult = r
-            results.add(convertToMapRouteAndMarkUsed(r, parameters.endStationUid, graph))
+
+            val mr = convertToMapRouteAndMarkUsed(r, parameters.endStationUid, graph)
+
+            if (mr == null) {
+                routeI--
+                continue
+            }
+
+            results.add(mr)
         }
 
         return results
@@ -33,21 +45,28 @@ object MapRouteProvider {
         result: DijkstraHeap.Result,
         endStationUid: Int,
         graph: TransportGraph
-    ): MapRoute {
+    ): MapRoute? {
         Log.i("MEME", "-- mark used pass --")
         val distances = result.distances
         val predecessors = result.predecessors
         val parts = ArrayList<MapRoutePart>()
         var to = endStationUid
         var from = predecessors[to]
+        var prevEdge: DijkstraHeap.Edge? = null
 
         while (from != DijkstraHeap.NO_WAY) {
-            graph.edges[from]
+            val edge = graph.edges[from]
                 .firstOrNull { !it.used && it.transfer && it.end == to }
-                ?.let {
+                ?.also {
                     Log.i("MEME", "edge to ${it.start} -> ${it.end}")
                     it.used = true
                 }
+
+
+            if (edge?.transfer == true &&
+                prevEdge?.transfer == true
+            ) return null
+            prevEdge = edge
 
             parts.add(MapRoutePart(from, to, distances[to] - distances[from]))
             to = from
