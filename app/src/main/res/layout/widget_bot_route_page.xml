@@ -167,7 +167,7 @@
             app:layout_constraintBottom_toBottomOf="@id/icon_start"
     />
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <com.bluejamesbond.text.DocumentView
             android:id="@+id/station_start"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -176,8 +176,16 @@
             app:layout_constraintBottom_toBottomOf="@id/icon_start"
             app:layout_constraintStart_toEndOf="@id/line_icon_start"
             app:layout_constraintEnd_toStartOf="@id/icon_end"
-            style="@style/bottomPanelRouteStation"
-            tools:text="Station start"
+
+            app:documentView_text="Station start"
+            app:documentView_textFormat="plain"
+            app:documentView_antialias="true"
+            app:documentView_cacheConfig="no_cache"
+            app:documentView_hyphen="-"
+            app:documentView_maxLines="2"
+            app:documentView_textSize="12sp"
+            app:documentView_textColor="@android:color/tertiary_text_light"
+            app:documentView_textAlignment="left"
     />
 
     <ImageView
@@ -204,7 +212,7 @@
             app:layout_constraintBottom_toBottomOf="@id/icon_end"
     />
 
-    <androidx.appcompat.widget.AppCompatTextView
+    <com.bluejamesbond.text.DocumentView
             android:id="@+id/station_end"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -213,8 +221,16 @@
             app:layout_constraintBottom_toBottomOf="@id/icon_end"
             app:layout_constraintStart_toEndOf="@id/line_icon_end"
             app:layout_constraintEnd_toStartOf="@id/route_time"
-            style="@style/bottomPanelRouteStation"
-            tools:text="Station end"
+
+            app:documentView_text="Station end"
+            app:documentView_textFormat="plain"
+            app:documentView_antialias="true"
+            app:documentView_cacheConfig="no_cache"
+            app:documentView_hyphen="-"
+            app:documentView_maxLines="2"
+            app:documentView_textSize="12sp"
+            app:documentView_textColor="@android:color/tertiary_text_light"
+            app:documentView_textAlignment="left"
     />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

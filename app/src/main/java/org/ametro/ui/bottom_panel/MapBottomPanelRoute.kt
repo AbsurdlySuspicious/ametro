@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
+import com.bluejamesbond.text.DocumentView
+import com.bluejamesbond.text.hyphen.DefaultHyphenator
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayoutMediator
 import org.ametro.databinding.WidgetBotRoutePageBinding
@@ -66,10 +68,12 @@ class RoutePagerAdapter(private val context: Context) :
 
     private fun bindRoutePoint(
         icon: ImageView,
-        station: AppCompatTextView,
+        station: DocumentView,
         point: Pair<MapSchemeLine, MapSchemeStation>
     ) {
         (icon.drawable as GradientDrawable).setColor(point.first.lineColor)
+        // station.documentLayoutParams.setHyphenator(DefaultHyphenator.getInstance())
+        // station.documentLayoutParams.isHyphenated = true
         station.text = point.second.displayName
     }
 

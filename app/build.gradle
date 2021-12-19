@@ -60,6 +60,7 @@ dependencies {
     // patched version, upstream is 'com.tbuonomo:dotsindicator:4.2'; todo use jitpack (?)
     implementation project(path: ':dots')
 
+    implementation 'com.github.bluejamesbond:textjustify-android:2.1.6'
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
     implementation 'com.github.japgolly:svg-android:2.0.0'
