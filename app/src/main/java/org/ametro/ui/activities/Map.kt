@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.Lifecycle
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
@@ -260,7 +261,6 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         else
             backPressCount = 0
 
-
         if (backPressCount >= 2)
             return super.onBackPressed()
 
@@ -270,10 +270,17 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             mapBottomStation.hide()
         else if (mapSelectionIndicators.hasSelection())
             mapSelectionIndicators.clearSelection()
-        else if (app.restorePrevRoute())
-            restoreRoute(app.currentRoute, ignoreStation = true)
-        else
-            super.onBackPressed()
+        else {
+            when (mapBottomSheet.bottomSheet.state) {
+                BottomSheetBehavior.STATE_SETTLING,
+                BottomSheetBehavior.STATE_DRAGGING -> return
+                else -> if (delta < 1000) return
+            }
+            if (app.restorePrevRoute())
+                restoreRoute(app.currentRoute, ignoreStation = true)
+            else
+                super.onBackPressed()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
