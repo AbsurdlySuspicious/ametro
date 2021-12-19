@@ -50,8 +50,6 @@
                         android:visibility="invisible"
                         android:src="@drawable/map_marker_end"
                 />
-
-                <include android:id="@+id/include_top_panel" layout="@layout/widget_map_top_panel"/>
             </FrameLayout>
 
             <include android:id="@+id/include_empty_map" layout="@layout/widget_empty_map"/>

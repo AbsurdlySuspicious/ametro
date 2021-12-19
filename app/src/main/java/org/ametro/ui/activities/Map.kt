@@ -48,7 +48,6 @@ import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationLis
 import org.ametro.ui.bottom_panel.RoutePagerItem
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
-import org.ametro.ui.widgets.MapTopPanelWidget
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.convertPair
 import java.util.*
