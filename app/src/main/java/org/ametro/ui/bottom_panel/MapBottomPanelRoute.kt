@@ -89,6 +89,10 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, true) {
             adapter.replaceItems(routes)
             sheet.adapter.showRoute = true
+            binding?.let {
+                val anim = sheet.bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN
+                sheet.updatePeekHeightImpl(it.root.height, anim, force = true)
+            }
         }
     }
 

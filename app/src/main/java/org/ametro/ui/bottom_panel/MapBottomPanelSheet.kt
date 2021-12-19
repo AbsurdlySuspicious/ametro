@@ -1,6 +1,7 @@
 package org.ametro.ui.bottom_panel
 
 import android.app.Activity
+import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import androidx.core.widget.NestedScrollView
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
+import org.ametro.utils.misc.BottomSheetUtils
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class MapBottomPanelSheet(
@@ -76,11 +78,11 @@ class MapBottomPanelSheet(
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
                     runPendingSheetActions(newState)
-                    updatePeekHeightTopmostImpl()
+                    updatePeekHeightTopmostImpl(true)
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     runPendingSheetActions(newState)
-                    updatePeekHeightTopmostImpl()
+                    updatePeekHeightTopmostImpl(true)
                 }
                 else -> {}
             }
@@ -112,22 +114,28 @@ class MapBottomPanelSheet(
         }
     }
 
-    fun updatePeekHeightTopmost() = queueState {
-        updatePeekHeightTopmostImpl()
+    fun updatePeekHeightTopmostQueue(animate: Boolean, force: Boolean = false) = queueState {
+        updatePeekHeightTopmostImpl(animate, force)
     }
 
-    private fun updatePeekHeightTopmostImpl() {
-        updatePeekHeight(adapter.topmostHeight())
+    fun updatePeekHeightQueue(height: Int, animate: Boolean, force: Boolean = false) = queueState {
+        updatePeekHeightImpl(height, animate, force)
     }
 
-    private fun updatePeekHeight(height: Int) {
-        if (openTriggered) {
-            openTriggered = false
+    fun updatePeekHeightTopmostImpl(animate: Boolean, force: Boolean = false) {
+        updatePeekHeightImpl(adapter.topmostHeight(), animate, force)
+    }
+
+    fun updatePeekHeightImpl(height: Int, animate: Boolean, force: Boolean = false) {
+        val bs = BottomSheetUtils.stateToString(bottomSheet.state)
+        Log.i("MEME3", "peek $height, anim $animate, force $force, ot $openTriggered, bs $bs")
+        if (openTriggered || force) {
+            if (!force) openTriggered = false
             val pad = topPadViews.fold(0) { acc, view ->
                 val params = view.layoutParams as LinearLayout.LayoutParams
                 acc + view.height + params.topMargin + params.bottomMargin
             }
-            bottomSheet.setPeekHeight(pad + height, true)
+            bottomSheet.setPeekHeight(pad + height, animate)
         }
     }
 
@@ -169,11 +177,13 @@ class MapBottomPanelSheet(
             if (collapsed) BottomSheetBehavior.STATE_COLLAPSED
             else BottomSheetBehavior.STATE_EXPANDED
         if (!isOpened) {
+            Log.i("MEME3", "non-opened branch")
             prepare()
             openTriggered = true
             pendingOpen = PENDING_OPEN_NO
             bottomSheet.state = newState
         } else {
+            Log.i("MEME3", "opened branch")
             when (openedBehavior) {
                 OPENED_REOPEN -> {
                     val pending =
@@ -185,7 +195,10 @@ class MapBottomPanelSheet(
                 }
                 OPENED_CHANGE_VIEW -> {
                     prepare()
-                    updatePeekHeightTopmostImpl()
+                    if (bottomSheet.state == newState)
+                        updatePeekHeightTopmostImpl(collapsed, true)
+                    else
+                        updatePeekHeightTopmostImpl(false, true)
                     bottomSheet.state = newState
                 }
                 OPENED_IGNORE -> {}

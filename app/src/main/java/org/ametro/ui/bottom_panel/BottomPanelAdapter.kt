@@ -64,9 +64,11 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
         this.notifyDataSetChanged()
     }
 
-    fun topmostHeight(): Int {
-        return recyclerView.findViewHolderForLayoutPosition(0)?.itemView?.height ?: 0
-    }
+    fun topmostView(): View? =
+        recyclerView.findViewHolderForLayoutPosition(0)?.itemView
+
+    fun topmostHeight(): Int =
+        topmostView()?.height ?: 0
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
