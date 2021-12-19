@@ -42,6 +42,7 @@
     <dimen name="panel_bottom_route_icon_size">16dp</dimen>
     <dimen name="panel_bottom_route_line_icon_size">8dp</dimen>
     <dimen name="panel_bottom_route_line_icon_margin">10dp</dimen>
+    <dimen name="panel_bottom_route_line_transfer_icon_size">15dp</dimen>
     <dimen name="panel_bottom_route_station_name_margin">10dp</dimen>
     <dimen name="panel_bottom_drag_spacing">10dp</dimen>
     <dimen name="panel_bottom_bg_rounding">10dp</dimen>
