@@ -20,7 +20,7 @@
 
             <include layout="@layout/widget_toolbar"/>
 
-            <RelativeLayout
+            <FrameLayout
                     android:id="@+id/map_panel"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -52,7 +52,7 @@
                 />
 
                 <include android:id="@+id/include_top_panel" layout="@layout/widget_map_top_panel"/>
-            </RelativeLayout>
+            </FrameLayout>
 
             <include android:id="@+id/include_empty_map" layout="@layout/widget_empty_map"/>
         </LinearLayout>
