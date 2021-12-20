@@ -2,6 +2,7 @@ package org.ametro.ui.bottom_panel
 
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
+import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,6 +21,9 @@ import org.ametro.databinding.WidgetBotRouteTransferBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
+import org.ametro.utils.StringUtils
+import java.util.*
+import kotlin.collections.ArrayList
 
 typealias RoutePagerStation =
         Pair<MapSchemeLine, MapSchemeStation>
@@ -29,8 +33,7 @@ data class RoutePagerTransfer(
 )
 
 data class RoutePagerItem(
-    val time: String,
-    val timeSeconds: String,
+    val delay: Int,
     val routeStart: RoutePagerStation,
     val routeEnd: RoutePagerStation,
     val transfers: List<RoutePagerTransfer>
@@ -38,6 +41,8 @@ data class RoutePagerItem(
 
 class RoutePagerAdapter(private val context: Context) :
     RecyclerView.Adapter<RoutePagerAdapter.PageHolder>() {
+
+    var leaveTime: Calendar? = null
 
     private val inflater = LayoutInflater.from(context)
     private var items: ArrayList<RoutePagerItem> = arrayListOf()
@@ -68,12 +73,33 @@ class RoutePagerAdapter(private val context: Context) :
         station.text = point.second.displayName
     }
 
+    private fun formatRangeTime(c: Calendar) =
+        DateFormat.format("hh:mm", c)
+
+    private fun setRangeText(item: RoutePagerItem, leaveTime: Calendar?, bind: WidgetBotRoutePageBinding) {
+        val timeF = leaveTime ?: Calendar.getInstance()
+        val timeT = (timeF.clone() as Calendar)
+            .also { it.add(Calendar.SECOND, item.delay) }
+
+        bind.routeTimeRangeLeave.text = formatRangeTime(timeF)
+        bind.routeTimeRangeArrive.text = formatRangeTime(timeT)
+    }
+
     override fun onBindViewHolder(holder: PageHolder, position: Int) {
         val item = items[position]
         val bind = holder.binding
 
-        bind.routeTime.text = item.time
-        bind.routeTimeSec.text = item.timeSeconds
+        val time =
+            StringUtils.humanReadableTimeRoute(item.delay)
+
+        bind.routeTime.text = time.first
+        bind.routeTimeSec.text = time.second
+
+        setRangeText(item, this.leaveTime, bind)
+        bind.routeTimeRangeBg.setOnClickListener {
+            setRangeText(item, null, bind)
+            // todo custom leave time dialog
+        }
 
         bindRoutePoint(bind.lineIconStart, bind.stationStart, item.routeStart)
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, item.routeEnd)
@@ -82,7 +108,8 @@ class RoutePagerAdapter(private val context: Context) :
             ?.replaceItems(item.transfers.toMutableList())
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int =
+        items.size
 
     inner class PageHolder(val binding: WidgetBotRoutePageBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -139,8 +166,9 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         sheet.adapter.routeBinder = this
     }
 
-    fun show(routes: ArrayList<RoutePagerItem>) {
+    fun show(routes: ArrayList<RoutePagerItem>, leaveTime: Calendar?) {
         sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, true) {
+            adapter.leaveTime = leaveTime
             adapter.replaceItems(routes)
             sheet.adapter.showRoute = true
             binding?.let {
@@ -153,6 +181,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     fun hide() {
         val after = {
             sheet.adapter.showRoute = false
+            adapter.leaveTime = null
         }
 
         if (!sheet.adapter.showRoute || sheet.adapter.showStation)

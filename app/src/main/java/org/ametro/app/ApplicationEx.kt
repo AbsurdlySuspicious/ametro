@@ -22,6 +22,7 @@ import androidx.multidex.MultiDexApplication
 import kotlinx.parcelize.Parcelize
 import org.ametro.utils.Lazy
 import org.ametro.utils.misc.*
+import java.util.*
 
 @Parcelize
 data class SavedRoute(
@@ -68,6 +69,8 @@ class ApplicationEx : MultiDexApplication() {
     var bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>? = null
 
     // todo save (all of above) to instance state too
+
+    var lastLeaveTime: Calendar? = null
 
     fun checkIsNew(): Boolean {
         return isNew.also { isNew = false }
@@ -162,9 +165,11 @@ class ApplicationEx : MultiDexApplication() {
         centerPositionAndScale = null
         currentRoute = SavedRoute()
         previousRoute = null
+        lastLeaveTime = null
     }
 
     fun clearRoute() {
+        lastLeaveTime = null
         if (currentRoute.isUnset) return
         previousRoute = currentRoute
         currentRoute = SavedRoute()

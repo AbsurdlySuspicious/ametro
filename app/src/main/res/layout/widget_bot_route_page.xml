@@ -26,7 +26,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/route_time"
-            />
+    />
 
     <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/route_time"
@@ -34,7 +34,8 @@
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toStartOf="@id/route_time_sec"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/route_time_range_leave"
+            app:layout_constraintVertical_chainStyle="spread"
             tools:text="1:40"
             app:fontFamily="@font/roboto_regular"
             android:textSize="35sp"
@@ -49,6 +50,59 @@
             tools:text=":35"
             app:fontFamily="@font/roboto_light"
             android:textSize="22sp"
+    />
+
+    <View
+            android:id="@+id/route_time_range_bg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bottom_panel_action"
+            app:layout_constraintTop_toTopOf="@id/route_time_range_leave"
+            app:layout_constraintBottom_toBottomOf="@id/route_time_range_leave"
+            app:layout_constraintStart_toStartOf="@id/route_time_range_leave"
+            app:layout_constraintEnd_toEndOf="@id/route_time_range_arrive"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time_range_leave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            tools:text="12:35"
+            app:fontFamily="@font/roboto_regular"
+            android:textSize="@dimen/panel_bottom_time_range_text_size"
+            app:layout_constraintStart_toStartOf="@id/route_time"
+            app:layout_constraintEnd_toStartOf="@id/route_time_range_icon"
+            app:layout_constraintTop_toBottomOf="@id/route_time"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed"
+    />
+
+    <ImageView
+            android:id="@+id/route_time_range_icon"
+            android:layout_width="@dimen/panel_bottom_time_range_text_size"
+            android:layout_height="@dimen/panel_bottom_time_range_text_size"
+            android:layout_marginHorizontal="5dp"
+            app:layout_constraintTop_toTopOf="@id/route_time_range_leave"
+            app:layout_constraintBottom_toBottomOf="@id/route_time_range_leave"
+            app:layout_constraintStart_toEndOf="@id/route_time_range_leave"
+            app:layout_constraintEnd_toStartOf="@id/route_time_range_arrive"
+            android:tint="@android:color/tertiary_text_light"
+            android:src="@drawable/ic_duration"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time_range_arrive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            tools:text="14:15"
+            app:fontFamily="@font/roboto_regular"
+            android:textSize="@dimen/panel_bottom_time_range_text_size"
+            app:layout_constraintStart_toEndOf="@id/route_time_range_icon"
+            app:layout_constraintEnd_toEndOf="@id/route_time_sec"
+            app:layout_constraintTop_toBottomOf="@id/route_time"
+            app:layout_constraintBottom_toBottomOf="parent"
     />
 
     <androidx.constraintlayout.widget.Barrier

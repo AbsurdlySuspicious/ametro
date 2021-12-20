@@ -115,9 +115,11 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         )
     }
 
+    private val isResuming: Boolean
+        get() = lifecycle.currentState != Lifecycle.State.RESUMED
+
     private fun ifNotResuming(action: () -> Unit) {
-        if (lifecycle.currentState == Lifecycle.State.RESUMED)
-            action()
+        if (!isResuming) action()
     }
 
     override fun onPause() {
@@ -545,11 +547,8 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 txfs.add(RoutePagerTransfer(lastStation.first))
             }
 
-            val time =
-                StringUtils.humanReadableTimeRoute(it.delay)
             RoutePagerItem(
-                time = time.first,
-                timeSeconds = time.second,
+                delay = it.delay,
                 routeStart = begin,
                 routeEnd = end,
                 transfers = txfs
@@ -560,6 +559,10 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             app.currentRoute.selectedRoute.let { if (it > 0) it else 0 }
         highlightRoute(routes[initRoute])
 
+        if (!isResuming || app.lastLeaveTime == null) {
+            app.lastLeaveTime = Calendar.getInstance()
+        }
+
         mapBottomRoute.setPage(initRoute, false)
         mapBottomRoute.setSlideCallback { pos ->
             routes.getOrNull(pos)?.let {
@@ -567,7 +570,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 app.currentRoute.selectedRoute = pos
             }
         }
-        mapBottomRoute.show(panelRoutes)
+        mapBottomRoute.show(panelRoutes, app.lastLeaveTime)
     }
 
     override fun onRouteSelectionCleared() {
