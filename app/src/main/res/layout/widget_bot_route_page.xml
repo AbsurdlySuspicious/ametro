@@ -16,17 +16,35 @@
 
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/transfers_recycler"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:layout_marginEnd="15dp"
+            android:layout_marginEnd="10dp"
             android:scrollbars="horizontal"
             tools:itemCount="1"
             tools:listitem="@layout/widget_bot_route_transfer"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/route_time"
+            app:layout_constraintEnd_toStartOf="@id/transfer_count"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constrainedWidth="true"
     />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/transfer_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="1.5dp"
+            tools:text="3"
+            android:textSize="@dimen/panel_bottom_route_line_transfer_count_size"
+            android:textColor="@android:color/tertiary_text_light"
+            app:layout_constraintTop_toTopOf="@id/transfers_recycler"
+            app:layout_constraintBottom_toBottomOf="@id/transfers_recycler"
+            app:layout_constraintStart_toEndOf="@id/transfers_recycler"
+            app:layout_constraintEnd_toStartOf="@id/route_time"
+        />
 
     <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/route_time"

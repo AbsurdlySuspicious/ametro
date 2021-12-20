@@ -106,6 +106,10 @@ class RoutePagerAdapter(private val context: Context) :
 
         (bind.transfersRecycler.adapter as RouteTransferAdapter?)
             ?.replaceItems(item.transfers.toMutableList())
+
+        bind.transferCount.text =
+            if (item.transfers.size < 2) ""
+            else (item.transfers.size - 1).toString()
     }
 
     override fun getItemCount(): Int =
