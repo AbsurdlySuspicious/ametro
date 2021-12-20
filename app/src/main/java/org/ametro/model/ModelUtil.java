@@ -1,8 +1,7 @@
 package org.ametro.model;
 
 
-import androidx.core.util.Pair;
-
+import kotlin.Pair;
 import org.ametro.model.entities.MapPoint;
 import org.ametro.model.entities.MapRect;
 import org.ametro.model.entities.MapScheme;

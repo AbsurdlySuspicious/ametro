@@ -3,27 +3,40 @@ package org.ametro.ui.bottom_panel
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayoutMediator
 import org.ametro.databinding.WidgetBotRoutePageBinding
+import org.ametro.databinding.WidgetBotRouteTransferBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 
+typealias RoutePagerStation =
+        Pair<MapSchemeLine, MapSchemeStation>
+
+data class RoutePagerTransfer(
+    val txf: MapSchemeLine
+)
+
 data class RoutePagerItem(
     val time: String,
     val timeSeconds: String,
-    val routeStart: Pair<MapSchemeLine, MapSchemeStation>,
-    val routeEnd: Pair<MapSchemeLine, MapSchemeStation>
+    val routeStart: RoutePagerStation,
+    val routeEnd: RoutePagerStation,
+    val transfers: List<RoutePagerTransfer>
 )
 
-class RoutePagerAdapter(context: Context) :
+class RoutePagerAdapter(private val context: Context) :
     RecyclerView.Adapter<RoutePagerAdapter.PageHolder>() {
 
     private val inflater = LayoutInflater.from(context)
@@ -36,6 +49,13 @@ class RoutePagerAdapter(context: Context) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageHolder {
         val binding = WidgetBotRoutePageBinding.inflate(inflater, parent, false)
+
+        binding.transfersRecycler.also {
+            it.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            it.overScrollMode = RecyclerView.OVER_SCROLL_NEVER
+            it.adapter = RouteTransferAdapter(inflater)
+        }
+
         return PageHolder(binding)
     }
 
@@ -57,11 +77,45 @@ class RoutePagerAdapter(context: Context) :
 
         bindRoutePoint(bind.lineIconStart, bind.stationStart, item.routeStart)
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, item.routeEnd)
+
+        (bind.transfersRecycler.adapter as RouteTransferAdapter?)
+            ?.replaceItems(item.transfers.toMutableList())
     }
 
     override fun getItemCount(): Int = items.size
 
     inner class PageHolder(val binding: WidgetBotRoutePageBinding) :
+        RecyclerView.ViewHolder(binding.root)
+}
+
+class RouteTransferAdapter(private val inflater: LayoutInflater) :
+    RecyclerView.Adapter<RouteTransferAdapter.TransferHolder>() {
+
+    private var items: MutableList<RoutePagerTransfer> = arrayListOf()
+
+    fun replaceItems(items: MutableList<RoutePagerTransfer>) {
+        this.items = items
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransferHolder {
+        val binding = WidgetBotRouteTransferBinding.inflate(inflater, parent, false)
+        return TransferHolder(binding)
+    }
+
+    override fun onBindViewHolder(holder: TransferHolder, position: Int) {
+        holder.binding.also {
+            val item = items[position]
+            (it.lineIconTransfer.drawable as GradientDrawable)
+                .setColor(item.txf.lineColor)
+            it.iconTransferArrow.isVisible = position != items.size - 1
+        }
+    }
+
+    override fun getItemCount(): Int =
+        items.size
+
+    inner class TransferHolder(val binding: WidgetBotRouteTransferBinding) :
         RecyclerView.ViewHolder(binding.root)
 }
 

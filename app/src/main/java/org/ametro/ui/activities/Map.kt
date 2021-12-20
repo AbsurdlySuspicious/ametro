@@ -33,9 +33,10 @@ import org.ametro.providers.TransportIconsProvider
 import org.ametro.routes.MapRouteProvider
 import org.ametro.routes.RouteUtils
 import org.ametro.routes.entities.MapRoute
+import org.ametro.routes.entities.MapRoutePart
 import org.ametro.routes.entities.MapRouteQueryParameters
 import org.ametro.ui.adapters.StationSearchAdapter
-import org.ametro.ui.bottom_panel.MapBottomPanelRoute
+import org.ametro.ui.bottom_panel.*
 import org.ametro.ui.navigation.INavigationControllerListener
 import org.ametro.ui.navigation.NavigationController
 import org.ametro.ui.tasks.MapLoadAsyncTask
@@ -43,14 +44,12 @@ import org.ametro.ui.tasks.MapLoadAsyncTask.IMapLoadingEventListener
 import org.ametro.ui.testing.DebugToast
 import org.ametro.ui.testing.TestMenuOptionsProcessor
 import org.ametro.ui.views.MultiTouchMapView
-import org.ametro.ui.bottom_panel.MapBottomPanelSheet
-import org.ametro.ui.bottom_panel.MapBottomPanelStation
 import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
-import org.ametro.ui.bottom_panel.RoutePagerItem
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.convertPair
+import java.lang.StringBuilder
 import java.util.*
 
 class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener,
@@ -533,13 +532,27 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         val panelRoutes = ArrayList<RoutePagerItem>(routes.size)
 
         routes.mapTo(panelRoutes) {
+            val txfs = arrayListOf<RoutePagerTransfer>()
+            var lastTxf: MapRoutePart? = null
+            for (p in it.parts.iterator()) {
+                if (!p.isTransfer) continue
+                lastTxf = p
+                val station = ModelUtil.findStationByUid(scheme!!, p.from.toLong())
+                txfs.add(RoutePagerTransfer(station.first))
+            }
+            if (lastTxf != null) {
+                val lastStation = ModelUtil.findStationByUid(scheme!!, lastTxf.to.toLong())
+                txfs.add(RoutePagerTransfer(lastStation.first))
+            }
+
             val time =
                 StringUtils.humanReadableTimeRoute(it.delay)
             RoutePagerItem(
                 time = time.first,
                 timeSeconds = time.second,
                 routeStart = begin,
-                routeEnd = end
+                routeEnd = end,
+                transfers = txfs
             )
         }
 

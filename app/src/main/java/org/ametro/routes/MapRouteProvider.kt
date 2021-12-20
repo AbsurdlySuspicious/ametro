@@ -56,19 +56,21 @@ object MapRouteProvider {
 
         while (from != DijkstraHeap.NO_WAY) {
             val edge = graph.edges[from]
-                .firstOrNull { !it.used && it.transfer && it.end == to }
+                .firstOrNull { it.end == to }
                 ?.also {
-                    Log.i("MEME", "edge to ${it.start} -> ${it.end}")
-                    it.used = true
+                    if (!it.used && it.transfer) {
+                        Log.i("MEME", "edge to ${it.start} -> ${it.end}")
+                        it.used = true
+                    }
                 }
 
+            val isTransfer = edge?.transfer ?: false
 
-            if (edge?.transfer == true &&
-                prevEdge?.transfer == true
-            ) return null
+            if (isTransfer && prevEdge?.transfer == true)
+                return null
             prevEdge = edge
 
-            parts.add(MapRoutePart(from, to, distances[to] - distances[from]))
+            parts.add(MapRoutePart(from, to, distances[to] - distances[from], isTransfer))
             to = from
             from = predecessors[to]
         }
