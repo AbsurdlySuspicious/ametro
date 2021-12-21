@@ -44,6 +44,9 @@
     <dimen name="panel_bottom_route_line_icon_margin">10dp</dimen>
     <dimen name="panel_bottom_route_line_transfer_icon_size">15dp</dimen>
     <dimen name="panel_bottom_route_line_transfer_count_size">15sp</dimen>
+    <dimen name="panel_bottom_route_line_transfer_count_icon_size">18sp</dimen>
+    <dimen name="panel_bottom_time_range_text_size">12sp</dimen>
+    <dimen name="panel_bottom_time_range_icon_size">15sp</dimen>
     <dimen name="panel_bottom_route_station_name_margin">10dp</dimen>
     <dimen name="panel_bottom_drag_spacing">10dp</dimen>
     <dimen name="panel_bottom_bg_rounding">10dp</dimen>
@@ -56,6 +59,5 @@
     <dimen name="panel_bottom_sub_spacing">10dp</dimen>
     <dimen name="panel_margin_left_right">0dp</dimen>
     <dimen name="panel_small_padding">8dp</dimen>
-    <dimen name="panel_bottom_time_range_text_size">12sp</dimen>
 
 </resources>
