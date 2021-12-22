@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:id="@+id/item_bot_route"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+
+        android:paddingHorizontal="@dimen/panel_bottom_padding"
+        android:paddingBottom="@dimen/panel_bottom_padding"
+>
+    <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+    />
+
+    <!--<com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
+            android:id="@+id/dots"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="8dp"
+            app:dotsColor="@color/panel_dots"
+            app:dotsStrokeColor="@color/panel_dots_inactive"
+            app:dotsSize="6dp"
+            app:dotsStrokeWidth="3dp"
+            app:dotsSpacing="4dp"
+    />-->
+
+    <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+            android:id="@+id/dots"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginVertical="8dp"
+            app:dotsColor="@color/panel_dots_inactive"
+            app:selectedDotColor="@color/panel_dots"
+            app:dotsSize="6dp"
+            app:dotsWidthFactor="2.5"
+            app:dotsSpacing="4dp"
+    />
+
+</LinearLayout>

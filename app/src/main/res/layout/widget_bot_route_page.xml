@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:id="@+id/route_page"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_height="wrap_content"
+
+        android:minHeight="70dp"
+        android:paddingHorizontal="@dimen/panel_bottom_padding_route_h"
+>
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/transfers_recycler"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginEnd="15dp"
+            android:scrollbars="horizontal"
+            tools:itemCount="1"
+            tools:listitem="@layout/widget_bot_route_transfer"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toEndOf="@id/transfer_count"
+            app:layout_constraintEnd_toStartOf="@id/route_time"
+            app:layout_constrainedWidth="true"
+    />
+
+    <ImageView
+            android:id="@+id/transfer_count_icon"
+            android:layout_width="@dimen/panel_bottom_route_line_transfer_count_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_line_transfer_count_icon_size"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="0dp"
+            android:src="@drawable/ic_transfer"
+            app:tint="@color/panel_secondary_icon"
+            app:layout_constraintTop_toTopOf="@id/transfers_recycler"
+            app:layout_constraintBottom_toBottomOf="@id/transfers_recycler"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/transfer_count"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintHorizontal_bias="0"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/transfer_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="1.5dp"
+            tools:text="3"
+            android:textSize="@dimen/panel_bottom_route_line_transfer_count_size"
+            android:textColor="@android:color/tertiary_text_light"
+            app:layout_constraintTop_toTopOf="@id/transfers_recycler"
+            app:layout_constraintBottom_toBottomOf="@id/transfers_recycler"
+            app:layout_constraintStart_toEndOf="@id/transfer_count_icon"
+            app:layout_constraintEnd_toStartOf="@id/transfers_recycler"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toStartOf="@id/route_time_sec"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/route_time_range_leave"
+            app:layout_constraintVertical_chainStyle="spread"
+            tools:text="1:40"
+            app:fontFamily="@font/roboto_regular"
+            android:textSize="35sp"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time_sec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBaseline_toBaselineOf="@id/route_time"
+            tools:text=":35"
+            app:fontFamily="@font/roboto_light"
+            android:textSize="22sp"
+    />
+
+    <View
+            android:id="@+id/route_time_range_bg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bottom_panel_action"
+            app:layout_constraintTop_toTopOf="@id/route_time_range_leave"
+            app:layout_constraintBottom_toBottomOf="@id/route_time_range_leave"
+            app:layout_constraintStart_toStartOf="@id/route_time_range_leave"
+            app:layout_constraintEnd_toEndOf="@id/route_time_range_arrive"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time_range_leave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            tools:text="12:35"
+            app:fontFamily="@font/roboto_regular"
+            android:textSize="@dimen/panel_bottom_time_range_text_size"
+            app:layout_constraintStart_toStartOf="@id/route_time"
+            app:layout_constraintEnd_toStartOf="@id/route_time_range_icon"
+            app:layout_constraintTop_toBottomOf="@id/route_time"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_chainStyle="packed"
+    />
+
+    <ImageView
+            android:id="@+id/route_time_range_icon"
+            android:layout_width="@dimen/panel_bottom_time_range_icon_size"
+            android:layout_height="@dimen/panel_bottom_time_range_icon_size"
+            android:layout_marginHorizontal="3dp"
+            app:tint="@android:color/tertiary_text_light"
+            android:src="@drawable/ic_duration"
+            app:layout_constraintTop_toTopOf="@id/route_time_range_leave"
+            app:layout_constraintBottom_toBottomOf="@id/route_time_range_leave"
+            app:layout_constraintStart_toEndOf="@id/route_time_range_leave"
+            app:layout_constraintEnd_toStartOf="@id/route_time_range_arrive"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/route_time_range_arrive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            tools:text="14:15"
+            app:fontFamily="@font/roboto_regular"
+            android:textSize="@dimen/panel_bottom_time_range_text_size"
+            app:layout_constraintStart_toEndOf="@id/route_time_range_icon"
+            app:layout_constraintEnd_toEndOf="@id/route_time_sec"
+            app:layout_constraintTop_toBottomOf="@id/route_time"
+            app:layout_constraintBottom_toBottomOf="parent"
+    />
+
+    <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/stations_barrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="transfers_recycler"
+    />
+
+    <ImageView
+            android:id="@+id/icon_start"
+            android:layout_width="@dimen/panel_bottom_route_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_icon_size"
+            android:src="@drawable/ic_loc_origin"
+            app:tint="@color/panel_secondary_icon"
+            app:layout_constraintTop_toTopOf="@id/stations_barrier"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+    />
+
+    <ImageView
+            android:id="@+id/line_icon_start"
+            android:layout_width="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_marginStart="@dimen/panel_bottom_route_line_icon_margin"
+            android:src="@drawable/line_icon"
+            app:layout_constraintStart_toEndOf="@id/icon_start"
+            app:layout_constraintTop_toTopOf="@id/icon_start"
+            app:layout_constraintBottom_toBottomOf="@id/icon_start"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/station_start"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/panel_bottom_route_station_name_margin"
+            app:layout_constraintTop_toTopOf="@id/icon_start"
+            app:layout_constraintBottom_toBottomOf="@id/icon_start"
+            app:layout_constraintStart_toEndOf="@id/line_icon_start"
+            app:layout_constraintEnd_toStartOf="@id/icon_end"
+            style="@style/bottomPanelRouteStation"
+            tools:text="Station start"
+    />
+
+    <ImageView
+            android:id="@+id/icon_end"
+            android:layout_width="@dimen/panel_bottom_route_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_icon_size"
+            android:src="@drawable/ic_loc_destination"
+            app:tint="@color/panel_secondary_icon"
+            app:layout_constraintTop_toTopOf="@id/stations_barrier"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/route_time"
+            app:layout_constraintHorizontal_bias="0.50"
+    />
+
+    <ImageView
+            android:id="@+id/line_icon_end"
+            android:layout_width="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_height="@dimen/panel_bottom_route_line_icon_size"
+            android:layout_marginStart="@dimen/panel_bottom_route_line_icon_margin"
+            android:src="@drawable/line_icon"
+            app:layout_constraintStart_toEndOf="@id/icon_end"
+            app:layout_constraintTop_toTopOf="@id/icon_end"
+            app:layout_constraintBottom_toBottomOf="@id/icon_end"
+    />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/station_end"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/panel_bottom_route_station_name_margin"
+            app:layout_constraintTop_toTopOf="@id/icon_end"
+            app:layout_constraintBottom_toBottomOf="@id/icon_end"
+            app:layout_constraintStart_toEndOf="@id/line_icon_end"
+            app:layout_constraintEnd_toStartOf="@id/route_time"
+            style="@style/bottomPanelRouteStation"
+            tools:text="Station end"
+    />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

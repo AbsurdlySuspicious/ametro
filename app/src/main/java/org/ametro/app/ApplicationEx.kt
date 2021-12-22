@@ -18,20 +18,29 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.loader.content.AsyncTaskLoader
-import android.util.Pair
 import androidx.multidex.MultiDexApplication
 import kotlinx.parcelize.Parcelize
 import org.ametro.utils.Lazy
 import org.ametro.utils.misc.*
+import java.util.*
+
+@Parcelize
+data class SavedRoute(
+    var routeStart: Pair<MapSchemeLine, MapSchemeStation>? = null,
+    var routeEnd: Pair<MapSchemeLine, MapSchemeStation>? = null,
+    var selectedRoute: Int = -1
+): Parcelable {
+    val isUnset: Boolean
+        get() = routeStart == null && routeEnd == null
+}
 
 @Parcelize
 data class SavedState(
     val enabledTransports: MutableList<String>?,
-    val posCenter: kotlin.Pair<PointF, Float>?,
-    val routeStart: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
-    val routeEnd: kotlin.Pair<MapSchemeLine, MapSchemeStation>?,
+    val posCenter: Pair<PointF, Float>?,
+    val route: SavedRoute,
     val bottomPanelOpen: Boolean,
-    val bottomPanelStation: kotlin.Pair<MapSchemeLine, MapSchemeStation>?
+    val bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>?
 ): Parcelable
 
 class ApplicationEx : MultiDexApplication() {
@@ -50,14 +59,18 @@ class ApplicationEx : MultiDexApplication() {
     var enabledTransports: Array<String>? = null
         private set
     var centerPositionAndScale: Pair<PointF, Float>? = null
-    var routeStart: Pair<MapSchemeLine, MapSchemeStation>? = null
+
+    var currentRoute = SavedRoute()
         private set
-    var routeEnd: Pair<MapSchemeLine, MapSchemeStation>? = null
+    var previousRoute: SavedRoute? = null
         private set
+
     var bottomPanelOpen: Boolean = false
     var bottomPanelStation: Pair<MapSchemeLine, MapSchemeStation>? = null
 
     // todo save (all of above) to instance state too
+
+    var lastLeaveTime: Calendar? = null
 
     fun checkIsNew(): Boolean {
         return isNew.also { isNew = false }
@@ -66,11 +79,10 @@ class ApplicationEx : MultiDexApplication() {
     fun saveState(savedInstanceState: Bundle) {
         val state = SavedState(
             enabledTransports = enabledTransports?.toMutableList(),
-            posCenter = centerPositionAndScale?.let { convertPair(it) },
-            routeStart = routeStart?.let { convertPair(it) },
-            routeEnd = routeEnd?.let { convertPair(it) },
+            posCenter = centerPositionAndScale,
+            route = currentRoute,
             bottomPanelOpen = bottomPanelOpen,
-            bottomPanelStation = bottomPanelStation?.let { convertPair(it) }
+            bottomPanelStation = bottomPanelStation,
         )
         savedInstanceState.putParcelable(bundleKey, state)
     }
@@ -78,10 +90,9 @@ class ApplicationEx : MultiDexApplication() {
     fun restoreState(savedInstanceState: Bundle?) {
         val state = savedInstanceState?.getParcelable<SavedState>(bundleKey) ?: return
         enabledTransports = state.enabledTransports?.toTypedArray()
-        centerPositionAndScale = state.posCenter?.let { convertPair(it) }
-        routeStart = state.routeStart?.let { convertPair(it) }
-        routeEnd = state.routeEnd?.let { convertPair(it) }
-        bottomPanelStation = state.bottomPanelStation?.let { convertPair(it) }
+        centerPositionAndScale = state.posCenter
+        currentRoute = state.route
+        bottomPanelStation = state.bottomPanelStation
         bottomPanelOpen = state.bottomPanelOpen
     }
 
@@ -152,20 +163,35 @@ class ApplicationEx : MultiDexApplication() {
         schemeName = null
         enabledTransports = null
         centerPositionAndScale = null
-        clearRoute()
+        currentRoute = SavedRoute()
+        previousRoute = null
+        lastLeaveTime = null
     }
 
     fun clearRoute() {
-        routeStart = null
-        routeEnd = null
+        lastLeaveTime = null
+        if (currentRoute.isUnset) return
+        previousRoute = currentRoute
+        currentRoute = SavedRoute()
+    }
+
+    fun restorePrevRoute(): Boolean {
+        currentRoute = previousRoute ?: return false
+        previousRoute = null
+        if (currentRoute.isUnset) return false
+        return true
+    }
+
+    fun resetSelectedRoute() {
+        currentRoute.selectedRoute = -1
     }
 
     fun setRouteStart(line: MapSchemeLine, station: MapSchemeStation) {
-        routeStart = Pair(line, station)
+        currentRoute.routeStart = Pair(line, station)
     }
 
     fun setRouteEnd(line: MapSchemeLine, station: MapSchemeStation) {
-        routeEnd = Pair(line, station)
+        currentRoute.routeEnd = Pair(line, station)
     }
 
     companion object {

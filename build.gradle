@@ -4,6 +4,7 @@ buildscript {
     ext.versions = [
             kotlin : '1.5.10'
     ]
+    ext.kotlin_version = versions.kotlin
 
     repositories {
         google()

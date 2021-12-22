@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PointF
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -15,13 +14,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
 import org.ametro.app.Constants
+import org.ametro.app.SavedRoute
 import org.ametro.databinding.ActivityMapViewBinding
 import org.ametro.model.MapContainer
 import org.ametro.model.ModelUtil
@@ -33,8 +32,11 @@ import org.ametro.model.serialization.MapSerializationException
 import org.ametro.providers.TransportIconsProvider
 import org.ametro.routes.MapRouteProvider
 import org.ametro.routes.RouteUtils
+import org.ametro.routes.entities.MapRoute
+import org.ametro.routes.entities.MapRoutePart
 import org.ametro.routes.entities.MapRouteQueryParameters
 import org.ametro.ui.adapters.StationSearchAdapter
+import org.ametro.ui.bottom_panel.*
 import org.ametro.ui.navigation.INavigationControllerListener
 import org.ametro.ui.navigation.NavigationController
 import org.ametro.ui.tasks.MapLoadAsyncTask
@@ -42,16 +44,19 @@ import org.ametro.ui.tasks.MapLoadAsyncTask.IMapLoadingEventListener
 import org.ametro.ui.testing.DebugToast
 import org.ametro.ui.testing.TestMenuOptionsProcessor
 import org.ametro.ui.views.MultiTouchMapView
-import org.ametro.ui.widgets.MapBottomPanelWidget
-import org.ametro.ui.widgets.MapBottomPanelWidget.IMapBottomPanelEventListener
+import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
-import org.ametro.ui.widgets.MapTopPanelWidget
 import org.ametro.utils.StringUtils
+import org.ametro.utils.misc.convertPair
+import java.lang.StringBuilder
 import java.util.*
 
-class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener, IMapBottomPanelEventListener,
-    IMapSelectionEventListener {
+class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener,
+    IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener {
+
+    private var backPressTime = 0L
+    private var backPressCount = 0
 
     private var enabledTransportsSet: MutableSet<String?>? = null
     private var container: MapContainer? = null
@@ -62,8 +67,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
     private lateinit var binding: ActivityMapViewBinding
     private lateinit var mapSelectionIndicators: MapSelectionIndicatorsWidget
-    private lateinit var mapBottomPanel: MapBottomPanelWidget
-    private lateinit var mapTopPanel: MapTopPanelWidget
+    private lateinit var mapBottomSheet: MapBottomPanelSheet
+    private lateinit var mapBottomStation: MapBottomPanelStation
+    private lateinit var mapBottomRoute: MapBottomPanelRoute
     private val mapPanelView: View
         get() = binding.mapPanel
     private val mapContainerView: ViewGroup
@@ -84,8 +90,9 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
         app = ApplicationEx.getInstanceActivity(this)
 
-        mapTopPanel = MapTopPanelWidget(binding.includeTopPanel.mapTopPanel)
-        mapBottomPanel = MapBottomPanelWidget(binding.includeBottomPanel.mapBottomPanel, app, this)
+        mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app, this)
+        mapBottomStation = MapBottomPanelStation(mapBottomSheet, this)
+        mapBottomRoute = MapBottomPanelRoute(mapBottomSheet, this)
 
         mapSelectionIndicators = MapSelectionIndicatorsWidget(
             this,
@@ -108,10 +115,17 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         )
     }
 
+    private val isResuming: Boolean
+        get() = lifecycle.currentState != Lifecycle.State.RESUMED
+
+    private fun ifNotResuming(action: () -> Unit) {
+        if (!isResuming) action()
+    }
+
     override fun onPause() {
         super.onPause()
         mapView?.let {
-            app.centerPositionAndScale = it.centerPositionAndScale
+            app.centerPositionAndScale = convertPair(it.centerPositionAndScale)
         }
     }
 
@@ -123,41 +137,37 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         super.onRestoreInstanceState(savedInstanceState)
     }
 
+    private fun restoreRoute(route: SavedRoute, ignoreStation: Boolean) {
+        app.centerPositionAndScale?.let {
+            mapView!!.setCenterPositionAndScale(it.first, it.second, false)
+        }
+
+        route.routeStart?.let {
+            mapSelectionIndicators.setBeginStation(it)
+        }
+
+        route.routeEnd?.let {
+            mapSelectionIndicators.setEndStation(it)
+        }
+
+        if (!ignoreStation && !mapBottomStation.isOpened && app.bottomPanelOpen) run {
+            val station = app.bottomPanelStation ?: return@run
+            val hasDetails = container!!
+                .findStationInformation(station.first.name, station.second.name)
+                ?.mapFilePath != null
+            mapBottomStation.show(station.first, station.second, hasDetails)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
 
         initMapViewState()
 
         if (mapView != null && container != null) {
-            val routeStart = app.routeStart
-            val routeEnd = app.routeEnd
-            var selectedStations = 0
-
-            app.centerPositionAndScale?.let {
-                mapView!!.setCenterPositionAndScale(it.first, it.second, false)
-            }
-
-            routeStart?.let {
-                onSelectBeginStation(it.first, it.second)
-                selectedStations++
-            }
-
-            routeEnd?.let {
-                onSelectEndStation(it.first, it.second)
-                selectedStations++
-            }
-
-            if (selectedStations == 2) {
-                onRouteSelectionComplete(routeStart!!.second, routeEnd!!.second)
-            }
-
-            if (!mapBottomPanel.isOpened && app.bottomPanelOpen) run {
-                val station = app.bottomPanelStation ?: return@run
-                val hasDetails = container!!
-                    .findStationInformation(station.first.name, station.second.name)
-                    ?.mapFilePath != null
-                mapBottomPanel.show(station.first, station.second, hasDetails)
-            }
+            val route = app.currentRoute
+            mapSelectionIndicators.clearSelection()
+            restoreRoute(route, ignoreStation = false)
         } else {
             app.clearCurrentMapViewState()
             settingsProvider.currentMap?.let {
@@ -220,7 +230,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                         .findStationInformation(stationInfo.first.name, stationInfo.second.name)
                     val p = PointF(selectedStation[0]!!.position.x, selectedStation[0]!!.position.y)
                     mapView!!.setCenterPositionAndScale(p, mapView!!.scale, true)
-                    mapBottomPanel.show(
+                    mapBottomStation.show(
                         stationInfo.first,
                         stationInfo.second,
                         stationInformation?.mapFilePath != null
@@ -242,15 +252,35 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onBackPressed() {
-        if (navigationController.isDrawerOpen) {
+        val currentPress = System.currentTimeMillis()
+        val delta = currentPress - backPressTime
+        backPressTime = currentPress
+        Log.i("MEME2", "bpc pre $backPressCount, delta $delta")
+
+        if (delta < 200)
+            backPressCount += 1
+        else
+            backPressCount = 0
+
+        if (backPressCount >= 2)
+            return super.onBackPressed()
+
+        if (navigationController.isDrawerOpen)
             navigationController.closeDrawer()
-        } else if (mapBottomPanel.isOpened) {
-            mapBottomPanel.hide()
-        } else if (mapSelectionIndicators.hasSelection()) {
+        else if (mapBottomStation.isOpened)
+            mapBottomStation.hide()
+        else if (mapSelectionIndicators.hasSelection())
             mapSelectionIndicators.clearSelection()
-            app.clearRoute()
-        } else {
-            super.onBackPressed()
+        else {
+            when (mapBottomSheet.bottomSheet.state) {
+                BottomSheetBehavior.STATE_SETTLING,
+                BottomSheetBehavior.STATE_DRAGGING -> return
+                else -> if (delta < 1000) return
+            }
+            if (app.restorePrevRoute())
+                restoreRoute(app.currentRoute, ignoreStation = true)
+            else
+                super.onBackPressed()
         }
     }
 
@@ -258,6 +288,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         waitingForActivityResult = false
         when (requestCode) {
             OPEN_MAPS_ACTION -> if (resultCode == RESULT_OK) {
+                app.clearCurrentMapViewState()
                 val localMapCatalogManager = app.getLocalMapCatalogManager()
                 MapLoadAsyncTask(
                     this, this, MapContainer(
@@ -271,7 +302,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
                 ).execute()
             }
             OPEN_STATION_DETAILS -> {
-                mapBottomPanel.detailsClosed()
+                mapBottomStation.detailsClosed()
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
@@ -334,12 +365,12 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             ModelUtil.findTouchedStation(scheme, mapView!!.touchPoint)?.let { stationInfo ->
                 val stationInformation = container!!
                     .findStationInformation(stationInfo.first.name, stationInfo.second.name)
-                mapBottomPanel.show(
+                mapBottomStation.show(
                     stationInfo.first,
                     stationInfo.second,
                     stationInformation?.mapFilePath != null
                 )
-            } ?: mapBottomPanel.hide()
+            } ?: mapBottomStation.hide()
         }
         mapContainerView.removeAllViews()
         mapContainerView.addView(mapView)
@@ -358,14 +389,14 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onOpenMaps(): Boolean {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         startActivityForResult(Intent(this, MapList::class.java), OPEN_MAPS_ACTION)
         waitingForActivityResult = true
         return true
     }
 
     override fun onOpenSettings(): Boolean {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         startActivityForResult(Intent(this, SettingsList::class.java), OPEN_SETTINGS_ACTION)
         return true
     }
@@ -376,7 +407,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onChangeScheme(schemeName: String): Boolean {
-        mapBottomPanel.hide()
+        mapBottomStation.hide()
         MapLoadAsyncTask(this, this, container, schemeName, enabledTransportsSet!!.toTypedArray()).execute()
         return true
     }
@@ -403,6 +434,10 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         return true
     }
 
+    override fun onPanelHidden() {
+        mapSelectionIndicators.clearSelection()
+    }
+
     override fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?) {
         if (waitingForActivityResult || station == null) return
         waitingForActivityResult = true
@@ -414,55 +449,135 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
     }
 
     override fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?) {
-        mapBottomPanel.hide()
-        mapSelectionIndicators.setBeginStation(station)
+        ifNotResuming {
+            mapBottomStation.hide()
+            app.resetSelectedRoute()
+        }
         if (line != null && station != null) {
+            mapSelectionIndicators.setBeginStation(Pair(line, station))
             app.setRouteStart(line, station)
+        } else {
+            mapSelectionIndicators.setBeginStation(null)
         }
     }
 
     override fun onSelectEndStation(line: MapSchemeLine?, station: MapSchemeStation?) {
-        mapBottomPanel.hide()
-        mapSelectionIndicators.setEndStation(station)
+        ifNotResuming {
+            mapBottomStation.hide()
+            app.resetSelectedRoute()
+        }
         if (line != null && station != null) {
+            mapSelectionIndicators.setEndStation(Pair(line, station))
             app.setRouteEnd(line, station)
+        } else {
+            mapSelectionIndicators.setEndStation(null)
         }
     }
 
-    override fun onRouteSelectionComplete(begin: MapSchemeStation, end: MapSchemeStation) {
-        val routes = MapRouteProvider.findRoutes(
-            MapRouteQueryParameters(
-                container,
-                enabledTransportsSet,
-                currentDelayIndex,
-                mapSelectionIndicators.getBeginStation()!!.uid,
-                mapSelectionIndicators.getEndStation()!!.uid
-            )
+    private fun highlightRoute(route: MapRoute) {
+        mapView!!
+            .highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(route, scheme!!))
+    }
+
+    override fun onRouteSelectionComplete(
+        begin: Pair<MapSchemeLine, MapSchemeStation>,
+        end: Pair<MapSchemeLine, MapSchemeStation>
+    ) {
+        val routeParams = MapRouteQueryParameters(
+            container,
+            enabledTransportsSet,
+            currentDelayIndex,
+            begin.second.uid,
+            end.second.uid
         )
+
+        val routes = MapRouteProvider.findRoutes(routeParams, maxRoutes = 5)
+
         if (routes.isEmpty()) {
             mapView!!.highlightsElements(null)
-            mapTopPanel.hide()
+            mapBottomRoute.hide()
             Toast.makeText(
-                this, String.format(getString(R.string.msg_no_route_found), begin.displayName, end.displayName),
+                this,
+                String.format(
+                    getString(R.string.msg_no_route_found),
+                    begin.second.displayName,
+                    end.second.displayName
+                ),
                 Toast.LENGTH_LONG
             ).show()
             return
         }
-        mapView!!.highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(routes[0], scheme))
-        mapTopPanel.show(
-            String.format(
-                getString(R.string.msg_from_to),
-                begin.displayName,
-                end.displayName,
-                StringUtils.humanReadableTime(routes[0].delay)
+
+        run {
+            // DEBUG
+            fun rl(t: String) {
+                Log.i("MEME", t)
+            }
+
+            fun rs(uid: Int): String {
+                val m = ModelUtil.findStationByUid(scheme!!, uid.toLong())
+                return "${m.first.displayName}, ${m.second.displayName} ($uid)"
+            }
+
+            rl("-- route update --")
+
+            for ((i, route) in routes.withIndex()) {
+                val routeDelay = StringUtils.humanReadableTime(route.delay)
+                rl("route $i: $routeDelay")
+                for (p in route.parts) {
+                    val partDelay = StringUtils.humanReadableTime(p.delay.toInt())
+                    rl("  ${rs(p.from)} -> ${rs(p.to)}: $partDelay")
+                }
+            }
+        }
+
+        val panelRoutes = ArrayList<RoutePagerItem>(routes.size)
+
+        routes.mapTo(panelRoutes) {
+            val txfs = arrayListOf<RoutePagerTransfer>()
+            var lastTxf: MapRoutePart? = null
+            for (p in it.parts.iterator()) {
+                if (!p.isTransfer) continue
+                lastTxf = p
+                val station = ModelUtil.findStationByUid(scheme!!, p.from.toLong())
+                txfs.add(RoutePagerTransfer(station.first))
+            }
+            if (lastTxf != null) {
+                val lastStation = ModelUtil.findStationByUid(scheme!!, lastTxf.to.toLong())
+                txfs.add(RoutePagerTransfer(lastStation.first))
+            }
+
+            RoutePagerItem(
+                delay = it.delay,
+                routeStart = begin,
+                routeEnd = end,
+                transfers = txfs
             )
-        )
+        }
+
+        val initRoute =
+            app.currentRoute.selectedRoute.let { if (it > 0) it else 0 }
+        highlightRoute(routes[initRoute])
+
+        if (!isResuming || app.lastLeaveTime == null) {
+            app.lastLeaveTime = Calendar.getInstance()
+        }
+
+        mapBottomRoute.setPage(initRoute, false)
+        mapBottomRoute.setSlideCallback { pos ->
+            routes.getOrNull(pos)?.let {
+                highlightRoute(it)
+                app.currentRoute.selectedRoute = pos
+            }
+        }
+        mapBottomRoute.show(panelRoutes, app.lastLeaveTime)
     }
 
     override fun onRouteSelectionCleared() {
-        mapView?.let {
-            it.highlightsElements(null)
-            mapTopPanel.hide()
+        mapView?.highlightsElements(null)
+        ifNotResuming {
+            app.clearRoute()
+            mapBottomRoute.hide()
         }
     }
 
