@@ -16,6 +16,7 @@ import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.bluejamesbond.text.DocumentView
 import com.bluejamesbond.text.hyphen.DefaultHyphenator
+import com.bluejamesbond.text.style.TextAlignment
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayoutMediator
 import org.ametro.databinding.WidgetBotRoutePageBinding
@@ -72,9 +73,12 @@ class RoutePagerAdapter(private val context: Context) :
         point: Pair<MapSchemeLine, MapSchemeStation>
     ) {
         (icon.drawable as GradientDrawable).setColor(point.first.lineColor)
-        // station.documentLayoutParams.setHyphenator(DefaultHyphenator.getInstance())
-        // station.documentLayoutParams.isHyphenated = true
+
         station.text = point.second.displayName
+        station.documentLayoutParams.textAlignment = TextAlignment.LEFT
+        station.documentLayoutParams.hyphenator =
+            DefaultHyphenator.getInstance(com.bluejamesbond.text.R.raw.ru, context)
+        station.documentLayoutParams.isHyphenated = true
     }
 
     private fun formatRangeTime(c: Calendar) =
