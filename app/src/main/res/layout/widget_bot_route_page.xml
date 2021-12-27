@@ -170,12 +170,13 @@
     <com.bluejamesbond.text.DocumentView
             android:id="@+id/station_start"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginHorizontal="@dimen/panel_bottom_route_station_name_margin"
-            app:layout_constraintTop_toTopOf="@id/icon_start"
-            app:layout_constraintBottom_toBottomOf="@id/icon_start"
+            app:layout_constraintTop_toTopOf="@id/stations_barrier"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/line_icon_start"
             app:layout_constraintEnd_toStartOf="@id/icon_end"
+            app:layout_constrainedWidth="true"
 
             app:documentView_text="Station start"
             app:documentView_textFormat="plain"
@@ -215,12 +216,13 @@
     <com.bluejamesbond.text.DocumentView
             android:id="@+id/station_end"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginHorizontal="@dimen/panel_bottom_route_station_name_margin"
-            app:layout_constraintTop_toTopOf="@id/icon_end"
-            app:layout_constraintBottom_toBottomOf="@id/icon_end"
+            app:layout_constraintTop_toTopOf="@id/stations_barrier"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/line_icon_end"
             app:layout_constraintEnd_toStartOf="@id/route_time"
+            app:layout_constrainedWidth="true"
 
             app:documentView_text="Station end"
             app:documentView_textFormat="plain"

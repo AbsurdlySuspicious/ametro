@@ -76,6 +76,7 @@ class RoutePagerAdapter(private val context: Context) :
 
         station.text = point.second.displayName
         station.documentLayoutParams.textAlignment = TextAlignment.LEFT
+        //station.documentLayoutParams.
         station.documentLayoutParams.hyphenator =
             DefaultHyphenator.getInstance(com.bluejamesbond.text.R.raw.ru, context)
         station.documentLayoutParams.isHyphenated = true
