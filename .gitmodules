@@ -1,3 +1,6 @@
 [submodule "dots"]
 	path = dotsindicator
 	url = https://github.com/AbsurdlySuspicious/dotsindicator.git
+[submodule "TextJustify-Android"]
+	path = TextJustify-Android
+	url = https://github.com/AbsurdlySuspicious/TextJustify-Android.git

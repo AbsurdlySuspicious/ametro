@@ -1,1 +1,1 @@
-include ':app', ':dots'
+include ':app', ':dots', ':hypenator'
