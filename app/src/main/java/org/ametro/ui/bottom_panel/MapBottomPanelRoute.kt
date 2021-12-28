@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -39,7 +40,8 @@ data class RoutePagerItem(
     val transfers: List<RoutePagerTransfer>
 )
 
-class RoutePagerAdapter(private val context: Context) :
+class RoutePagerAdapter(private val context: Context,
+                        private val listener: MapBottomPanelRoute.MapBottomPanelRouteListener) :
     RecyclerView.Adapter<RoutePagerAdapter.PageHolder>() {
 
     var leaveTime: Calendar? = null
@@ -67,10 +69,22 @@ class RoutePagerAdapter(private val context: Context) :
     private fun bindRoutePoint(
         icon: ImageView,
         station: AppCompatTextView,
+        bg: View,
         point: Pair<MapSchemeLine, MapSchemeStation>
     ) {
         (icon.drawable as GradientDrawable).setColor(point.first.lineColor)
         station.text = point.second.displayName
+
+        bg.setOnLongClickListener {
+            Toast
+                .makeText(bg.context, point.second.displayName, Toast.LENGTH_SHORT)
+                .show()
+            true
+        }
+
+        bg.setOnClickListener {
+            listener.onOpenDetails(point)
+        }
     }
 
     private fun formatRangeTime(c: Calendar) =
@@ -101,8 +115,8 @@ class RoutePagerAdapter(private val context: Context) :
             // todo custom leave time dialog
         }
 
-        bindRoutePoint(bind.lineIconStart, bind.stationStart, item.routeStart)
-        bindRoutePoint(bind.lineIconEnd, bind.stationEnd, item.routeEnd)
+        bindRoutePoint(bind.lineIconStart, bind.stationStart, bind.stationStartBg, item.routeStart)
+        bindRoutePoint(bind.lineIconEnd, bind.stationEnd, bind.stationEndBg, item.routeEnd)
 
         (bind.transfersRecycler.adapter as RouteTransferAdapter?)
             ?.replaceItems(item.transfers.toMutableList())
@@ -161,7 +175,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     private var binding: WidgetItemBotRouteBinding? = null
     private var slideHandler: ((Int) -> Unit)? = null
     private var currentPage: Int = 0
-    private val adapter = RoutePagerAdapter(sheet.sheetView.context)
+    private val adapter = RoutePagerAdapter(sheet.sheetView.context, listener)
 
     init {
         sheet.addSheetStateCallbackPre { _, state ->
@@ -244,5 +258,6 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     interface MapBottomPanelRouteListener {
         fun onPanelHidden()
+        fun onOpenDetails(station: Pair<MapSchemeLine, MapSchemeStation>)
     }
 }

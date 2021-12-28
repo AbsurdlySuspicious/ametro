@@ -50,6 +50,7 @@
     <style name="bottomPanelActionStation" parent="bottomPanelStation">
         <item name="android:gravity">left</item>
         <item name="android:textSize">12sp</item>
+        <item name="android:maxLines">1</item>
     </style>
 
     <style name="bottomPanelRouteStation" parent="bottomPanelActionStation">

@@ -438,11 +438,15 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
         mapSelectionIndicators.clearSelection()
     }
 
+    override fun onOpenDetails(station: Pair<MapSchemeLine, MapSchemeStation>) {
+        onShowMapDetail(station.first, station.second)
+    }
+
     override fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?) {
-        if (waitingForActivityResult || station == null) return
+        if (waitingForActivityResult || station == null || line == null) return
         waitingForActivityResult = true
         val intent = Intent(this, StationDetails::class.java)
-        intent.putExtra(Constants.LINE_NAME, line?.name ?: "")
+        intent.putExtra(Constants.LINE_NAME, line.name)
         intent.putExtra(Constants.STATION_NAME, station.name)
         intent.putExtra(Constants.STATION_UID, station.uid)
         startActivityForResult(intent, OPEN_STATION_DETAILS)

@@ -9,23 +9,18 @@ import androidx.fragment.app.Fragment
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
+import org.ametro.model.entities.MapStationInformation
 
-class StationMapFragment : Fragment() {
+class StationMapFragment(private val station: MapStationInformation) : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_station_map_view, container, false)
-        val arguments = requireArguments()
-        setupWebView(
-            rootView.findViewById(R.id.web),
-            arguments.getString(Constants.LINE_NAME),
-            arguments.getString(Constants.STATION_NAME)
-        )
+        setupWebView(rootView.findViewById(R.id.web))
         return rootView
     }
 
-    private fun setupWebView(webView: WebView, lineName: String?, stationName: String?) {
+    private fun setupWebView(webView: WebView) {
         try {
             val container = ApplicationEx.getInstanceActivity(requireActivity()).container!!
-            val station = container.findStationInformation(lineName, stationName)
             val mapInSvgFormat = container.loadStationMap(station.mapFilePath)
             webView.apply {
                 setInitialScale(1)

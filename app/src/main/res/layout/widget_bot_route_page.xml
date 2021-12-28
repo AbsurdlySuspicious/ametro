@@ -89,6 +89,10 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:background="@drawable/bottom_panel_action"
+            android:layout_marginStart="@dimen/panel_bottom_route_range_bg_margin"
+            android:layout_marginEnd="@dimen/panel_bottom_route_range_bg_margin"
+            android:layout_marginTop="@dimen/panel_bottom_route_range_bg_margin"
+            android:layout_marginBottom="@dimen/panel_bottom_route_range_bg_margin"
             app:layout_constraintTop_toTopOf="@id/route_time_range_leave"
             app:layout_constraintBottom_toBottomOf="@id/route_time_range_leave"
             app:layout_constraintStart_toStartOf="@id/route_time_range_leave"
@@ -145,6 +149,21 @@
             app:constraint_referenced_ids="transfers_recycler"
     />
 
+    <View
+            android:id="@+id/station_start_bg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bottom_panel_action"
+            android:layout_marginStart="@dimen/panel_bottom_route_station_bg_margin"
+            android:layout_marginEnd="@dimen/panel_bottom_route_station_bg_margin"
+            android:layout_marginTop="@dimen/panel_bottom_route_station_bg_margin"
+            android:layout_marginBottom="@dimen/panel_bottom_route_station_bg_margin"
+            app:layout_constraintTop_toTopOf="@id/station_start"
+            app:layout_constraintBottom_toBottomOf="@id/station_start"
+            app:layout_constraintStart_toStartOf="@id/icon_start"
+            app:layout_constraintEnd_toEndOf="@id/station_start"
+    />
+
     <ImageView
             android:id="@+id/icon_start"
             android:layout_width="@dimen/panel_bottom_route_icon_size"
@@ -179,6 +198,22 @@
             style="@style/bottomPanelRouteStation"
             tools:text="Station start"
     />
+
+    <View
+            android:id="@+id/station_end_bg"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bottom_panel_action"
+            android:layout_marginStart="@dimen/panel_bottom_route_station_bg_margin"
+            android:layout_marginEnd="@dimen/panel_bottom_route_station_bg_margin"
+            android:layout_marginTop="@dimen/panel_bottom_route_station_bg_margin"
+            android:layout_marginBottom="@dimen/panel_bottom_route_station_bg_margin"
+            app:layout_constraintTop_toTopOf="@id/station_end"
+            app:layout_constraintBottom_toBottomOf="@id/station_end"
+            app:layout_constraintStart_toStartOf="@id/icon_end"
+            app:layout_constraintEnd_toEndOf="@id/station_end"
+    />
+
 
     <ImageView
             android:id="@+id/icon_end"
