@@ -17,6 +17,7 @@ import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayoutMediator
+import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetBotRoutePageBinding
 import org.ametro.databinding.WidgetBotRouteTransferBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
@@ -88,7 +89,10 @@ class RoutePagerAdapter(private val context: Context,
     }
 
     private fun formatRangeTime(c: Calendar) =
-        DateFormat.format("hh:mm", c)
+        if (ApplicationEx.getInstanceContext(context.applicationContext)!!.is24HourTime)
+            DateFormat.format("HH:mm", c)
+        else
+            DateFormat.format("h:mm", c)
 
     private fun setRangeText(item: RoutePagerItem, leaveTime: Calendar?, bind: WidgetBotRoutePageBinding) {
         val timeF = leaveTime ?: Calendar.getInstance()

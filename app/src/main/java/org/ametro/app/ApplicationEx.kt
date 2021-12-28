@@ -17,6 +17,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
+import android.text.format.DateFormat
 import androidx.loader.content.AsyncTaskLoader
 import androidx.multidex.MultiDexApplication
 import kotlinx.parcelize.Parcelize
@@ -44,6 +45,9 @@ data class SavedState(
 ): Parcelable
 
 class ApplicationEx : MultiDexApplication() {
+
+    val is24HourTime by lazy { DateFormat.is24HourFormat(this) }
+
     private var appSettingsProvider: Lazy<ApplicationSettingsProvider>? = null
     private var countryFlagProvider: Lazy<IconProvider>? = null
     private var remoteMapCatalogProvider: Lazy<RemoteMapCatalogProvider>? = null
