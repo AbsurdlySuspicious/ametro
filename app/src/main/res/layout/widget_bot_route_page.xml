@@ -154,7 +154,7 @@
 
     <ImageView
             android:id="@+id/icon_start"
-            android:layout_width="@dimen/panel_bottom_route_icon_size"
+            android:layout_width="0.01dp"
             android:layout_height="@dimen/panel_bottom_route_icon_size"
             android:src="@drawable/ic_loc_origin"
             app:tint="@color/panel_secondary_icon"
@@ -162,7 +162,9 @@
             app:layout_constraintBottom_toTopOf="@id/icon_end"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/route_time"
-            app:layout_constraintHorizontal_bias="0.45"
+            app:layout_constraintHorizontal_bias="0.4"
+
+            android:visibility="invisible"
     />
 
     <ImageView
@@ -207,7 +209,7 @@
 
     <ImageView
             android:id="@+id/icon_end"
-            android:layout_width="@dimen/panel_bottom_route_icon_size"
+            android:layout_width="0.01dp"
             android:layout_height="@dimen/panel_bottom_route_icon_size"
             android:src="@drawable/ic_loc_destination"
             app:tint="@color/panel_secondary_icon"
@@ -216,6 +218,8 @@
             app:layout_constraintStart_toStartOf="@id/icon_start"
             app:layout_constraintEnd_toStartOf="@id/route_time"
             app:layout_constraintHorizontal_bias="0"
+
+            android:visibility="invisible"
     />
 
     <ImageView
