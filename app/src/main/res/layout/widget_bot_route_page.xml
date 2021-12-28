@@ -170,7 +170,7 @@
     <com.bluejamesbond.text.DocumentView
             android:id="@+id/station_start"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/panel_bottom_route_station_name_margin"
             app:layout_constraintTop_toTopOf="@id/stations_barrier"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -217,7 +217,7 @@
     <com.bluejamesbond.text.DocumentView
             android:id="@+id/station_end"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/panel_bottom_route_station_name_margin"
             app:layout_constraintTop_toTopOf="@id/stations_barrier"
             app:layout_constraintBottom_toBottomOf="parent"
