@@ -1,13 +1,20 @@
 # aMetro - World Subway Maps for Android
 
-aMetro shows the maps of transit systems all over the world – subways, metro, buses, trains, and other. 
-You can find the right route between stations and estimate travel time. There is a 2D maps of stations for some cities.
-Used maps from pMetro project: http://pmetro.su/Maps.html
+This is a fork of original aMetro project. It's currently in developement, when 3.0.0 milestone is done, this fork will get a new name, first release and better readme
 
-Google Play: https://play.google.com/store/apps/details?id=org.ametro
+## Acknowledgements
 
-Home: http://www.ametro.org/
+Uses maps from pMetro project:   
+http://pmetro.su/Maps.html
 
-# License
+Original project author::
+- [Roman Golovanov](https://github.com/RomanGolovanov)
 
-aMetro distributed under the [GNU General Public License](https://raw.githubusercontent.com/RomanGolovanov/ametro/master/LICENSE) - see the accompanying LICENSE file for more details. 
+Thanks to their hard work this project exists in the first place
+
+Fork authors and contributors:
+- [AbsurdlySuspicious](https://github.com/AbsurdlySuspicious)
+
+## License
+
+aMetro distributed under the [GNU GPL 3.0-only license](https://www.gnu.org/licenses/gpl-3.0.en.html) - see the accompanying LICENSE file for more details. 
