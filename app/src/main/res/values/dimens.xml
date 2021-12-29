@@ -40,9 +40,9 @@
     <dimen name="panel_bottom_actions_left_icon_size">14dp</dimen>
     <dimen name="panel_bottom_actions_icon_size">15dp</dimen> <!-- 12, 15, 18 -->
     <dimen name="panel_bottom_route_icon_size">16dp</dimen>
-    <dimen name="panel_bottom_route_line_icon_size">8dp</dimen>
+    <dimen name="panel_bottom_route_line_icon_size">10sp</dimen>
     <dimen name="panel_bottom_route_line_icon_margin">10dp</dimen>
-    <dimen name="panel_bottom_route_line_transfer_icon_size">15dp</dimen>
+    <dimen name="panel_bottom_route_line_transfer_icon_size">10sp</dimen>
     <dimen name="panel_bottom_route_line_transfer_count_size">15sp</dimen>
     <dimen name="panel_bottom_route_line_transfer_count_icon_size">18sp</dimen>
     <dimen name="panel_bottom_time_range_text_size">12sp</dimen>
