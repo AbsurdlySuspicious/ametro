@@ -10,6 +10,8 @@ android {
     defaultConfig {
         applicationId "org.ametro"
         minSdkVersion 15
+
+        // don't care, didn't ask (yet)
         //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 23
 
@@ -29,11 +31,6 @@ android {
         }
     }
 
-    compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_8
-        sourceCompatibility JavaVersion.VERSION_1_8
-    }
-
     buildFeatures {
         viewBinding true
     }
@@ -41,10 +38,22 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+
     implementation "androidx.multidex:multidex:2.0.1"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin"
 
@@ -65,8 +74,3 @@ dependencies {
     implementation 'com.github.japgolly:svg-android:2.0.0'
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
