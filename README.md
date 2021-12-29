@@ -5,15 +5,15 @@ This is a fork of original aMetro project. It's currently in developement, when 
 ## Acknowledgements
 
 Uses maps from pMetro project:   
-http://pmetro.su/Maps.html
+- http://pmetro.su/Maps.html
 
-Original project author::
+Original project author:
 - [Roman Golovanov](https://github.com/RomanGolovanov)
 
 Thanks to their hard work this project exists in the first place
 
 Fork authors and contributors:
-- [AbsurdlySuspicious](https://github.com/AbsurdlySuspicious)
+- [AbsurdlySuspicious \<repom2@riseup.net\>](https://github.com/AbsurdlySuspicious)
 
 ## License
 
