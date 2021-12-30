@@ -3,12 +3,15 @@ package org.ametro.ui.bottom_panel
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.text.format.DateFormat
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
@@ -31,8 +34,13 @@ typealias RoutePagerStation =
         Pair<MapSchemeLine, MapSchemeStation>
 
 data class RoutePagerTransfer(
-    val txf: MapSchemeLine
-)
+    val txf: MapSchemeLine,
+    val partsCount: Int,
+    val partsDelays: Int
+) {
+    val length: Int
+        get() = partsCount
+}
 
 data class RoutePagerItem(
     val delay: Int,
@@ -41,8 +49,10 @@ data class RoutePagerItem(
     val transfers: List<RoutePagerTransfer>
 )
 
-class RoutePagerAdapter(private val context: Context,
-                        private val listener: MapBottomPanelRoute.MapBottomPanelRouteListener) :
+class RoutePagerAdapter(
+    private val context: Context,
+    private val listener: MapBottomPanelRoute.MapBottomPanelRouteListener
+) :
     RecyclerView.Adapter<RoutePagerAdapter.PageHolder>() {
 
     var leaveTime: Calendar? = null
@@ -145,11 +155,18 @@ class RoutePagerAdapter(private val context: Context,
 class RouteTransferAdapter(private val inflater: LayoutInflater) :
     RecyclerView.Adapter<RouteTransferAdapter.TransferHolder>() {
 
+    private lateinit var recyclerView: RecyclerView
     private var items: MutableList<RoutePagerTransfer> = arrayListOf()
+    private var txfLengthSum = 0
 
     fun replaceItems(items: MutableList<RoutePagerTransfer>) {
         this.items = items
+        this.txfLengthSum = items.fold(0) { acc, i -> acc + i.length }
         notifyDataSetChanged()
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        this.recyclerView = recyclerView
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransferHolder {
@@ -158,11 +175,31 @@ class RouteTransferAdapter(private val inflater: LayoutInflater) :
     }
 
     override fun onBindViewHolder(holder: TransferHolder, position: Int) {
-        holder.binding.also {
-            val item = items[position]
-            (it.lineIconTransfer.drawable as GradientDrawable)
+        val item = items[position]
+        val lineIcon = holder.binding.lineIconTransfer
+
+        recyclerView.post {
+            (lineIcon.drawable as GradientDrawable)
                 .setColor(item.txf.lineColor)
-            // it.iconTransferArrow.isVisible = position != items.size - 1
+
+            val lineLayout =
+                lineIcon.layoutParams as LinearLayout.LayoutParams
+            var width =
+                recyclerView.width / txfLengthSum * item.length
+            if (position == items.size - 1) {
+                width += recyclerView.width % txfLengthSum
+                lineLayout.rightMargin = 0
+                lineLayout.leftMargin = 0
+            }
+            width -=
+                lineLayout.leftMargin + lineLayout.rightMargin
+            Log.i(
+                "MEME3", "rw ${recyclerView.width}, ls $txfLengthSum, " +
+                        "w $width, rem ${recyclerView.width % txfLengthSum}, " +
+                        "pos $position (${items.size})"
+            )
+            lineLayout.width = width
+            lineIcon.requestLayout()
         }
     }
 

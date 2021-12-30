@@ -539,16 +539,26 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
         routes.mapTo(panelRoutes) {
             val txfs = arrayListOf<RoutePagerTransfer>()
+            var lastPartsCount = 0
+            var lastPartsDelays = 0L
             var lastTxf: MapRoutePart? = null
+
             for (p in it.parts.iterator()) {
+                lastPartsCount += 1
+                lastPartsDelays += p.delay
                 if (!p.isTransfer) continue
-                lastTxf = p
+
                 val station = ModelUtil.findStationByUid(scheme!!, p.from.toLong())
-                txfs.add(RoutePagerTransfer(station.first))
+                txfs.add(RoutePagerTransfer(station.first, lastPartsCount, lastPartsDelays.toInt()))
+
+                lastTxf = p
+                lastPartsCount = 0
+                lastPartsDelays = 0
             }
+
             if (lastTxf != null) {
                 val lastStation = ModelUtil.findStationByUid(scheme!!, lastTxf.to.toLong())
-                txfs.add(RoutePagerTransfer(lastStation.first))
+                txfs.add(RoutePagerTransfer(lastStation.first, lastPartsCount, lastPartsDelays.toInt()))
             }
 
             RoutePagerItem(
