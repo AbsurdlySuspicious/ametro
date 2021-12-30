@@ -14,6 +14,22 @@
         android:paddingHorizontal="@dimen/panel_bottom_padding_route_h"
 >
 
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/transfers_recycler"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="10dp"
+            android:scrollbars="horizontal"
+            tools:itemCount="1"
+            tools:listitem="@layout/widget_bot_route_transfer"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/station_start_bg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constrainedWidth="true"
+    />
+
     <ImageView
             android:id="@+id/transfer_count_icon"
             android:layout_width="@dimen/panel_bottom_route_line_transfer_count_icon_size"
@@ -21,28 +37,10 @@
             android:src="@drawable/ic_transfer"
             app:tint="@color/panel_secondary_icon"
             app:layout_constraintTop_toTopOf="@id/line_icon_start"
-            app:layout_constraintBottom_toTopOf="@id/transfers_recycler"
+            app:layout_constraintBottom_toBottomOf="@id/line_icon_start"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/route_time"
             app:layout_constraintHorizontal_bias="0.65"
-            app:layout_constraintVertical_chainStyle="packed"
-    />
-
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/transfers_recycler"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:layout_marginTop="10dp"
-            android:scrollbars="horizontal"
-            tools:itemCount="1"
-            tools:listitem="@layout/widget_bot_route_transfer"
-            app:layout_constraintTop_toBottomOf="@id/transfer_count_icon"
-            app:layout_constraintBottom_toBottomOf="@id/line_icon_end"
-            app:layout_constraintStart_toStartOf="@id/transfer_count_icon"
-            app:layout_constraintEnd_toStartOf="@id/route_time"
-            app:layout_constrainedWidth="true"
-            app:layout_constraintHorizontal_bias="0"
     />
 
     <androidx.appcompat.widget.AppCompatTextView
@@ -153,28 +151,13 @@
             app:layout_constraintEnd_toEndOf="@id/station_start"
     />
 
-    <!--<ImageView
-            android:id="@+id/icon_start"
-            android:layout_width="0.01dp"
-            android:layout_height="@dimen/panel_bottom_route_icon_size"
-            android:src="@drawable/ic_loc_origin"
-            app:tint="@color/panel_secondary_icon"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/icon_end"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/route_time"
-            app:layout_constraintHorizontal_bias="0.4"
-
-            android:visibility="invisible"
-    />-->
-
     <ImageView
             android:id="@+id/line_icon_start"
             android:layout_width="@dimen/panel_bottom_route_line_icon_size"
             android:layout_height="@dimen/panel_bottom_route_line_icon_size"
             android:layout_marginBottom="5dp"
             android:src="@drawable/line_icon"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/transfers_recycler"
             app:layout_constraintBottom_toTopOf="@id/line_icon_end"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/route_time"
@@ -209,22 +192,6 @@
             app:layout_constraintStart_toStartOf="@id/line_icon_end"
             app:layout_constraintEnd_toEndOf="@id/station_end"
     />
-
-
-    <!--<ImageView
-            android:id="@+id/icon_end"
-            android:layout_width="0.01dp"
-            android:layout_height="@dimen/panel_bottom_route_icon_size"
-            android:src="@drawable/ic_loc_destination"
-            app:tint="@color/panel_secondary_icon"
-            app:layout_constraintTop_toBottomOf="@id/icon_start"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/icon_start"
-            app:layout_constraintEnd_toStartOf="@id/route_time"
-            app:layout_constraintHorizontal_bias="0"
-
-            android:visibility="invisible"
-    />-->
 
     <ImageView
             android:id="@+id/line_icon_end"

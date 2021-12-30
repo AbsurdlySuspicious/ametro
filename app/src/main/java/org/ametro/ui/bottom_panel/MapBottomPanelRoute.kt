@@ -162,7 +162,7 @@ class RouteTransferAdapter(private val inflater: LayoutInflater) :
             val item = items[position]
             (it.lineIconTransfer.drawable as GradientDrawable)
                 .setColor(item.txf.lineColor)
-            it.iconTransferArrow.isVisible = position != items.size - 1
+            // it.iconTransferArrow.isVisible = position != items.size - 1
         }
     }
 
