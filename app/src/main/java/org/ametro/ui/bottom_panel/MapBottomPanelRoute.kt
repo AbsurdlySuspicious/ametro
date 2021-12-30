@@ -3,6 +3,7 @@ package org.ametro.ui.bottom_panel
 import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.text.format.DateFormat
+import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -11,6 +12,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +22,7 @@ import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.tabs.TabLayoutMediator
+import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetBotRoutePageBinding
 import org.ametro.databinding.WidgetBotRouteTransferBinding
@@ -29,6 +32,7 @@ import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.max
 
 typealias RoutePagerStation =
         Pair<MapSchemeLine, MapSchemeStation>
@@ -150,6 +154,86 @@ class RoutePagerAdapter(
 
     inner class PageHolder(val binding: WidgetBotRoutePageBinding) :
         RecyclerView.ViewHolder(binding.root)
+}
+
+class RouteTransfersLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : LinearLayout(context, attrs, defStyleAttr) {
+    private val inflater = LayoutInflater.from(context)
+    private val viewStash: MutableList<ImageView> = arrayListOf()
+    private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
+
+    private val lineHeight: Int = context.resources
+        .getDimensionPixelSize(R.dimen.panel_bottom_route_line_long_height)
+    private val lineMargin: Int = context.resources
+        .getDimensionPixelSize(R.dimen.panel_bottom_route_line_long_margin)
+    private val lineDrawable = ResourcesCompat
+        .getDrawable(context.resources, R.drawable.line_long, null)!!
+
+    init {
+        this.orientation = HORIZONTAL
+    }
+
+    private fun createImg(color: Int?, width: Int, margin: Int) = ImageView(context).also { img ->
+        val d = lineDrawable.mutate() as GradientDrawable
+        color?.let { d.setColor(it) }
+        img.layoutParams = LayoutParams(width, lineHeight).also {
+            it.rightMargin = margin
+        }
+        img.setImageDrawable(d)
+    }
+
+    private fun createZeroImg() =
+        createImg(null, 0, 0)
+
+    fun replaceItems(items: MutableList<RoutePagerTransfer>, animate: Boolean) {
+        this.transfers = items
+
+        this.post {
+            val txfLengthSum = items.fold(0) { acc, i -> acc + i.length }
+            val txfPartLength = txfLengthSum / this.width
+            val txfCount = transfers.size
+
+            val calcWidth = { i: Int, t: RoutePagerTransfer ->
+                t.length * txfPartLength +
+                        if (i == txfCount - 1)
+                            txfLengthSum % this.width
+                        else 0
+            }
+
+            if (!animate || viewStash.isEmpty()) {
+                for (i in 0 until max(txfCount, viewStash.size)) {
+                    val v = viewStash.getOrNull(i)
+                    val t = transfers.getOrNull(i)
+
+                    if (v != null && t != null) {
+                        (v.drawable as GradientDrawable).setColor(t.txf.lineColor)
+                        (v.layoutParams as LayoutParams).also {
+                            it.width = calcWidth(i, t)
+                            it.rightMargin = lineMargin
+                        }
+                        v.requestLayout()
+                    } else if (v != null) {
+                        (v.layoutParams as LayoutParams).also {
+                            it.width = 0
+                            it.leftMargin = 0
+                            it.rightMargin = 0
+                        }
+                    } else if (t != null) {
+                        val img =
+                            createImg(t.txf.lineColor, calcWidth(i, t), lineMargin)
+                        viewStash.add(img)
+                    }
+                }
+            } else { /* todo */ }
+
+            this.removeAllViews()
+            for (i in 0 until txfCount)
+                this.addView(viewStash[i])
+        }
+    }
 }
 
 class RouteTransferAdapter(private val inflater: LayoutInflater) :

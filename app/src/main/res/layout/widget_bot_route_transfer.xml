@@ -13,7 +13,7 @@
             android:id="@+id/line_icon_transfer"
             android:layout_width="30dp"
             android:layout_height="@dimen/panel_bottom_route_line_long_height"
-            android:layout_marginEnd="5dp"
+            android:layout_marginEnd="@dimen/panel_bottom_route_line_long_margin"
             android:src="@drawable/line_long"
     />
 
