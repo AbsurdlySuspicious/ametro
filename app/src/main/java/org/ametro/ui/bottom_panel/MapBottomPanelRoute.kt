@@ -1,9 +1,11 @@
 package org.ametro.ui.bottom_panel
 
 import android.content.Context
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.text.format.DateFormat
 import android.util.AttributeSet
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -153,8 +155,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
         .getDimensionPixelSize(R.dimen.panel_bottom_route_line_long_height)
     private val lineMargin: Int = context.resources
         .getDimensionPixelSize(R.dimen.panel_bottom_route_line_long_margin)
-    private val lineDrawable = ResourcesCompat
-        .getDrawable(context.resources, R.drawable.line_long, null)!!
+    private val lineDrawable: Drawable
+        get() = ResourcesCompat
+            .getDrawable(context.resources, R.drawable.line_long, null)!!.mutate()
 
     init {
         this.orientation = HORIZONTAL
@@ -163,13 +166,13 @@ class RouteTransfersLayout @JvmOverloads constructor(
     fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean) {
         this.post {
             val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
-            val txfPartLength = txfLengthSum / this.width
+            val txfPartLength = this.width / txfLengthSum
             val txfCount = transfers.size
 
             val calcWidth = { i: Int, t: RoutePagerTransfer ->
                 t.length * txfPartLength +
                         if (i == txfCount - 1)
-                            txfLengthSum % this.width
+                            this.width % txfLengthSum
                         else 0
             }
 
