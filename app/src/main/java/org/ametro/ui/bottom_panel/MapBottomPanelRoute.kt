@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.drawable.GradientDrawable
 import android.text.format.DateFormat
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.res.ResourcesCompat
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
@@ -21,12 +19,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetBotRoutePageBinding
-import org.ametro.databinding.WidgetBotRouteTransferBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
-import org.ametro.utils.misc.AnimUtils
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.max
@@ -164,18 +160,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
         this.orientation = HORIZONTAL
     }
 
-    private fun createImg(color: Int?, width: Int, margin: Int) = ImageView(context).also { img ->
-        val d = lineDrawable.mutate() as GradientDrawable
-        color?.let { d.setColor(it) }
-        img.layoutParams = LayoutParams(width, lineHeight).also {
-            it.rightMargin = margin
-        }
-        img.setImageDrawable(d)
-    }
-
-    private fun createZeroImg() =
-        createImg(null, 0, 0)
-
     fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean) {
         this.post {
             val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
@@ -187,6 +171,14 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         if (i == txfCount - 1)
                             txfLengthSum % this.width
                         else 0
+            }
+
+            val createView = {
+                ImageView(context).also {
+                    it.layoutParams = LayoutParams(0, lineHeight)
+                    it.setImageDrawable(lineDrawable.mutate())
+                    viewStash.add(it)
+                }
             }
 
             val resetView = { v: View ->
@@ -205,10 +197,13 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
             if (!animate || viewStash.isEmpty() || transfers.isEmpty()) {
                 for (i in 0 until max(txfCount, viewStash.size)) {
-                    val v = viewStash.getOrNull(i)
+                    var v = viewStash.getOrNull(i)
                     val t = transfers.getOrNull(i)
 
-                    if (v != null && t != null) {
+                    if (t != null) {
+                        if (v == null)
+                            v = createView()
+
                         (v.drawable as GradientDrawable).setColor(t.txf.lineColor)
                         (v.layoutParams as LayoutParams).also {
                             it.width = calcWidth(i, t)
@@ -217,10 +212,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         v.requestLayout()
                     } else if (v != null) {
                         resetView(v)
-                    } else if (t != null) {
-                        val img =
-                            createImg(t.txf.lineColor, calcWidth(i, t), lineMargin)
-                        viewStash.add(img)
                     }
                 }
 
@@ -232,7 +223,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 for (i in 0 until max(transfers.size, oldTxf.size)) {
                     val o = oldTxf.getOrNull(i)
                     val t = transfers.getOrNull(i)
-                    val v = viewStash.getOrNull(i)
+                    var v = viewStash.getOrNull(i)
 
                     if (o != null && t != null) {
                         val pw = v!!.width
@@ -244,8 +235,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         val at = AnimatedTxf(color, color, v!!.width, 0, ACTION_HIDE)
                         animTxf.add(at)
                     } else if (t != null) {
-                        if (v != null) resetView(v)
-                        else viewStash.add(createZeroImg())
+                        if (v == null)
+                            v = createView()
+                        resetView(v)
 
                         val color = t.txf.lineColor
                         val at = AnimatedTxf(color, color, 0, calcWidth(i, t), ACTION_SHOW)
