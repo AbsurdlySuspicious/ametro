@@ -13,15 +13,11 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.doOnLayout
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.tabs.TabLayoutMediator
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetBotRoutePageBinding
@@ -30,6 +26,7 @@ import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
+import org.ametro.utils.misc.AnimUtils
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.max
@@ -188,11 +185,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
     private fun createZeroImg() =
         createImg(null, 0, 0)
 
-    fun replaceItems(items: MutableList<RoutePagerTransfer>, animate: Boolean) {
-        this.transfers = items
-
+    fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean) {
         this.post {
-            val txfLengthSum = items.fold(0) { acc, i -> acc + i.length }
+            val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
             val txfPartLength = txfLengthSum / this.width
             val txfCount = transfers.size
 
@@ -203,7 +198,21 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         else 0
             }
 
-            if (!animate || viewStash.isEmpty()) {
+            val resetView = { v: View ->
+                (v.layoutParams as LayoutParams).also {
+                    it.width = 0
+                    it.leftMargin = 0
+                    it.rightMargin = 0
+                }
+            }
+
+            val addViews = {
+                this.removeAllViews()
+                for (i in 0 until txfCount)
+                    this.addView(viewStash[i])
+            }
+
+            if (!animate || viewStash.isEmpty() || transfers.isEmpty()) {
                 for (i in 0 until max(txfCount, viewStash.size)) {
                     val v = viewStash.getOrNull(i)
                     val t = transfers.getOrNull(i)
@@ -216,23 +225,64 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         }
                         v.requestLayout()
                     } else if (v != null) {
-                        (v.layoutParams as LayoutParams).also {
-                            it.width = 0
-                            it.leftMargin = 0
-                            it.rightMargin = 0
-                        }
+                        resetView(v)
                     } else if (t != null) {
                         val img =
                             createImg(t.txf.lineColor, calcWidth(i, t), lineMargin)
                         viewStash.add(img)
                     }
                 }
-            } else { /* todo */ }
 
-            this.removeAllViews()
-            for (i in 0 until txfCount)
-                this.addView(viewStash[i])
+                addViews()
+
+            } else {
+                val oldTxf = this.transfers
+                val animTxf = ArrayList<AnimatedTxf>()
+                for (i in 0 until max(transfers.size, oldTxf.size)) {
+                    val o = oldTxf.getOrNull(i)
+                    val t = transfers.getOrNull(i)
+                    val v = viewStash.getOrNull(i)
+
+                    if (o != null && t != null) {
+                        val pw = v!!.width
+                        val at =
+                            AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(i, t) - pw, ACTION_RESIZE)
+                        animTxf.add(at)
+                    } else if (o != null) {
+                        val color = o.txf.lineColor
+                        val at = AnimatedTxf(color, color, v!!.width, 0, ACTION_HIDE)
+                        animTxf.add(at)
+                    } else if (t != null) {
+                        if (v != null) resetView(v)
+                        else viewStash.add(createZeroImg())
+
+                        val color = t.txf.lineColor
+                        val at = AnimatedTxf(color, color, 0, calcWidth(i, t), ACTION_SHOW)
+                        animTxf.add(at)
+                    }
+                }
+
+                addViews()
+
+                // AnimUtils.getValueAnimator() todo
+            }
+
+            this.transfers = transfers
         }
+    }
+
+    data class AnimatedTxf(
+        val srcColor: Int,
+        val dstColor: Int,
+        val widthPrev: Int,
+        val widthDelta: Int,
+        val action: Int
+    )
+
+    companion object {
+        private const val ACTION_RESIZE = 0
+        private const val ACTION_HIDE = 1
+        private const val ACTION_SHOW = 2
     }
 }
 
