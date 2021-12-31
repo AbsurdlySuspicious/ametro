@@ -14,15 +14,12 @@
         android:paddingHorizontal="@dimen/panel_bottom_padding_route_h"
 >
 
-    <androidx.recyclerview.widget.RecyclerView
+    <org.ametro.ui.bottom_panel.RouteTransfersLayout
             android:id="@+id/transfers_recycler"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="10dp"
-            android:scrollbars="horizontal"
-            tools:itemCount="1"
-            tools:listitem="@layout/widget_bot_route_transfer"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toTopOf="@id/station_start_bg"
             app:layout_constraintStart_toStartOf="parent"

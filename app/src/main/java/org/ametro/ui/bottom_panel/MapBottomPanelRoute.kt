@@ -68,13 +68,6 @@ class RoutePagerAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageHolder {
         val binding = WidgetBotRoutePageBinding.inflate(inflater, parent, false)
-
-        binding.transfersRecycler.also {
-            it.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            it.overScrollMode = RecyclerView.OVER_SCROLL_NEVER
-            it.adapter = RouteTransferAdapter(inflater)
-        }
-
         return PageHolder(binding)
     }
 
@@ -133,9 +126,8 @@ class RoutePagerAdapter(
         bindRoutePoint(bind.lineIconStart, bind.stationStart, bind.stationStartBg, item.routeStart)
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, bind.stationEndBg, item.routeEnd)
 
-        (bind.transfersRecycler.adapter as RouteTransferAdapter?)
-            ?.replaceItems(item.transfers.toMutableList())
-
+        bind.transfersRecycler
+            .replaceItems(item.transfers.toMutableList(), false)
 
         if (item.transfers.size < 2) {
             bind.transferCount.text = ""
@@ -158,7 +150,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
-    private val inflater = LayoutInflater.from(context)
     private val viewStash: MutableList<ImageView> = arrayListOf()
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
 
@@ -284,64 +275,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
         private const val ACTION_HIDE = 1
         private const val ACTION_SHOW = 2
     }
-}
-
-class RouteTransferAdapter(private val inflater: LayoutInflater) :
-    RecyclerView.Adapter<RouteTransferAdapter.TransferHolder>() {
-
-    private lateinit var recyclerView: RecyclerView
-    private var items: MutableList<RoutePagerTransfer> = arrayListOf()
-    private var txfLengthSum = 0
-
-    fun replaceItems(items: MutableList<RoutePagerTransfer>) {
-        this.items = items
-        this.txfLengthSum = items.fold(0) { acc, i -> acc + i.length }
-        notifyDataSetChanged()
-    }
-
-    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        this.recyclerView = recyclerView
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TransferHolder {
-        val binding = WidgetBotRouteTransferBinding.inflate(inflater, parent, false)
-        return TransferHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: TransferHolder, position: Int) {
-        val item = items[position]
-        val lineIcon = holder.binding.lineIconTransfer
-
-        recyclerView.post {
-            (lineIcon.drawable as GradientDrawable)
-                .setColor(item.txf.lineColor)
-
-            val lineLayout =
-                lineIcon.layoutParams as LinearLayout.LayoutParams
-            var width =
-                recyclerView.width / txfLengthSum * item.length
-            if (position == items.size - 1) {
-                width += recyclerView.width % txfLengthSum
-                lineLayout.rightMargin = 0
-                lineLayout.leftMargin = 0
-            }
-            width -=
-                lineLayout.leftMargin + lineLayout.rightMargin
-            Log.i(
-                "MEME3", "rw ${recyclerView.width}, ls $txfLengthSum, " +
-                        "w $width, rem ${recyclerView.width % txfLengthSum}, " +
-                        "pos $position (${items.size})"
-            )
-            lineLayout.width = width
-            lineIcon.requestLayout()
-        }
-    }
-
-    override fun getItemCount(): Int =
-        items.size
-
-    inner class TransferHolder(val binding: WidgetBotRouteTransferBinding) :
-        RecyclerView.ViewHolder(binding.root)
 }
 
 class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val listener: MapBottomPanelRouteListener) :
