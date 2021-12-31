@@ -172,7 +172,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
             val calcWidth = { i: Int, t: RoutePagerTransfer ->
                 t.length * txfPartLength +
                         if (i == txfCount - 1)
-                            this.width % txfLengthSum
+                            (this.width % txfLengthSum) - lineMargin
                         else 0
             }
 
