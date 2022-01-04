@@ -1,5 +1,6 @@
 package org.ametro.ui.bottom_panel
 
+import android.animation.ArgbEvaluator
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -9,10 +10,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.animation.doOnEnd
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -25,6 +28,7 @@ import org.ametro.databinding.WidgetItemBotRouteBinding
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
+import org.ametro.utils.misc.AnimUtils
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.max
@@ -125,7 +129,7 @@ class RoutePagerAdapter(
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, bind.stationEndBg, item.routeEnd)
 
         bind.transfersRecycler
-            .replaceItems(item.transfers.toMutableList(), false)
+            .replaceItems(item.transfers.toMutableList(), true)
 
         if (item.transfers.size < 2) {
             bind.transferCount.text = ""
@@ -148,6 +152,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
+
     private val viewStash: MutableList<ImageView> = arrayListOf()
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
 
@@ -197,12 +202,18 @@ class RouteTransfersLayout @JvmOverloads constructor(
             }
 
             val addViews = {
-                this.removeAllViews()
-                for (i in 0 until txfCount)
-                    this.addView(viewStash[i])
+                val viewsCount = this.childCount
+                Log.i("MEME3", "cc $viewsCount, tc $txfCount, vss ${viewStash.size}")
+                if (txfCount > viewsCount)
+                    for (i in viewsCount until txfCount)
+                        this.addView(viewStash[i])
+                else if (txfCount < viewsCount)
+                    this.removeViews(txfCount, viewsCount - txfCount)
             }
 
+            Log.i("MEME3", "anim decision: a $animate, vss ${viewStash.size}, ts ${transfers.size}")
             if (!animate || viewStash.isEmpty() || transfers.isEmpty()) {
+                Log.i("MEME3", "anim D branch")
                 for (i in 0 until max(txfCount, viewStash.size)) {
                     var v = viewStash.getOrNull(i)
                     val t = transfers.getOrNull(i)
@@ -225,7 +236,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 addViews()
 
             } else {
+                Log.i("MEME3", "anim E branch")
                 val oldTxf = this.transfers
+                val oldTxfCount = oldTxf.size
                 val animTxf = ArrayList<AnimatedTxf>()
                 for (i in 0 until max(transfers.size, oldTxf.size)) {
                     val o = oldTxf.getOrNull(i)
@@ -238,8 +251,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
                             AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(i, t) - pw, ACTION_RESIZE)
                         animTxf.add(at)
                     } else if (o != null) {
+                        val pw = v!!.width
                         val color = o.txf.lineColor
-                        val at = AnimatedTxf(color, color, v!!.width, 0, ACTION_HIDE)
+                        val at = AnimatedTxf(color, color, pw, -pw, ACTION_HIDE)
                         animTxf.add(at)
                     } else if (t != null) {
                         if (v == null)
@@ -254,7 +268,28 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
                 addViews()
 
-                // AnimUtils.getValueAnimator() todo
+                val anim = AnimUtils.getValueAnimator(true, 300, DecelerateInterpolator()) { p ->
+                    for ((i, t) in animTxf.withIndex()) {
+                        val v = viewStash[i]
+                        val lp = v.layoutParams as LayoutParams
+
+                        when (t.action) {
+                            ACTION_SHOW -> lp.rightMargin = (lineMargin * p).toInt()
+                            ACTION_HIDE -> lp.rightMargin = (lineMargin - lineMargin * p).toInt()
+                        }
+
+                        lp.width = (t.widthPrev + t.widthDelta * p).toInt()
+                        v.requestLayout()
+
+                        val color = AnimUtils.argbEvaluate(p, t.srcColor, t.dstColor)
+                        (v.drawable as GradientDrawable).setColor(color)
+                    }
+                }
+
+                anim.doOnEnd {
+                    if (oldTxfCount > txfCount)
+                        this.removeViews(oldTxfCount, oldTxfCount - txfCount)
+                }
             }
 
             this.transfers = transfers
