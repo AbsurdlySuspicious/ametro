@@ -166,14 +166,18 @@ class RouteTransfersLayout @JvmOverloads constructor(
     fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean) {
         this.post {
             val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
-            val txfPartLength = this.width / txfLengthSum
             val txfCount = transfers.size
+            val txfPartLength =
+                if (txfLengthSum == 0 || txfCount == 0) 0
+                else this.width / txfLengthSum
 
             val calcWidth = { i: Int, t: RoutePagerTransfer ->
-                t.length * txfPartLength +
-                        if (i == txfCount - 1)
-                            (this.width % txfLengthSum) - lineMargin
-                        else 0
+                var width = t.length * txfPartLength
+                if (i == txfCount - 1)
+                    width += this.width % txfLengthSum
+                else
+                    width -= lineMargin
+                width
             }
 
             val createView = {
