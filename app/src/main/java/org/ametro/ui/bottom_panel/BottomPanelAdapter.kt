@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import org.ametro.databinding.WidgetItemBotRouteBinding
@@ -18,12 +19,11 @@ interface PanelAdapterBinder {
 }
 
 private abstract class BaseItem(
-    val viewType: Int,
-    val priority: Int
+    val viewType: Int
 )
 
-private object RouteItem : BaseItem(BottomPanelAdapter.TYPE_ROUTE, 1)
-private object StationItem : BaseItem(BottomPanelAdapter.TYPE_STATION, 2)
+private object RouteItem : BaseItem(BottomPanelAdapter.TYPE_ROUTE)
+private object StationItem : BaseItem(BottomPanelAdapter.TYPE_STATION)
 
 class PanelHolder(val viewType: Int, view: View, val binding: ViewBinding) : RecyclerView.ViewHolder(view)
 
@@ -36,7 +36,7 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
     private val inflater = LayoutInflater.from(context)
     private lateinit var recyclerView: RecyclerView
 
-    private val itemList: MutableList<BaseItem> = mutableListOf()
+    private var itemList: MutableList<BaseItem> = mutableListOf()
 
     var showRoute: Boolean = false
         set(value) {
@@ -49,19 +49,31 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
         }
     var stationBinder: PanelAdapterBinder? = null
 
+    private fun enableItem(old: List<BaseItem>, cond: Boolean, item: BaseItem) {
+        val idxOld = old
+            .indexOfFirst { it.viewType == item.viewType }
+        if (cond) {
+            val idxNew = itemList.size
+            itemList.add(item)
+            if (idxOld != idxNew) {
+                if (idxOld > -1)
+                    this.notifyItemRemoved(idxOld)
+                this.notifyItemInserted(idxNew)
+            } else
+                this.notifyItemChanged(idxNew)
+        } else if (idxOld > -1)
+            this.notifyItemRemoved(idxOld)
+    }
+
     private fun refreshList() {
-        itemList
-            .removeAll { it.viewType == TYPE_ROUTE }
-        if (showRoute)
-            itemList.add(RouteItem)
+        val old = this.itemList
+        this.itemList = mutableListOf()
 
-        itemList
-            .removeAll { it.viewType == TYPE_STATION }
-        if (showStation)
-            itemList.add(StationItem)
+        enableItem(old, showRoute, RouteItem)
+        enableItem(old, showStation, StationItem)
 
-        itemList.sortBy { it.priority }
-        this.notifyDataSetChanged()
+        (recyclerView.layoutManager as LinearLayoutManager)
+            .scrollToPosition(0)
     }
 
     fun topmostView(): View? =

@@ -64,8 +64,19 @@ class RoutePagerAdapter(
     private var items: ArrayList<RoutePagerItem> = arrayListOf()
 
     fun replaceItems(items: ArrayList<RoutePagerItem>) {
+        val oldSize = this.items.size
+        val newSize = items.size
         this.items = items
-        this.notifyDataSetChanged()
+
+        if (oldSize > newSize) {
+            this.notifyItemRangeRemoved(newSize, oldSize - newSize)
+            this.notifyItemRangeChanged(0, newSize)
+        } else if (oldSize < newSize) {
+            this.notifyItemRangeInserted(oldSize, newSize - oldSize)
+            this.notifyItemRangeChanged(0, oldSize)
+        } else { // oldSize == newSize
+            this.notifyItemRangeChanged(0, newSize)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageHolder {
