@@ -11,9 +11,7 @@ android {
         applicationId "org.ametro"
         minSdkVersion 15
 
-        // don't care, didn't ask (yet)
-        //noinspection ExpiredTargetSdkVersion
-        targetSdkVersion 23
+        targetSdkVersion 30
 
         versionCode 42
         versionName "2.0.2"
