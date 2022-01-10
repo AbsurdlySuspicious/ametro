@@ -139,6 +139,7 @@ class RoutePagerAdapter(
         bindRoutePoint(bind.lineIconStart, bind.stationStart, bind.stationStartBg, item.routeStart)
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, bind.stationEndBg, item.routeEnd)
 
+        Log.i("MEME3", "txfr bind: p $position")
         bind.transfersRecycler
             .replaceItems(item.transfers.toMutableList(), true)
 
@@ -149,6 +150,10 @@ class RoutePagerAdapter(
             bind.transferCount.text = (item.transfers.size - 1).toString()
             bind.transferCountIcon.visibility = View.VISIBLE
         }
+    }
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
     }
 
     override fun getItemCount(): Int =
@@ -386,6 +391,10 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         bind as WidgetItemBotRouteBinding
 
     override fun bindItem(bind: ViewBinding) {
+        // nope
+    }
+
+    override fun createHolder(bind: ViewBinding) {
         binding = castBind(bind)
         binding!!.also {
             it.pager.adapter = adapter

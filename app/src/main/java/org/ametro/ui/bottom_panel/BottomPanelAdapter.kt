@@ -14,6 +14,7 @@ import org.ametro.databinding.WidgetItemBotStationBinding
 
 interface PanelAdapterBinder {
     fun bindItem(bind: ViewBinding)
+    fun createHolder(bind: ViewBinding) {}
     fun attachItem(holder: PanelHolder) {}
     fun detachItem(holder: PanelHolder) {}
 }
@@ -101,6 +102,7 @@ class BottomPanelAdapter(context: Context) : RecyclerView.Adapter<PanelHolder>()
             TYPE_ROUTE -> WidgetItemBotRouteBinding.inflate(inflater, parent, false)
             else -> throw Exception("Unknown view $viewType")
         }
+        invokeBinder(viewType) { it?.createHolder(bind) }
         return PanelHolder(viewType, bind.root, bind)
     }
 
