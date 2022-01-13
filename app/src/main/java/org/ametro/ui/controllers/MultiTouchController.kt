@@ -19,7 +19,7 @@ import kotlin.math.min
 
 class MultiTouchController(context: Context, private val listener: IMultiTouchListener) {
     interface IMultiTouchListener {
-        var positionAndScaleMatrix: Matrix?
+        var positionAndScaleMatrix: Matrix
         fun onTouchModeChanged(mode: Int)
         fun onPerformClick(position: PointF?)
         fun onPerformLongClick(position: PointF?)
