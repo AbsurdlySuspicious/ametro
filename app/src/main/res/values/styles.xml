@@ -17,6 +17,7 @@
     <color name="route_panel_text_time_range">#717171</color>
     <color name="route_panel_misc_icon">#5F5F5F</color>
     <color name="route_panel_misc_icon_text">#5F5F5F</color>
+    <color name="route_panel_misc_icon_disabled">#B5B5B5</color>
 
     <color name="panel_secondary_text">#80000000</color>
     <color name="panel_secondary_icon">#56000000</color>

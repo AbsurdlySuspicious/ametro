@@ -2,6 +2,7 @@ package org.ametro.ui.bottom_panel
 
 import android.animation.ArgbEvaluator
 import android.content.Context
+import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.text.format.DateFormat
@@ -60,6 +61,7 @@ class RoutePagerAdapter(
 
     var leaveTime: Calendar? = null
 
+    private val resources = context.applicationContext.resources
     private val inflater = LayoutInflater.from(context)
     private var items: ArrayList<RoutePagerItem> = arrayListOf()
 
@@ -140,15 +142,28 @@ class RoutePagerAdapter(
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, bind.stationEndBg, item.routeEnd)
 
         Log.i("MEME3", "txfr bind: p $position")
+        val itemsForTxfBar =
+            if (item.transfers.isEmpty())
+                mutableListOf(RoutePagerTransfer(item.routeStart.first, 1, 1))
+            else
+                item.transfers.toMutableList()
         bind.transfersRecycler
-            .replaceItems(item.transfers.toMutableList(), true)
+            .replaceItems(itemsForTxfBar, true)
 
         if (item.transfers.size < 2) {
-            bind.transferCount.text = ""
-            bind.transferCountIcon.visibility = View.INVISIBLE
+            val color = ResourcesCompat.getColor(resources, R.color.route_panel_misc_icon_disabled, null)
+            bind.transferCount.text = 0.toString()
+            bind.transferCount.setTextColor(color)
+            bind.transferCountIcon.drawable.setColorFilter(color, PorterDuff.Mode.SRC_IN)
         } else {
             bind.transferCount.text = (item.transfers.size - 1).toString()
-            bind.transferCountIcon.visibility = View.VISIBLE
+            bind.transferCount
+                .setTextColor(ResourcesCompat.getColor(resources, R.color.route_panel_misc_icon_text, null))
+            bind.transferCountIcon.drawable
+                .setColorFilter(
+                    ResourcesCompat.getColor(resources, R.color.route_panel_misc_icon, null),
+                    PorterDuff.Mode.SRC_IN
+                )
         }
     }
 
@@ -227,8 +242,10 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
             val removeViews = {
                 val viewsCount = this.childCount
-                Log.i("MEME3", "tc $txfCount, views $childCount, " +
-                        "count ${childCount - txfCount}")
+                Log.i(
+                    "MEME3", "tc $txfCount, views $childCount, " +
+                            "count ${childCount - txfCount}"
+                )
                 if (txfCount < viewsCount)
                     this.removeViews(txfCount, viewsCount - txfCount)
             }
