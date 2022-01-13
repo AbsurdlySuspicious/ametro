@@ -65,10 +65,13 @@ class RoutePagerAdapter(
     private val inflater = LayoutInflater.from(context)
     private var items: ArrayList<RoutePagerItem> = arrayListOf()
 
-    fun replaceItems(items: ArrayList<RoutePagerItem>) {
+    fun replaceItems(items: ArrayList<RoutePagerItem>, currentPage: Int, moveToFirst: Boolean) {
         val oldSize = this.items.size
         val newSize = items.size
         this.items = items
+
+        if (moveToFirst)
+            this.notifyItemMoved(currentPage, 0)
 
         if (oldSize > newSize) {
             this.notifyItemRangeRemoved(newSize, oldSize - newSize)
@@ -148,7 +151,7 @@ class RoutePagerAdapter(
             else
                 item.transfers.toMutableList()
         bind.transfersRecycler
-            .replaceItems(itemsForTxfBar, true)
+            .replaceItems(itemsForTxfBar, true, position)
 
         if (item.transfers.size < 2) {
             val color = ResourcesCompat.getColor(resources, R.color.route_panel_misc_icon_disabled, null)
@@ -199,7 +202,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
         this.orientation = HORIZONTAL
     }
 
-    fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean) {
+    fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean, page: Int) {
         this.post {
             val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
             val txfCount = transfers.size
@@ -250,8 +253,8 @@ class RouteTransfersLayout @JvmOverloads constructor(
                     this.removeViews(txfCount, viewsCount - txfCount)
             }
 
-            Log.i("MEME3", "anim decision: a $animate, vss ${viewStash.size}, ts ${transfers.size}")
-            if (!animate || viewStash.isEmpty() || transfers.isEmpty()) {
+            Log.i("MEME3", "anim decision: a $animate, vss ${viewStash.size}, ts ${transfers.size}, page $page")
+            if (!animate || page != 0 || viewStash.isEmpty() || transfers.isEmpty()) {
                 Log.i("MEME3", "anim D branch")
                 for (i in 0 until max(txfCount, viewStash.size)) {
                     var v = viewStash.getOrNull(i)
@@ -367,10 +370,15 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         sheet.adapter.routeBinder = this
     }
 
-    fun show(routes: ArrayList<RoutePagerItem>, leaveTime: Calendar?) {
+    fun show(routes: ArrayList<RoutePagerItem>, leaveTime: Calendar?, setPage: Int) {
         sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, true) {
             adapter.leaveTime = leaveTime
-            adapter.replaceItems(routes)
+            if (setPage > 0) {
+                adapter.replaceItems(routes, currentPage, false)
+                binding?.pager?.post { this.setPage(setPage) }
+            } else {
+                adapter.replaceItems(routes, currentPage, true)
+            }
             sheet.adapter.showRoute = true
             binding?.let {
                 val anim = sheet.bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN

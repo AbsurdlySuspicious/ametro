@@ -70,9 +70,6 @@ class BottomPanelController(private val binding: WidgetMapBottomPanelBinding) {
     private fun routeShowHide(prevState: Boolean, state: Boolean) {
         bindPanel(routeBinding, routeBinder, state)
         routeBinding.itemBotRoute.isVisible = state
-        if (state) {
-            routeBinding.pager.setCurrentItem(0, true)
-        }
     }
 
     private fun stationShowHide(prevState: Boolean, state: Boolean) {

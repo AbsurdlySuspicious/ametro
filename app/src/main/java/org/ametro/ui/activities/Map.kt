@@ -577,14 +577,13 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             app.lastLeaveTime = Calendar.getInstance()
         }
 
-        mapBottomRoute.setPage(initRoute, false)
         mapBottomRoute.setSlideCallback { pos ->
             routes.getOrNull(pos)?.let {
                 highlightRoute(it)
                 app.currentRoute.selectedRoute = pos
             }
         }
-        mapBottomRoute.show(panelRoutes, app.lastLeaveTime)
+        mapBottomRoute.show(panelRoutes, app.lastLeaveTime, initRoute)
     }
 
     override fun onRouteSelectionCleared() {
