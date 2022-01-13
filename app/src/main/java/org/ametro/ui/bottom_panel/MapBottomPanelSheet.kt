@@ -62,6 +62,14 @@ class MapBottomPanelSheet(
             f()
     }
 
+    private fun getSheetHeight(sheetView: View): Int {
+        val cfg = activity.resources.configuration
+        val win = (cfg.screenHeightDp * density).toInt()
+        val loc = intArrayOf(0, 0)
+        sheetView.getLocationInWindow(loc)
+        return (win - loc[1]).coerceAtLeast(0)
+    }
+
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(sheetView: View, newState: Int) {
             // Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
@@ -71,14 +79,8 @@ class MapBottomPanelSheet(
                 BottomSheetBehavior.STATE_SETTLING -> {}
                 BottomSheetBehavior.STATE_HIDDEN ->
                     listener.updatePanelPadding(0)
-                else -> {
-                    val cfg = activity.resources.configuration
-                    val win = (cfg.screenHeightDp * density).toInt()
-                    val loc = intArrayOf(0, 0)
-                    sheetView.getLocationInWindow(loc)
-                    val realHeight = win - loc[1]
-                    listener.updatePanelPadding(realHeight)
-                }
+                else ->
+                    listener.updatePanelPadding(getSheetHeight(sheetView))
             }
 
             sheetStateCallbacksPre
@@ -108,7 +110,9 @@ class MapBottomPanelSheet(
             }
         }
 
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {}
+        override fun onSlide(sheetView: View, slideOffset: Float) {
+            listener.updatePanelPadding(getSheetHeight(sheetView))
+        }
     }
 
     val isOpened: Boolean
