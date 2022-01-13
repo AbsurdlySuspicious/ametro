@@ -70,12 +70,12 @@ class RoutePagerAdapter(
 
         if (oldSize > newSize) {
             this.notifyItemRangeRemoved(newSize, oldSize - newSize)
-            this.notifyItemRangeChanged(0, newSize)
+            this.notifyItemRangeChanged(0, newSize, Object())
         } else if (oldSize < newSize) {
             this.notifyItemRangeInserted(oldSize, newSize - oldSize)
-            this.notifyItemRangeChanged(0, oldSize)
+            this.notifyItemRangeChanged(0, oldSize, Object())
         } else { // oldSize == newSize
-            this.notifyItemRangeChanged(0, newSize)
+            this.notifyItemRangeChanged(0, newSize, Object())
         }
     }
 
@@ -141,7 +141,7 @@ class RoutePagerAdapter(
 
         Log.i("MEME3", "txfr bind: p $position")
         bind.transfersRecycler
-            .replaceItems(item.transfers.toMutableList(), false)
+            .replaceItems(item.transfers.toMutableList(), true)
 
         if (item.transfers.size < 2) {
             bind.transferCount.text = ""
@@ -223,7 +223,13 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 if (txfCount > viewsCount)
                     for (i in viewsCount until txfCount)
                         this.addView(viewStash[i])
-                else if (txfCount < viewsCount)
+            }
+
+            val removeViews = {
+                val viewsCount = this.childCount
+                Log.i("MEME3", "tc $txfCount, views $childCount, " +
+                        "count ${childCount - txfCount}")
+                if (txfCount < viewsCount)
                     this.removeViews(txfCount, viewsCount - txfCount)
             }
 
@@ -250,11 +256,10 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 }
 
                 addViews()
-
+                removeViews()
             } else {
-                Log.i("MEME3", "anim E branch") /* todo broken atm */
+                Log.i("MEME3", "anim E branch")
                 val oldTxf = this.transfers
-                val oldTxfCount = oldTxf.size
                 val animTxf = ArrayList<AnimatedTxf>()
                 for (i in 0 until max(transfers.size, oldTxf.size)) {
                     val o = oldTxf.getOrNull(i)
@@ -284,7 +289,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
                 addViews()
 
-                val anim = AnimUtils.getValueAnimator(true, 300, DecelerateInterpolator()) { p ->
+                AnimUtils.getValueAnimator(true, 300, DecelerateInterpolator()) { p ->
                     for ((i, t) in animTxf.withIndex()) {
                         val v = viewStash[i]
                         val lp = v.layoutParams as LayoutParams
@@ -300,11 +305,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         val color = AnimUtils.argbEvaluate(p, t.srcColor, t.dstColor)
                         (v.drawable as GradientDrawable).setColor(color)
                     }
-                }
-
-                anim.doOnEnd {
-                    if (oldTxfCount > txfCount)
-                        this.removeViews(oldTxfCount, oldTxfCount - txfCount)
+                }.also {
+                    it.doOnEnd { removeViews() }
+                    it.start()
                 }
             }
 
