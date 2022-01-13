@@ -206,10 +206,6 @@ class MapBottomPanelStation(
     }
 
     fun show(line: MapSchemeLine, station: MapSchemeStation, showDetails: Boolean) {
-        if (sheet.isOpened && adapter.showStation &&
-            this.line === line && this.station === station
-        ) return
-
         this.line = line
         this.station = station
         this.hasDetails = showDetails

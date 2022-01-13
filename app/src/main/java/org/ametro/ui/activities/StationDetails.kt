@@ -34,8 +34,8 @@ class StationDetails : AppCompatActivity(), TabColorizer {
         val stationScheme = app.container!!.findSchemeStation(app.schemeName, lineName, stationName)
         val stationInfo = app.container!!.findStationInformation(lineName, stationName)
 
-        if (stationInfo.mapFilePath == null)
-            finish() // todo check other info (about) when implemented
+        if (stationScheme == null || stationInfo == null || stationInfo.mapFilePath == null)
+            return finish() // todo check other info (about) when implemented
 
         supportActionBar?.run {
             setDefaultDisplayHomeAsUpEnabled(true)

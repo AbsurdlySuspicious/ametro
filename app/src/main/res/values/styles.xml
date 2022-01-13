@@ -11,6 +11,14 @@
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
 
+    <color name="route_panel_text_station">#000000</color>
+    <color name="route_panel_text_time">#717171</color>
+    <color name="route_panel_text_time_sec">#717171</color>
+    <color name="route_panel_text_time_range">#717171</color>
+    <color name="route_panel_misc_icon">#5F5F5F</color>
+    <color name="route_panel_misc_icon_text">#5F5F5F</color>
+    <color name="route_panel_misc_icon_disabled">#B5B5B5</color>
+
     <color name="panel_secondary_text">#80000000</color>
     <color name="panel_secondary_icon">#56000000</color>
     <color name="panel_dots">#ABABAB</color>
@@ -54,7 +62,7 @@
     </style>
 
     <style name="bottomPanelRouteStation" parent="bottomPanelActionStation">
-        <item name="android:textColor">@android:color/tertiary_text_light</item>
+        <item name="android:textColor">@color/route_panel_text_station</item>
         <item name="android:textSize">12sp</item>
     </style>
 

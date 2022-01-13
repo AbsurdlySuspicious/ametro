@@ -11,20 +11,10 @@
 
     <ImageView
             android:id="@+id/line_icon_transfer"
-            android:layout_width="@dimen/panel_bottom_route_line_transfer_icon_size"
-            android:layout_height="@dimen/panel_bottom_route_line_transfer_icon_size"
-            android:src="@drawable/line_icon_transfer"
-    />
-
-    <ImageView
-            android:id="@+id/icon_transfer_arrow"
-            android:layout_width="@dimen/panel_bottom_route_line_transfer_icon_size"
-            android:layout_height="@dimen/panel_bottom_route_line_transfer_icon_size"
-            android:layout_marginHorizontal="2dp"
-            android:visibility="gone"
-            android:src="@drawable/ic_transfer_arrow"
-            app:tint="#9B9B9B"
-            tools:visibility="visible"
+            android:layout_width="30dp"
+            android:layout_height="@dimen/panel_bottom_route_line_long_height"
+            android:layout_marginEnd="@dimen/panel_bottom_route_line_long_margin"
+            android:src="@drawable/line_long"
     />
 
 </LinearLayout>
