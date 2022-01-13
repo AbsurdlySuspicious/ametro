@@ -141,7 +141,7 @@ class RoutePagerAdapter(
 
         Log.i("MEME3", "txfr bind: p $position")
         bind.transfersRecycler
-            .replaceItems(item.transfers.toMutableList(), true)
+            .replaceItems(item.transfers.toMutableList(), false)
 
         if (item.transfers.size < 2) {
             bind.transferCount.text = ""
@@ -252,7 +252,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 addViews()
 
             } else {
-                Log.i("MEME3", "anim E branch")
+                Log.i("MEME3", "anim E branch") /* todo broken atm */
                 val oldTxf = this.transfers
                 val oldTxfCount = oldTxf.size
                 val animTxf = ArrayList<AnimatedTxf>()
@@ -395,15 +395,13 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     }
 
     override fun createHolder(bind: ViewBinding) {
-        binding = castBind(bind)
-        binding!!.also {
+        castBind(bind).also {
             it.pager.adapter = adapter
         }
     }
 
-    override fun attachItem(holder: PanelHolder) {
-        binding = castBind(holder.binding)
-        binding!!.also {
+    override fun attachItem(bind: ViewBinding) {
+        castBind(bind).also {
             it.pager.setCurrentItem(currentPage, false)
             it.pager.registerOnPageChangeCallback(pageChangedCallback)
             it.dots.setViewPager2(it.pager)
@@ -411,8 +409,8 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         }
     }
 
-    override fun detachItem(holder: PanelHolder) {
-        castBind(holder.binding).also {
+    override fun detachItem(bind: ViewBinding) {
+        castBind(bind).also {
             it.pager.unregisterOnPageChangeCallback(pageChangedCallback)
             it.dots.pager?.removeOnPageChangeListener()
         }

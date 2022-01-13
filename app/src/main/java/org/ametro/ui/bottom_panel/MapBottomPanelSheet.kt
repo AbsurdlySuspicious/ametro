@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.LinearLayout
 import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
@@ -25,11 +26,9 @@ class MapBottomPanelSheet(
         const val OPENED_REOPEN = 2
     }
 
-    val adapter = BottomPanelAdapter(sheetView.context)
-    val bottomSheet = BottomSheetBehavior.from(sheetView)
-
     private val binding = WidgetMapBottomPanelBinding.bind(sheetView)
-    private val recycler = binding.recycler
+    val bottomSheet = BottomSheetBehavior.from(sheetView)
+    val adapter = BottomPanelController(binding)
 
     private val topPadViews = listOf(binding.drag)
 
@@ -103,12 +102,6 @@ class MapBottomPanelSheet(
             isDraggable = true
             state = BottomSheetBehavior.STATE_HIDDEN
             addBottomSheetCallback(bottomSheetCallback)
-        }
-        recycler.apply {
-            adapter = this@MapBottomPanelSheet.adapter
-            layoutManager = LinearLayoutManager(sheetView.context)
-            overScrollMode = View.OVER_SCROLL_NEVER
-            setHasFixedSize(true)
         }
     }
 
