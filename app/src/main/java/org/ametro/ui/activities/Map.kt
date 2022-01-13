@@ -54,7 +54,8 @@ import java.lang.StringBuilder
 import java.util.*
 
 class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener,
-    IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener {
+    IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener,
+    BottomPanelSheetListener {
 
     private var backPressTime = 0L
     private var backPressCount = 0
@@ -91,7 +92,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
         app = ApplicationEx.getInstanceActivity(this)
 
-        mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app, this)
+        mapBottomSheet = MapBottomPanelSheet(binding.includeBottomPanel.mapBottomPanel, app, this, this)
         mapBottomStation = MapBottomPanelStation(mapBottomSheet, this)
         mapBottomRoute = MapBottomPanelRoute(mapBottomSheet, this)
 
@@ -114,6 +115,10 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             ApplicationEx.getInstanceActivity(this).getCountryFlagProvider(),
             ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
         )
+    }
+
+    override fun updatePanelPadding(newPadding: Int) {
+        mapView?.panelPadding = newPadding
     }
 
     private val isResuming: Boolean

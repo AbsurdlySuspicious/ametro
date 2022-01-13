@@ -1,19 +1,23 @@
 package org.ametro.ui.bottom_panel
 
 import android.app.Activity
+import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import androidx.core.widget.NestedScrollView
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
 import java.util.concurrent.ConcurrentLinkedQueue
 
+interface BottomPanelSheetListener {
+    fun updatePanelPadding(newPadding: Int)
+}
+
 class MapBottomPanelSheet(
     val sheetView: NestedScrollView,
     val app: ApplicationEx,
+    private val listener: BottomPanelSheetListener,
     private val activity: Activity
 ) {
     companion object {
@@ -25,6 +29,8 @@ class MapBottomPanelSheet(
         const val OPENED_CHANGE_VIEW = 1
         const val OPENED_REOPEN = 2
     }
+
+    private val density = activity.resources.displayMetrics.density
 
     private val binding = WidgetMapBottomPanelBinding.bind(sheetView)
     val bottomSheet = BottomSheetBehavior.from(sheetView)
@@ -59,8 +65,25 @@ class MapBottomPanelSheet(
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(sheetView: View, newState: Int) {
             // Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
+
+            when (newState) {
+                BottomSheetBehavior.STATE_DRAGGING,
+                BottomSheetBehavior.STATE_SETTLING -> {}
+                BottomSheetBehavior.STATE_HIDDEN ->
+                    listener.updatePanelPadding(0)
+                else -> {
+                    val cfg = activity.resources.configuration
+                    val win = (cfg.screenHeightDp * density).toInt()
+                    val loc = intArrayOf(0, 0)
+                    sheetView.getLocationInWindow(loc)
+                    val realHeight = win - loc[1]
+                    listener.updatePanelPadding(realHeight)
+                }
+            }
+
             sheetStateCallbacksPre
                 .forEach { it(sheetView, newState) }
+
             when (newState) {
                 BottomSheetBehavior.STATE_HIDDEN -> {
                     runPendingSheetActions(newState)

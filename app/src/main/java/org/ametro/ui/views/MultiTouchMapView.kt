@@ -97,6 +97,13 @@ class MultiTouchMapView @JvmOverloads constructor(
             viewportChangedListener!!.onViewportChanged(matrix)
         }
 
+    var panelPadding: Int = 0
+        set(value) {
+            field = value
+            updateScrollBars(positionAndScaleMatrix)
+            updateViewRect()
+        }
+
     override fun onTouchModeChanged(mode: Int) {
         renderer.setUpdatesEnabled(
             mode != MultiTouchController.MODE_ZOOM && mode != MultiTouchController.MODE_DT_ZOOM && mode != MultiTouchController.MODE_ANIMATION
@@ -174,7 +181,7 @@ class MultiTouchMapView @JvmOverloads constructor(
     private fun updateViewRect() {
         multiTouchController.setViewRect(
             mapScheme.width.toFloat(),
-            mapScheme.height.toFloat(),
+            (mapScheme.height + panelPadding).toFloat(),
             RectF(0f, 0f, width.toFloat(), height.toFloat())
         )
         if (changeCenterPoint != null && changeScale != null) {
@@ -192,7 +199,7 @@ class MultiTouchMapView @JvmOverloads constructor(
         matrix.getValues(values)
         val scale = values[Matrix.MSCALE_X]
         horizontalScrollRange = (mapScheme.width * scale).toInt()
-        verticalScrollRange = (mapScheme.height * scale).toInt()
+        verticalScrollRange = (mapScheme.height * scale).toInt() + panelPadding
         horizontalScrollOffset = -values[Matrix.MTRANS_X].toInt()
         verticalScrollOffset = -values[Matrix.MTRANS_Y].toInt()
         awakeScrollBars()
