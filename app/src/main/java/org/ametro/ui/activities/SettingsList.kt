@@ -11,7 +11,7 @@ import androidx.core.app.NavUtils
 import org.ametro.databinding.ActivitySettingsListViewBinding
 import org.ametro.ui.fragments.SettingsListFragment
 
-class SettingsList : AppCompatActivity() {
+class SettingsList : AppCompatActivityEx() {
     private lateinit var binding: ActivitySettingsListViewBinding
 
     @SuppressLint("RestrictedApi")

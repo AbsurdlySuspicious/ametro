@@ -21,7 +21,7 @@ import org.ametro.ui.tasks.MapInstallerAsyncTask.IMapInstallerEventListener
 import org.ametro.ui.tasks.TaskHelpers
 import org.ametro.utils.StringUtils
 
-class CityList : AppCompatActivity(), ICitySelectionListener, IMapInstallerEventListener {
+class CityList : AppCompatActivityEx(), ICitySelectionListener, IMapInstallerEventListener {
     private lateinit var binding: ActivityCityListViewBinding
     private lateinit var cityListFragment: CityListFragment
     private var loadingProgressDialog: ProgressDialog? = null

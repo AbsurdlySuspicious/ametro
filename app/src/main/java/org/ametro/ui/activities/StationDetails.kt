@@ -16,7 +16,7 @@ import org.ametro.databinding.ActivityStationDetailsViewBinding
 import org.ametro.model.entities.MapStationInformation
 import java.util.ArrayList
 
-class StationDetails : AppCompatActivity(), TabColorizer {
+class StationDetails : AppCompatActivityEx(), TabColorizer {
     private lateinit var binding: ActivityStationDetailsViewBinding
 
     @SuppressLint("RestrictedApi")

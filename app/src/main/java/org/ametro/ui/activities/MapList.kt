@@ -26,7 +26,7 @@ import org.ametro.ui.tasks.TaskHelpers
 import org.ametro.utils.StringUtils
 import java.util.ArrayList
 
-class MapList : AppCompatActivity(), IMapListEventListener, IMapInstallerEventListener {
+class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEventListener {
 
     private lateinit var binding: ActivityMapListViewBinding
     private val messagePanel: View

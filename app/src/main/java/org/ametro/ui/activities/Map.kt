@@ -5,6 +5,7 @@ import android.app.SearchManager
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PointF
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -14,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -53,7 +55,7 @@ import org.ametro.utils.misc.convertPair
 import java.lang.StringBuilder
 import java.util.*
 
-class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationControllerListener,
+class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControllerListener,
     IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener,
     BottomPanelSheetListener {
 
@@ -87,6 +89,7 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityMapViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -353,8 +356,10 @@ class Map : AppCompatActivity(), IMapLoadingEventListener, INavigationController
             app.clearCurrentMapViewState()
             navigationController.setNavigation(null, null, null, null)
             mapPanelView.visibility = View.GONE
+            setupNavbarForceDark()
             return
         }
+        setupNavbar()
         container = app.container
         schemeName = app.schemeName
         scheme = container!!.getScheme(schemeName)

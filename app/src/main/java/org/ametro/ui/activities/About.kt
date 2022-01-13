@@ -18,7 +18,7 @@ import org.ametro.utils.FileUtils
 import java.io.IOException
 import java.lang.RuntimeException
 
-open class About : AppCompatActivity() {
+open class About : AppCompatActivityEx() {
     private lateinit var binding: ActivityAboutViewBinding
 
     @SuppressLint("RestrictedApi")
