@@ -145,7 +145,6 @@ class RoutePagerAdapter(
         bindRoutePoint(bind.lineIconStart, bind.stationStart, bind.stationStartBg, item.routeStart)
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, bind.stationEndBg, item.routeEnd)
 
-        Log.i("MEME3", "txfr bind: p $position")
         val itemsForTxfBar =
             if (item.transfers.isEmpty())
                 mutableListOf(RoutePagerTransfer(item.routeStart.first, 1, 1))
@@ -238,7 +237,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
             val addViews = {
                 val viewsCount = this.childCount
-                Log.i("MEME3", "cc $viewsCount, tc $txfCount, vss ${viewStash.size}")
                 if (txfCount > viewsCount)
                     for (i in viewsCount until txfCount)
                         this.addView(viewStash[i])
@@ -246,17 +244,11 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
             val removeViews = {
                 val viewsCount = this.childCount
-                Log.i(
-                    "MEME3", "tc $txfCount, views $childCount, " +
-                            "count ${childCount - txfCount}"
-                )
                 if (txfCount < viewsCount)
                     this.removeViews(txfCount, viewsCount - txfCount)
             }
 
-            Log.i("MEME3", "anim decision: a $animate, vss ${viewStash.size}, ts ${transfers.size}, page $page")
             if (!animate || page != 0 || viewStash.isEmpty() || transfers.isEmpty()) {
-                Log.i("MEME3", "anim D branch")
                 for (i in 0 until max(txfCount, viewStash.size)) {
                     var v = viewStash.getOrNull(i)
                     val t = transfers.getOrNull(i)
@@ -279,7 +271,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 addViews()
                 removeViews()
             } else {
-                Log.i("MEME3", "anim E branch")
                 val oldTxf = this.transfers
                 val animTxf = ArrayList<AnimatedTxf>()
                 for (i in 0 until max(transfers.size, oldTxf.size)) {

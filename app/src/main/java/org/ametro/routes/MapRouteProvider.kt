@@ -46,7 +46,6 @@ object MapRouteProvider {
         endStationUid: Int,
         graph: TransportGraph
     ): MapRoute? {
-        Log.i("MEME", "-- mark used pass --")
         val distances = result.distances
         val predecessors = result.predecessors
         val parts = ArrayList<MapRoutePart>()
@@ -59,7 +58,6 @@ object MapRouteProvider {
                 .firstOrNull { it.end == to }
                 ?.also {
                     if (!it.used && it.transfer) {
-                        Log.i("MEME", "edge to ${it.start} -> ${it.end}")
                         it.used = true
                     }
                 }

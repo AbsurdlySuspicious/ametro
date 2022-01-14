@@ -264,7 +264,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         val currentPress = System.currentTimeMillis()
         val delta = currentPress - backPressTime
         backPressTime = currentPress
-        Log.i("MEME2", "bpc pre $backPressCount, delta $delta")
 
         if (delta < 200)
             backPressCount += 1
@@ -521,29 +520,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
                 Toast.LENGTH_LONG
             ).show()
             return
-        }
-
-        run {
-            // DEBUG
-            fun rl(t: String) {
-                Log.i("MEME", t)
-            }
-
-            fun rs(uid: Int): String {
-                val m = ModelUtil.findStationByUid(scheme!!, uid.toLong())
-                return "${m.first.displayName}, ${m.second.displayName} ($uid)"
-            }
-
-            rl("-- route update --")
-
-            for ((i, route) in routes.withIndex()) {
-                val routeDelay = StringUtils.humanReadableTime(route.delay)
-                rl("route $i: $routeDelay")
-                for (p in route.parts) {
-                    val partDelay = StringUtils.humanReadableTime(p.delay.toInt())
-                    rl("  ${rs(p.from)} -> ${rs(p.to)}: $partDelay")
-                }
-            }
         }
 
         val panelRoutes = ArrayList<RoutePagerItem>(routes.size)

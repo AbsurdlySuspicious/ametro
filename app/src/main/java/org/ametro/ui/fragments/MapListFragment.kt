@@ -174,7 +174,6 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     private fun setListShown() {
-        Log.i("MEME", "set list shown pre")
         binding!!.progressText.visibility = View.GONE
         binding!!.progressBar.visibility = View.GONE
         binding!!.noMaps.visibility = View.GONE
@@ -183,7 +182,6 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
             visibility = View.VISIBLE
             emptyView = binding!!.empty
         }
-        Log.i("MEME", "set list shown after")
     }
 
     override fun onItemCheckedStateChanged(mode: ActionMode, position: Int, id: Long, checked: Boolean) {
@@ -230,10 +228,6 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     private fun resetAdapter() {
-        Log.i("MEME", "reset adapter, " +
-                "cat null: ${localMapCatalog == null}, " +
-                "cat size ${localMapCatalog?.maps?.size ?: 0}, " +
-                "filter value: $filterValue")
         if (localMapCatalog == null || localMapCatalog!!.maps.isEmpty()) {
             adapter!!.clear()
             adapter!!.filter.filter(filterValue)
