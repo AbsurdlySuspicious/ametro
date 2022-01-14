@@ -31,8 +31,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var currentWidth = 0f
     private var currentHeight = 0f
     private val matrixValues = FloatArray(9)
+
     private var isRenderFailed = false
     private var isUpdatesEnabled = false
+    private var isRebuildPending = false
     private var isEntireMapCached = false
 
     private val rendererThread: HandlerThread = HandlerThread("map-renderer").also { it.start() }
@@ -56,13 +58,16 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         isUpdatesEnabled = enabled
     }
 
+    fun rebuildOnDraw() {
+        isRebuildPending = true
+    }
+
     fun draw(canvas: Canvas): Boolean {
         maximumBitmapWidth = canvas.maximumBitmapWidth
         maximumBitmapHeight = canvas.maximumBitmapHeight
 
-        //Log.d(TAG,"draw map");
-        if (cache == null) {
-            // render at first run
+        if (cache == null || isRebuildPending) {
+            isRebuildPending = false
             rebuildCache()
         }
         if (isRenderFailed) {

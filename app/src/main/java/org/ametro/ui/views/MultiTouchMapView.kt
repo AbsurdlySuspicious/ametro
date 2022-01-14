@@ -169,7 +169,7 @@ class MultiTouchMapView @JvmOverloads constructor(
 
     fun highlightsElements(ids: java.util.HashSet<Int>?) {
         rendererProgram.highlightsElements(ids)
-        renderer.recycleCache()
+        renderer.rebuildOnDraw()
         invalidate()
     }
 
