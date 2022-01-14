@@ -7,14 +7,11 @@ import android.graphics.RectF
 import android.os.Handler
 import android.os.Message
 import android.util.DisplayMetrics
-import android.util.Log
-import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.ViewConfiguration
 import android.widget.Scroller
 import org.ametro.utils.AnimationInterpolator
-import kotlin.math.abs
 import kotlin.math.min
 
 class MultiTouchController(context: Context, private val listener: IMultiTouchListener) {
@@ -116,8 +113,8 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private val matrixValues = FloatArray(9)
     private var maxScale = 0f
     private var minScale = 0f
-    private var contentHeight = 0f
-    private var contentWidth = 0f
+    private var contentHeightReal = 0f
+    private var contentWidthReal = 0f
     private var displayRect: RectF? = null
     private val scroller: Scroller
     private var velocityTracker: VelocityTracker?
@@ -125,6 +122,12 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private val density: Float
     private val animationEndPoint = PointF()
     private val animationStartPoint = PointF()
+
+    private val contentHeight: Float
+        get() = contentHeightReal + verticalPaddingFixed
+
+    private val contentWidth: Float
+        get() = contentWidthReal
 
     init {
         scroller = Scroller(context)
@@ -172,8 +175,8 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     }
 
     fun setViewRect(newContentWidth: Float, newContentHeight: Float, newDisplayRect: RectF) {
-        contentWidth = newContentWidth
-        contentHeight = newContentHeight
+        contentWidthReal = newContentWidth
+        contentHeightReal = newContentHeight
         if (displayRect != null) {
             matrix.postTranslate(
                 (newDisplayRect.width() - displayRect!!.width()) / 2,
@@ -181,10 +184,14 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
             )
         }
         displayRect = newDisplayRect
-        swipeZoomBase = 60f * density
+        updateBounds()
+    }
+
+    fun updateBounds() {
         // calculate zoom bounds
+        swipeZoomBase = 60f * density
         maxScale = 2.0f * density
-        minScale = Math.min(displayRect!!.width() / contentWidth, displayRect!!.height() / contentHeight)
+        minScale = min(displayRect!!.width() / contentWidth, displayRect!!.height() / contentHeight)
         adjustScale()
         adjustPan()
         listener.positionAndScaleMatrix = matrix
@@ -494,6 +501,15 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     }
 
     /*package*/
+    var verticalPadding: Int = 0
+        set(value) {
+            field = value
+            updateBounds()
+        }
+
+    val verticalPaddingFixed: Float
+        get() = verticalPadding / matrixValues[Matrix.MSCALE_X]
+
     var controllerMode: Int
         get() = mode
         set(newMode) {

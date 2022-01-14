@@ -92,16 +92,21 @@ class MultiTouchMapView @JvmOverloads constructor(
     override var positionAndScaleMatrix: Matrix
         get() = multiTouchController.positionAndScale
         set(matrix) {
-            updateScrollBars(matrix)
+            val verticalPaddingScroll =
+                multiTouchController.verticalPaddingFixed
+            updateScrollBars(matrix, verticalPaddingScroll)
             renderer.setMatrix(matrix)
             viewportChangedListener!!.onViewportChanged(matrix)
         }
 
-    var panelPadding: Int = 0
+    var panelPadding: Int
+        get() = multiTouchController.verticalPadding
         set(value) {
-            field = value
-            updateScrollBars(positionAndScaleMatrix)
-            updateViewRect()
+            multiTouchController.verticalPadding = value
+            updateScrollBars(
+                multiTouchController.positionAndScale,
+                multiTouchController.verticalPaddingFixed
+            )
         }
 
     override fun onTouchModeChanged(mode: Int) {
@@ -181,7 +186,7 @@ class MultiTouchMapView @JvmOverloads constructor(
     private fun updateViewRect() {
         multiTouchController.setViewRect(
             mapScheme.width.toFloat(),
-            (mapScheme.height + panelPadding).toFloat(),
+            mapScheme.height.toFloat(),
             RectF(0f, 0f, width.toFloat(), height.toFloat())
         )
         if (changeCenterPoint != null && changeScale != null) {
@@ -194,12 +199,12 @@ class MultiTouchMapView @JvmOverloads constructor(
         }
     }
 
-    private fun updateScrollBars(matrix: Matrix) {
+    private fun updateScrollBars(matrix: Matrix, verticalPadding: Float) {
         val values = FloatArray(9)
         matrix.getValues(values)
         val scale = values[Matrix.MSCALE_X]
         horizontalScrollRange = (mapScheme.width * scale).toInt()
-        verticalScrollRange = (mapScheme.height * scale).toInt() + panelPadding
+        verticalScrollRange = ((mapScheme.height + verticalPadding) * scale).toInt()
         horizontalScrollOffset = -values[Matrix.MTRANS_X].toInt()
         verticalScrollOffset = -values[Matrix.MTRANS_Y].toInt()
         awakeScrollBars()
