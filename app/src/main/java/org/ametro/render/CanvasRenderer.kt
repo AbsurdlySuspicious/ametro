@@ -278,10 +278,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         renderPartialCache()
         canvasView.invalidate()
     }
+
     private val rebuildCacheRunnable = Runnable {
         rebuildCache()
         canvasView.invalidate()
     }
+
     private val updateCacheRunnable = Runnable {
         if (oldCache != null && oldCache!!.scale == scale) {
             updatePartialCache()
@@ -290,6 +292,22 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             renderPartialCache()
             canvasView.invalidate()
         }
+    }
+
+    private fun clearQueue() {
+        handler.removeCallbacks(rebuildCacheRunnable)
+        handler.removeCallbacks(renderPartialCacheRunnable)
+        handler.removeCallbacks(updateCacheRunnable)
+    }
+
+    private fun postRebuildCache() {
+        clearQueue()
+        handler.post(rebuildCacheRunnable)
+    }
+
+    private fun postUpdateCache() {
+        clearQueue()
+        handler.post(updateCacheRunnable)
     }
 
     fun recycleCache() {
@@ -357,20 +375,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 return newCache
             }
         }
-    }
-
-    private fun postRebuildCache() {
-        handler.removeCallbacks(rebuildCacheRunnable)
-        handler.removeCallbacks(renderPartialCacheRunnable)
-        handler.removeCallbacks(updateCacheRunnable)
-        handler.post(rebuildCacheRunnable)
-    }
-
-    private fun postUpdateCache() {
-        handler.removeCallbacks(rebuildCacheRunnable)
-        handler.removeCallbacks(renderPartialCacheRunnable)
-        handler.removeCallbacks(updateCacheRunnable)
-        handler.post(updateCacheRunnable)
     }
 
     fun onAttachedToWindow() {
