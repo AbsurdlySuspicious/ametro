@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.graphics.*
 import android.os.Handler
+import android.os.HandlerThread
 import android.view.View
 import org.ametro.model.entities.MapScheme
 import org.ametro.render.elements.DrawingElement
@@ -33,7 +34,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var isRenderFailed = false
     private var isUpdatesEnabled = false
     private var isEntireMapCached = false
-    private val handler = Handler()
+
+    private val rendererThread: HandlerThread = HandlerThread("map-renderer").also { it.start() }
+    private val handler: Handler = Handler(rendererThread.looper)
 
     init {
         val ac = canvasView.context.getSystemService(Activity.ACTIVITY_SERVICE) as ActivityManager
