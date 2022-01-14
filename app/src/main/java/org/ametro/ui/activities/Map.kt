@@ -488,9 +488,9 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         }
     }
 
-    private fun highlightRoute(route: MapRoute) {
+    private fun highlightRoute(route: MapRoute, enableDelay: Boolean) {
         mapView!!
-            .highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(route, scheme!!))
+            .highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(route, scheme!!), enableDelay)
     }
 
     override fun onRouteSelectionComplete(
@@ -508,7 +508,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         val routes = MapRouteProvider.findRoutes(routeParams, maxRoutes = 5)
 
         if (routes.isEmpty()) {
-            mapView!!.highlightsElements(null)
+            mapView!!.highlightsElements(null, false)
             mapBottomRoute.hide()
             Toast.makeText(
                 this,
@@ -558,7 +558,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
         val initRoute =
             app.currentRoute.selectedRoute.let { if (it > 0) it else 0 }
-        highlightRoute(routes[initRoute])
+        highlightRoute(routes[initRoute], !isResuming)
 
         if (!isResuming || app.lastLeaveTime == null) {
             app.lastLeaveTime = Calendar.getInstance()
@@ -566,7 +566,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
         mapBottomRoute.setSlideCallback { pos ->
             routes.getOrNull(pos)?.let {
-                highlightRoute(it)
+                highlightRoute(it, true)
                 app.currentRoute.selectedRoute = pos
             }
         }
@@ -574,7 +574,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
     }
 
     override fun onRouteSelectionCleared() {
-        mapView?.highlightsElements(null)
+        mapView?.highlightsElements(null, !isResuming)
         ifNotResuming {
             app.clearRoute()
             mapBottomRoute.hide()
