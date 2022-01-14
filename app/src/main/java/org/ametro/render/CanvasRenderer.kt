@@ -38,8 +38,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var isRebuildPending = false
     private var isEntireMapCached = false
 
-    private val rendererThread: HandlerThread = HandlerThread("map-renderer").also { it.start() }
-    private val handler: Handler = Handler(rendererThread.looper)
+    private lateinit var rendererThread: HandlerThread
+    private lateinit var handler: Handler
 
     private val density: Float
     private val renderFailedErrorText: String
@@ -56,6 +56,16 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         val ac = canvasView.context.getSystemService(Activity.ACTIVITY_SERVICE) as ActivityManager
         memoryClass = ac.memoryClass
         setScheme(renderProgram)
+    }
+
+    fun onAttachedToWindow() {
+        rendererThread = HandlerThread("map-renderer")
+        rendererThread.start()
+        handler = Handler(rendererThread.looper)
+    }
+
+    fun onDetachedFromWindow() {
+        rendererThread.looper.quit()
     }
 
     fun setScheme(renderProgram: RenderProgram?) {
@@ -410,13 +420,5 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 return newCache
             }
         }
-    }
-
-    fun onAttachedToWindow() {
-        // do nothing
-    }
-
-    fun onDetachedFromWindow() {
-        // do nothing
     }
 }
