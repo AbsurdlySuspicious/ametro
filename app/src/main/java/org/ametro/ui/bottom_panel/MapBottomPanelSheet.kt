@@ -74,14 +74,14 @@ class MapBottomPanelSheet(
         override fun onStateChanged(sheetView: View, newState: Int) {
             // Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
 
-            /*when (newState) {
+            when (newState) {
                 BottomSheetBehavior.STATE_DRAGGING,
                 BottomSheetBehavior.STATE_SETTLING -> {}
                 BottomSheetBehavior.STATE_HIDDEN ->
                     listener.updatePanelPadding(0)
                 else ->
                     listener.updatePanelPadding(getSheetHeight(sheetView))
-            }*/
+            }
 
             sheetStateCallbacksPre
                 .forEach { it(sheetView, newState) }
@@ -111,7 +111,7 @@ class MapBottomPanelSheet(
         }
 
         override fun onSlide(sheetView: View, slideOffset: Float) {
-            //listener.updatePanelPadding(getSheetHeight(sheetView))
+            listener.updatePanelPadding(getSheetHeight(sheetView))
         }
     }
 
