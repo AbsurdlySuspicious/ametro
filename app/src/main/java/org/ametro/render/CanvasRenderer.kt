@@ -6,6 +6,7 @@ import android.graphics.*
 import android.os.Handler
 import android.os.HandlerThread
 import android.view.View
+import org.ametro.R
 import org.ametro.model.entities.MapScheme
 import org.ametro.render.elements.DrawingElement
 
@@ -40,7 +41,18 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private val rendererThread: HandlerThread = HandlerThread("map-renderer").also { it.start() }
     private val handler: Handler = Handler(rendererThread.looper)
 
+    private val density: Float
+    private val renderFailedErrorText: String
+    private val renderFailedTextPaint = Paint().also {
+        it.color = Color.RED
+        it.textAlign = Paint.Align.CENTER
+    }
+
     init {
+        val res = canvasView.context.applicationContext.resources
+        density = res.displayMetrics.density
+        renderFailedErrorText = res.getString(R.string.render_failed)
+
         val ac = canvasView.context.getSystemService(Activity.ACTIVITY_SERVICE) as ActivityManager
         memoryClass = ac.memoryClass
         setScheme(renderProgram)
@@ -62,17 +74,32 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         isRebuildPending = true
     }
 
-    fun draw(canvas: Canvas): Boolean {
+    fun draw(canvas: Canvas) {
+        canvas.save()
+
+        if (cache != null) {
+            drawImpl(canvas)
+            if (isRebuildPending)
+                postRebuildCache()
+        } else {
+            postRebuildCache()
+        }
+
+        if (isRenderFailed)
+            drawFailure(canvas)
+
+        canvas.restore()
+    }
+
+    private fun drawFailure(canvas: Canvas) {
+        renderFailedTextPaint.textSize = density * 50f
+        canvas.drawText(renderFailedErrorText, screenRect.width() / 2, screenRect.height() / 2, renderFailedTextPaint)
+    }
+
+    private fun drawImpl(canvas: Canvas) {
         maximumBitmapWidth = canvas.maximumBitmapWidth
         maximumBitmapHeight = canvas.maximumBitmapHeight
 
-        if (cache == null || isRebuildPending) {
-            isRebuildPending = false
-            rebuildCache()
-        }
-        if (isRenderFailed) {
-            return false
-        }
         // prepare transform matrix
         val m = renderMatrix
         if (cache!!.scale != scale) {
@@ -95,7 +122,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 postUpdateCache()
             }
         }
-        return !isRenderFailed
     }
 
     /** set transformation matrix for content  */
@@ -123,6 +149,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     fun rebuildCache() {
         recycleCache()
+        isRebuildPending = false
         isEntireMapCached = false
         if (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight) {
             renderPartialCache()

@@ -24,8 +24,6 @@ class MultiTouchMapView @JvmOverloads constructor(
 ) : ScrollView(context), IMultiTouchListener {
     private val multiTouchController: MultiTouchController
     private val renderer: CanvasRenderer
-    private val renderFailedTextPaint: Paint
-    private val renderFailedErrorText: String
     private val mapScheme: MapScheme
     private val rendererProgram: RenderProgram
     private val hideScrollbarsRunnable = Runnable { fadeScrollBars() }
@@ -38,7 +36,6 @@ class MultiTouchMapView @JvmOverloads constructor(
 
     init {
         isScrollbarFadingEnabled = false
-        renderFailedErrorText = "Render failed!"
         isFocusable = true
         isFocusableInTouchMode = true
         isHorizontalScrollBarEnabled = true
@@ -48,9 +45,6 @@ class MultiTouchMapView @JvmOverloads constructor(
         multiTouchController = MultiTouchController(getContext(), this)
         rendererProgram = RenderProgram(container, schemeName!!)
         renderer = CanvasRenderer(this, mapScheme, rendererProgram)
-        renderFailedTextPaint = Paint()
-        renderFailedTextPaint.color = Color.RED
-        renderFailedTextPaint.textAlign = Align.CENTER
         initializeViewport()
     }
 
@@ -81,11 +75,7 @@ class MultiTouchMapView @JvmOverloads constructor(
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.save()
-        if (!renderer.draw(canvas)) {
-            canvas.drawText(renderFailedErrorText, (width / 2).toFloat(), (height / 2).toFloat(), renderFailedTextPaint)
-        }
-        canvas.restore()
+        renderer.draw(canvas)
         super.onDraw(canvas)
     }
 
