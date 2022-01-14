@@ -363,7 +363,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     }
 
     fun show(routes: ArrayList<RoutePagerItem>, leaveTime: Calendar?, setPage: Int) {
-        sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, true) {
+        sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, false) {
             adapter.leaveTime = leaveTime
             if (setPage > 0) {
                 adapter.replaceItems(routes, currentPage, false)
@@ -372,10 +372,6 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
                 adapter.replaceItems(routes, currentPage, true)
             }
             sheet.adapter.showRoute = true
-            binding?.let {
-                val anim = sheet.bottomSheet.state != BottomSheetBehavior.STATE_HIDDEN
-                sheet.updatePeekHeightImpl(it.root.height, anim, force = true)
-            }
         }
     }
 
