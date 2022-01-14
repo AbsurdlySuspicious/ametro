@@ -157,14 +157,10 @@ class MultiTouchMapView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldWidth, oldHeight)
     }
 
-    fun highlightsElements(ids: java.util.HashSet<Int>?, enableDelay: Boolean) {
-        val delay =
-            if (enableDelay) 300L else 0L
-        postDelayed({
-            rendererProgram.highlightsElements(ids)
-            renderer.rebuildOnDraw()
-            invalidate()
-        }, delay)
+    fun highlightsElements(ids: java.util.HashSet<Int>?) {
+        rendererProgram.highlightsElements(ids)
+        renderer.rebuildOnDraw()
+        invalidate()
     }
 
     private fun initializeViewport() {
