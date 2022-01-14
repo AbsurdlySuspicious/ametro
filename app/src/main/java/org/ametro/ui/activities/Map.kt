@@ -177,6 +177,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             val route = app.currentRoute
             mapSelectionIndicators.clearSelection()
             restoreRoute(route, ignoreStation = false)
+            mapView!!.invalidate()
         } else {
             app.clearCurrentMapViewState()
             settingsProvider.currentMap?.let {
