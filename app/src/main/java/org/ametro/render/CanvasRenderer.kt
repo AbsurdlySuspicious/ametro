@@ -33,7 +33,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var isRenderFailed = false
     private var isUpdatesEnabled = false
     private var isEntireMapCached = false
-    private val mPrivateHandler = Handler()
+    private val handler = Handler()
 
     init {
         val ac = canvasView.context.getSystemService(Activity.ACTIVITY_SERVICE) as ActivityManager
@@ -67,21 +67,21 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         }
         // prepare transform matrix
         val m = renderMatrix
-        if (cache!!.Scale != scale) {
+        if (cache!!.scale != scale) {
             // if we're zooming - at first "roll-back" previous cache transform
-            m.set(cache!!.InvertedMatrix)
+            m.set(cache!!.invertedMatrix)
             // next apply current transformation
             m.postConcat(matrix)
         } else {
             // if we're using cache - simple translate origin
-            m.setTranslate(currentX - cache!!.X, currentY - cache!!.Y)
+            m.setTranslate(currentX - cache!!.x, currentY - cache!!.y)
         }
         canvas.clipRect(screenRect)
         canvas.drawColor(Color.WHITE)
-        canvas.drawBitmap(cache!!.Image!!, m, null)
+        canvas.drawBitmap(cache!!.image!!, m, null)
         if (isUpdatesEnabled) {
             //Log.w(TAG, "cache: " + StringUtil.formatRectF(cache.ViewRect) + " vs. screen: " + StringUtil.formatRectF(schemeRect) + ", hit = "+ cache.hit(schemeRect) );
-            if (cache!!.Scale != scale) {
+            if (cache!!.scale != scale) {
                 postRebuildCache()
             } else if (!isEntireMapCached && !cache!!.hit(schemeRect)) {
                 postUpdateCache()
@@ -151,9 +151,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 scale,
                 viewRect
             )
-            val c = Canvas(newCache.Image!!)
+            val c = Canvas(newCache.image!!)
             c.drawColor(Color.WHITE)
-            c.setMatrix(newCache.CacheMatrix)
+            c.setMatrix(newCache.cacheMatrix)
             val elements: List<DrawingElement> = renderProgram!!.allDrawingElements
             c.drawColor(Color.WHITE)
             for (elem in elements) {
@@ -180,10 +180,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 scale,
                 schemeRect
             )
-            val c = Canvas(newCache.Image!!)
-            c.setMatrix(newCache.CacheMatrix)
-            c.clipRect(newCache.SchemeRect)
-            val elements = renderProgram!!.getClippedDrawingElements(newCache.SchemeRect)
+            val c = Canvas(newCache.image!!)
+            c.setMatrix(newCache.cacheMatrix)
+            c.clipRect(newCache.schemeRect)
+            val elements = renderProgram!!.getClippedDrawingElements(newCache.schemeRect)
             c.drawColor(Color.WHITE)
             for (elem in elements) {
                 elem.draw(c)
@@ -211,20 +211,20 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 scale,
                 schemeRect
             )
-            val c = Canvas(newCache.Image!!)
-            val renderAll = splitRenderViewPort(newCache.SchemeRect, cache!!.SchemeRect)
+            val c = Canvas(newCache.image!!)
+            val renderAll = splitRenderViewPort(newCache.schemeRect, cache!!.schemeRect)
             if (renderAll) {
-                c.setMatrix(newCache.CacheMatrix)
-                c.clipRect(newCache.SchemeRect)
-                val elements = renderProgram!!.getClippedDrawingElements(newCache.SchemeRect)
+                c.setMatrix(newCache.cacheMatrix)
+                c.clipRect(newCache.schemeRect)
+                val elements = renderProgram!!.getClippedDrawingElements(newCache.schemeRect)
                 c.drawColor(Color.WHITE)
                 for (elem in elements) {
                     elem.draw(c)
                 }
             } else {
                 c.save()
-                c.setMatrix(newCache.CacheMatrix)
-                c.clipRect(newCache.SchemeRect)
+                c.setMatrix(newCache.cacheMatrix)
+                c.clipRect(newCache.schemeRect)
                 val elements: List<DrawingElement> =
                     renderProgram!!.getClippedDrawingElements(renderViewPortHorizontal, renderViewPortVertical)
                 c.drawColor(Color.WHITE)
@@ -232,13 +232,13 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     elem.draw(c)
                 }
                 c.restore()
-                c.drawBitmap(cache!!.Image!!, newCache.X - cache!!.X, newCache.Y - cache!!.Y, null)
+                c.drawBitmap(cache!!.image!!, newCache.x - cache!!.x, newCache.y - cache!!.y, null)
             }
             oldCache = cache
             cache = newCache
             if (!renderAll) {
-                mPrivateHandler.removeCallbacks(renderPartialCacheRunnable)
-                mPrivateHandler.postDelayed(renderPartialCacheRunnable, 300)
+                handler.removeCallbacks(renderPartialCacheRunnable)
+                handler.postDelayed(renderPartialCacheRunnable, 300)
             }
         } catch (ex: Exception) {
             isRenderFailed = true
@@ -283,7 +283,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         canvasView.invalidate()
     }
     private val updateCacheRunnable = Runnable {
-        if (oldCache != null && oldCache!!.Scale == scale) {
+        if (oldCache != null && oldCache!!.scale == scale) {
             updatePartialCache()
             //canvasView.invalidate();
         } else {
@@ -294,32 +294,32 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     fun recycleCache() {
         if (cache != null) {
-            cache!!.Image!!.recycle()
-            cache!!.Image = null
+            cache!!.image!!.recycle()
+            cache!!.image = null
             cache = null
         }
         if (oldCache != null) {
-            oldCache!!.Image!!.recycle()
-            oldCache!!.Image = null
+            oldCache!!.image!!.recycle()
+            oldCache!!.image = null
             oldCache = null
         }
         System.gc()
     }
 
     private class MapCache {
-        var CacheMatrix = Matrix()
-        var InvertedMatrix = Matrix()
-        var Scale = 0f
-        var X = 0f
-        var Y = 0f
-        var SchemeRect = RectF()
-        var Image: Bitmap? = null
+        var cacheMatrix = Matrix()
+        var invertedMatrix = Matrix()
+        var scale = 0f
+        var x = 0f
+        var y = 0f
+        var schemeRect = RectF()
+        var image: Bitmap? = null
         fun equals(width: Int, height: Int): Boolean {
-            return Image!!.width == width && Image!!.height == height
+            return image!!.width == width && image!!.height == height
         }
 
         fun hit(viewRect: RectF?): Boolean {
-            return SchemeRect.contains(viewRect!!)
+            return schemeRect.contains(viewRect!!)
         }
 
         companion object {
@@ -338,39 +338,39 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 if (oldCache != null) {
                     newCache = oldCache
                     if (!newCache.equals(width, height)) {
-                        newCache.Image!!.recycle()
-                        newCache.Image = null
+                        newCache.image!!.recycle()
+                        newCache.image = null
                         System.gc()
                     }
                 } else {
                     newCache = MapCache()
                 }
-                if (newCache.Image == null) {
-                    newCache.Image = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+                if (newCache.image == null) {
+                    newCache.image = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
                 }
-                newCache.CacheMatrix.set(matrix)
-                newCache.InvertedMatrix.set(invertedMatrix)
-                newCache.X = x
-                newCache.Y = y
-                newCache.Scale = scale
-                newCache.SchemeRect.set(schemeRect!!)
+                newCache.cacheMatrix.set(matrix)
+                newCache.invertedMatrix.set(invertedMatrix)
+                newCache.x = x
+                newCache.y = y
+                newCache.scale = scale
+                newCache.schemeRect.set(schemeRect!!)
                 return newCache
             }
         }
     }
 
     private fun postRebuildCache() {
-        mPrivateHandler.removeCallbacks(rebuildCacheRunnable)
-        mPrivateHandler.removeCallbacks(renderPartialCacheRunnable)
-        mPrivateHandler.removeCallbacks(updateCacheRunnable)
-        mPrivateHandler.post(rebuildCacheRunnable)
+        handler.removeCallbacks(rebuildCacheRunnable)
+        handler.removeCallbacks(renderPartialCacheRunnable)
+        handler.removeCallbacks(updateCacheRunnable)
+        handler.post(rebuildCacheRunnable)
     }
 
     private fun postUpdateCache() {
-        mPrivateHandler.removeCallbacks(rebuildCacheRunnable)
-        mPrivateHandler.removeCallbacks(renderPartialCacheRunnable)
-        mPrivateHandler.removeCallbacks(updateCacheRunnable)
-        mPrivateHandler.post(updateCacheRunnable)
+        handler.removeCallbacks(rebuildCacheRunnable)
+        handler.removeCallbacks(renderPartialCacheRunnable)
+        handler.removeCallbacks(updateCacheRunnable)
+        handler.post(updateCacheRunnable)
     }
 
     fun onAttachedToWindow() {
