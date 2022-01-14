@@ -157,8 +157,8 @@ class MultiTouchMapView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldWidth, oldHeight)
     }
 
-    fun highlightsElements(ids: java.util.HashSet<Int>?) {
-        rendererProgram.highlightsElements(ids)
+    fun highlightsElements(ids: (() -> java.util.HashSet<Int>?)?) {
+        rendererProgram.highlightsElements(ids?.invoke())
         renderer.rebuildOnDraw()
         invalidate()
     }

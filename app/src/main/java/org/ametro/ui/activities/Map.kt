@@ -490,8 +490,9 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
     }
 
     private fun highlightRoute(route: MapRoute) {
-        mapView!!
-            .highlightsElements(RouteUtils.convertRouteToSchemeObjectIds(route, scheme!!))
+        mapView!!.highlightsElements {
+            RouteUtils.convertRouteToSchemeObjectIds(route, scheme!!)
+        }
     }
 
     override fun onRouteSelectionComplete(
