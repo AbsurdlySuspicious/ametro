@@ -4,6 +4,9 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.Paint.Align
 import android.os.Handler
+import android.os.HandlerThread
+import android.os.Looper
+import android.os.Message
 import android.util.Pair
 import android.view.MotionEvent
 import android.widget.ScrollView
@@ -26,7 +29,10 @@ class MultiTouchMapView @JvmOverloads constructor(
     private val renderer: CanvasRenderer
     private val mapScheme: MapScheme
     private val rendererProgram: RenderProgram
-    private val hideScrollbarsRunnable = Runnable { fadeScrollBars() }
+
+    private lateinit var dispatcherThread: HandlerThread
+    private lateinit var dispatcher: Handler
+
     private var verticalScrollOffset = 0
     private var horizontalScrollOffset = 0
     private var verticalScrollRange = 0
@@ -34,13 +40,28 @@ class MultiTouchMapView @JvmOverloads constructor(
     private var changeCenterPoint: PointF? = null
     private var changeScale: Float? = null
 
+    private fun createDispatcher(looper: Looper) = object : Handler(looper) {
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                MSG_HIDE_SCROLLBARS ->
+                    fadeScrollBars()
+                MSG_HIGHLIGHT_ELEMENTS -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val lazyIds = msg.obj as (() -> java.util.HashSet<Int>?)?
+                    rendererProgram.highlightsElements(lazyIds?.invoke())
+                    renderer.rebuildOnDraw()
+                    invalidate()
+                }
+            }
+        }
+    }
+
     init {
         isScrollbarFadingEnabled = false
         isFocusable = true
         isFocusableInTouchMode = true
         isHorizontalScrollBarEnabled = true
         isVerticalScrollBarEnabled = true
-        awakeScrollBars()
         mapScheme = container!!.getScheme(schemeName)
         multiTouchController = MultiTouchController(getContext(), this)
         rendererProgram = RenderProgram(container, schemeName!!)
@@ -64,12 +85,17 @@ class MultiTouchMapView @JvmOverloads constructor(
         return horizontalScrollRange
     }
 
+
+
     override fun onAttachedToWindow() {
+        dispatcherThread = HandlerThread("map-view-dispatcher").also { it.start() }
+        dispatcher = createDispatcher(dispatcherThread.looper)
         renderer.onAttachedToWindow()
         super.onAttachedToWindow()
     }
 
     override fun onDetachedFromWindow() {
+        dispatcherThread.looper.quit()
         renderer.onDetachedFromWindow()
         super.onDetachedFromWindow()
     }
@@ -158,9 +184,11 @@ class MultiTouchMapView @JvmOverloads constructor(
     }
 
     fun highlightsElements(ids: (() -> java.util.HashSet<Int>?)?) {
-        rendererProgram.highlightsElements(ids?.invoke())
-        renderer.rebuildOnDraw()
-        invalidate()
+        val msg = Message().also {
+            it.obj = ids
+            it.what = MSG_HIGHLIGHT_ELEMENTS
+        }
+        dispatcher.sendMessage(msg)
     }
 
     private fun initializeViewport() {
@@ -200,11 +228,11 @@ class MultiTouchMapView @JvmOverloads constructor(
         awakeScrollBars()
     }
 
-    private fun awakeScrollBars() {
+    fun awakeScrollBars() {
         isVerticalScrollBarEnabled = true
         isHorizontalScrollBarEnabled = true
-        dispatcher.removeCallbacks(hideScrollbarsRunnable)
-        dispatcher.postDelayed(hideScrollbarsRunnable, SCROLLBAR_TIMEOUT)
+        dispatcher.removeMessages(MSG_HIDE_SCROLLBARS)
+        dispatcher.sendEmptyMessageDelayed(MSG_HIDE_SCROLLBARS, SCROLLBAR_TIMEOUT)
         invalidate()
     }
 
@@ -220,6 +248,7 @@ class MultiTouchMapView @JvmOverloads constructor(
 
     companion object {
         private const val SCROLLBAR_TIMEOUT: Long = 1000
-        private val dispatcher = Handler()
+        private const val MSG_HIDE_SCROLLBARS = 1
+        private const val MSG_HIGHLIGHT_ELEMENTS = 2
     }
 }
