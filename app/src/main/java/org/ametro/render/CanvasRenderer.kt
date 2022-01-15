@@ -246,7 +246,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             }
         } finally {
             isCacheRebuilding = false
-            recycleCache()
+            recycleCache(noOld = true)
         }
     }
 
@@ -412,11 +412,11 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         image?.let { toRecycle.add(it) }
     }
 
-    fun recycleCache(full: Boolean = false, noSwap: Boolean = false, noGC: Boolean = false) {
+    fun recycleCache(full: Boolean = false, noSwap: Boolean = false, noOld: Boolean = false, noGC: Boolean = false) {
         val q: ArrayList<Bitmap> = ArrayList(3)
 
         if (!noSwap) recycleCacheSingle(q, swapCache.also { swapCache = null })
-        recycleCacheSingle(q, oldCache.also { oldCache = null })
+        if (!noOld) recycleCacheSingle(q, oldCache.also { oldCache = null })
         if (full) recycleCacheSingle(q, cache.also { cache = null })
 
         q.forEach { it.recycle() }
