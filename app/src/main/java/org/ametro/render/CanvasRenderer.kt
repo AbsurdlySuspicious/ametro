@@ -5,6 +5,8 @@ import android.app.ActivityManager
 import android.graphics.*
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.Looper
+import android.os.Message
 import android.view.View
 import org.ametro.R
 import org.ametro.model.entities.MapScheme
@@ -48,6 +50,30 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         it.textAlign = Paint.Align.CENTER
     }
 
+    private fun createHandler(looper: Looper) = object : Handler(looper) {
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                MSG_REBUILD_CACHE -> {
+                    rebuildCache()
+                    canvasView.invalidate()
+                }
+                MSG_UPDATE_CACHE -> {
+                    if (oldCache != null && oldCache!!.scale == scale) {
+                        updatePartialCache()
+                        //canvasView.invalidate();
+                    } else {
+                        renderPartialCache()
+                        canvasView.invalidate()
+                    }
+                }
+                MSG_RENDER_PARTIAL_CACHE -> {
+                    renderPartialCache()
+                    canvasView.invalidate()
+                }
+            }
+        }
+    }
+
     init {
         val res = canvasView.context.applicationContext.resources
         density = res.displayMetrics.density
@@ -61,7 +87,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     fun onAttachedToWindow() {
         rendererThread = HandlerThread("map-renderer")
         rendererThread.start()
-        handler = Handler(rendererThread.looper)
+        handler = createHandler(rendererThread.looper)
     }
 
     fun onDetachedFromWindow() {
@@ -282,8 +308,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             oldCache = cache
             cache = newCache
             if (!renderAll) {
-                handler.removeCallbacks(renderPartialCacheRunnable)
-                handler.postDelayed(renderPartialCacheRunnable, 300)
+                handler.removeMessages(MSG_RENDER_PARTIAL_CACHE)
+                handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, 300)
             }
         } catch (ex: Exception) {
             isRenderFailed = true
@@ -319,40 +345,20 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         return renderAll
     }
 
-    private val renderPartialCacheRunnable = Runnable {
-        renderPartialCache()
-        canvasView.invalidate()
-    }
-
-    private val rebuildCacheRunnable = Runnable {
-        rebuildCache()
-        canvasView.invalidate()
-    }
-
-    private val updateCacheRunnable = Runnable {
-        if (oldCache != null && oldCache!!.scale == scale) {
-            updatePartialCache()
-            //canvasView.invalidate();
-        } else {
-            renderPartialCache()
-            canvasView.invalidate()
-        }
-    }
-
     private fun clearQueue() {
-        handler.removeCallbacks(rebuildCacheRunnable)
-        handler.removeCallbacks(renderPartialCacheRunnable)
-        handler.removeCallbacks(updateCacheRunnable)
+        handler.removeMessages(MSG_REBUILD_CACHE)
+        handler.removeMessages(MSG_RENDER_PARTIAL_CACHE)
+        handler.removeMessages(MSG_UPDATE_CACHE)
     }
 
     private fun postRebuildCache() {
         clearQueue()
-        handler.post(rebuildCacheRunnable)
+        handler.sendEmptyMessage(MSG_REBUILD_CACHE)
     }
 
     private fun postUpdateCache() {
         clearQueue()
-        handler.post(updateCacheRunnable)
+        handler.sendEmptyMessage(MSG_UPDATE_CACHE)
     }
 
     fun recycleCache() {
@@ -420,5 +426,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 return newCache
             }
         }
+    }
+
+    companion object {
+        private const val MSG_HIGHLIGHT_ELEMENTS = 1
+        private const val MSG_RENDER_PARTIAL_CACHE = 2
+        private const val MSG_REBUILD_CACHE = 3
+        private const val MSG_UPDATE_CACHE = 4
     }
 }
