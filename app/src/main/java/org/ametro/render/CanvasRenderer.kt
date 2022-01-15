@@ -42,6 +42,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var isRenderFailed = false
     private var isUpdatesEnabled = false
     private var isRebuildPending = false
+    private var isCacheRebuilding = false
     private var isEntireMapCached = false
 
     private lateinit var rendererThread: HandlerThread
@@ -139,8 +140,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             if (isRebuildPending)
                 postRebuildCache().also { Log.d("AM1", "draw: rebuild pending") }
         } else {
-            Log.d("AM1", "draw: no cache")
-            postRebuildCache()
+            Log.d("AM1", "draw: no cache, will rebuild: ${!isCacheRebuilding}")
+            if (!isCacheRebuilding)
+                postRebuildCache()
         }
 
         if (isRenderFailed)
@@ -207,29 +209,34 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     fun rebuildCache() {
         Log.d("AM1", "rebuild cache")
-        recycleCache()
-        isRebuildPending = false
-        isEntireMapCached = false
-        if (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight) {
-            renderPartialCache()
-            Log.d("AM1", "rebuild cache: end partial 1")
-            return
-        }
-        val memoryLimit = 4 * 1024 * 1024 * memoryClass / 16
-        val bitmapSize = currentWidth.toInt() * currentHeight.toInt() * 2
-        if (bitmapSize > memoryLimit) {
-            renderPartialCache()
-            Log.d("AM1", "rebuild cache: end partial 2")
-            return
-        }
+        isCacheRebuilding = true
         try {
-            renderEntireCache()
-            isEntireMapCached = true
-            Log.d("AM1", "rebuild cache: end entire")
-        } catch (ex: OutOfMemoryError) {
             recycleCache()
-            renderPartialCache()
-            Log.d("AM1", "rebuild cache: end partial oom")
+            isRebuildPending = false
+            isEntireMapCached = false
+            if (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight) {
+                renderPartialCache()
+                Log.d("AM1", "rebuild cache: end partial 1")
+                return
+            }
+            val memoryLimit = 4 * 1024 * 1024 * memoryClass / 16
+            val bitmapSize = currentWidth.toInt() * currentHeight.toInt() * 2
+            if (bitmapSize > memoryLimit) {
+                renderPartialCache()
+                Log.d("AM1", "rebuild cache: end partial 2")
+                return
+            }
+            try {
+                renderEntireCache()
+                isEntireMapCached = true
+                Log.d("AM1", "rebuild cache: end entire")
+            } catch (ex: OutOfMemoryError) {
+                recycleCache()
+                renderPartialCache()
+                Log.d("AM1", "rebuild cache: end partial oom")
+            }
+        } finally {
+            isCacheRebuilding = false
         }
     }
 
@@ -389,16 +396,20 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     }
 
     fun recycleCache() {
+        val cache = this.cache
         if (cache != null) {
-            cache!!.image!!.recycle()
-            cache!!.image = null
-            cache = null
+            this.cache = null
+            cache.image!!.recycle()
+            cache.image = null
         }
+
+        val oldCache = this.oldCache
         if (oldCache != null) {
-            oldCache!!.image!!.recycle()
-            oldCache!!.image = null
-            oldCache = null
+            this.oldCache = null
+            oldCache.image!!.recycle()
+            oldCache.image = null
         }
+
         System.gc()
     }
 
