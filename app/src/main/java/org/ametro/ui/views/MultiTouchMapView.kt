@@ -11,6 +11,7 @@ import org.ametro.model.MapContainer
 import org.ametro.model.entities.MapPoint
 import org.ametro.model.entities.MapScheme
 import org.ametro.render.CanvasRenderer
+import org.ametro.render.ElementsToHighlight
 import org.ametro.render.RenderProgram
 import org.ametro.ui.controllers.MultiTouchController
 import org.ametro.ui.controllers.MultiTouchController.IMultiTouchListener
@@ -157,10 +158,8 @@ class MultiTouchMapView @JvmOverloads constructor(
         super.onSizeChanged(w, h, oldWidth, oldHeight)
     }
 
-    fun highlightsElements(ids: (() -> java.util.HashSet<Int>?)?) {
-        rendererProgram.highlightsElements(ids?.invoke())
-        renderer.rebuildOnDraw()
-        invalidate()
+    fun highlightsElements(ids: ElementsToHighlight) {
+        renderer.highlightElements(ids)
     }
 
     private fun initializeViewport() {

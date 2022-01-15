@@ -12,7 +12,10 @@ import org.ametro.R
 import org.ametro.model.entities.MapScheme
 import org.ametro.render.elements.DrawingElement
 
+typealias ElementsToHighlight = (() -> java.util.HashSet<Int>?)?
+
 class CanvasRenderer(private val canvasView: View, private val mapScheme: MapScheme, renderProgram: RenderProgram?) {
+
     private var renderProgram: RenderProgram? = null
     private var cache: MapCache? = null
     private var oldCache: MapCache? = null
@@ -70,6 +73,13 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     renderPartialCache()
                     canvasView.invalidate()
                 }
+                MSG_HIGHLIGHT_ELEMENTS -> {
+                    @Suppress("UNCHECKED_CAST")
+                    val lazyIds = msg.obj as ElementsToHighlight
+                    renderProgram!!.highlightsElements(lazyIds?.invoke())
+                    rebuildOnDraw()
+                    canvasView.invalidate()
+                }
             }
         }
     }
@@ -108,6 +118,14 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     fun rebuildOnDraw() {
         isRebuildPending = true
+    }
+
+    fun highlightElements(lazyIds: ElementsToHighlight) {
+        val msg = Message().also {
+            it.what = MSG_HIGHLIGHT_ELEMENTS
+            it.obj = lazyIds
+        }
+        handler.sendMessage(msg)
     }
 
     fun draw(canvas: Canvas) {
