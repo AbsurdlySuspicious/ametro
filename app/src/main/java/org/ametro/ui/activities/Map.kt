@@ -385,7 +385,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         }
         mapContainerView.removeAllViews()
         mapContainerView.addView(mapView)
-        mapView!!.awakeScrollBars()
         mapView!!.requestFocus()
     }
 
