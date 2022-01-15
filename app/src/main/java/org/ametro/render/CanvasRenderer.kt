@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.Message
+import android.util.Log
 import android.view.View
 import org.ametro.R
 import org.ametro.model.entities.MapScheme
@@ -77,8 +78,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     @Suppress("UNCHECKED_CAST")
                     val lazyIds = msg.obj as ElementsToHighlight
                     renderProgram!!.highlightsElements(lazyIds?.invoke())
-                    rebuildOnDraw()
-                    canvasView.invalidate()
+                    // rebuildOnDraw()
+                    // canvasView.invalidate()
+                    postRebuildCache()
                 }
             }
         }
@@ -132,10 +134,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         canvas.save()
 
         if (cache != null) {
+            Log.d("AM1", "draw: has cache")
             drawImpl(canvas)
             if (isRebuildPending)
-                postRebuildCache()
+                postRebuildCache().also { Log.d("AM1", "draw: rebuild pending") }
         } else {
+            Log.d("AM1", "draw: no cache")
             postRebuildCache()
         }
 
@@ -202,25 +206,30 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     @Synchronized
     fun rebuildCache() {
+        Log.d("AM1", "rebuild cache")
         recycleCache()
         isRebuildPending = false
         isEntireMapCached = false
         if (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight) {
             renderPartialCache()
+            Log.d("AM1", "rebuild cache: end partial 1")
             return
         }
         val memoryLimit = 4 * 1024 * 1024 * memoryClass / 16
         val bitmapSize = currentWidth.toInt() * currentHeight.toInt() * 2
         if (bitmapSize > memoryLimit) {
             renderPartialCache()
+            Log.d("AM1", "rebuild cache: end partial 2")
             return
         }
         try {
             renderEntireCache()
             isEntireMapCached = true
+            Log.d("AM1", "rebuild cache: end entire")
         } catch (ex: OutOfMemoryError) {
             recycleCache()
             renderPartialCache()
+            Log.d("AM1", "rebuild cache: end partial oom")
         }
     }
 
