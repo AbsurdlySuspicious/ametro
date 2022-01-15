@@ -20,6 +20,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var renderProgram: RenderProgram? = null
     private var cache: MapCache? = null
     private var oldCache: MapCache? = null
+    private var swapCache: MapCache? = null
     private val matrix = Matrix()
     private val mInvertedMatrix = Matrix()
     private val renderMatrix = Matrix()
@@ -112,7 +113,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         val m = Matrix()
         m.setTranslate(1.0f, 1.0f)
         setMatrix(m)
-        recycleCache()
+        recycleCache(full = true)
     }
 
     fun setUpdatesEnabled(enabled: Boolean) {
@@ -133,10 +134,15 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     fun draw(canvas: Canvas) {
         canvas.save()
+        val mainCache = this.cache
+        val swapCache = this.swapCache
 
-        if (cache != null) {
+        if (isCacheRebuilding && swapCache?.image != null) {
+            Log.d("AM1", "draw: rebuilding + swap cache")
+            drawImpl(canvas, swapCache, noUpdates = true)
+        } else if (mainCache?.image != null) {
             Log.d("AM1", "draw: has cache")
-            drawImpl(canvas)
+            drawImpl(canvas, mainCache, noUpdates = false)
             if (isRebuildPending)
                 postRebuildCache().also { Log.d("AM1", "draw: rebuild pending") }
         } else {
@@ -156,29 +162,29 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         canvas.drawText(renderFailedErrorText, screenRect.width() / 2, screenRect.height() / 2, renderFailedTextPaint)
     }
 
-    private fun drawImpl(canvas: Canvas) {
+    private fun drawImpl(canvas: Canvas, drawCache: MapCache, noUpdates: Boolean) {
         maximumBitmapWidth = canvas.maximumBitmapWidth
         maximumBitmapHeight = canvas.maximumBitmapHeight
 
         // prepare transform matrix
         val m = renderMatrix
-        if (cache!!.scale != scale) {
+        if (drawCache.scale != scale) {
             // if we're zooming - at first "roll-back" previous cache transform
-            m.set(cache!!.invertedMatrix)
+            m.set(drawCache.invertedMatrix)
             // next apply current transformation
             m.postConcat(matrix)
         } else {
             // if we're using cache - simple translate origin
-            m.setTranslate(currentX - cache!!.x, currentY - cache!!.y)
+            m.setTranslate(currentX - drawCache.x, currentY - drawCache.y)
         }
         canvas.clipRect(screenRect)
         canvas.drawColor(Color.WHITE)
-        canvas.drawBitmap(cache!!.image!!, m, null)
-        if (isUpdatesEnabled) {
+        canvas.drawBitmap(drawCache.image!!, m, null)
+        if (!noUpdates && isUpdatesEnabled) {
             //Log.w(TAG, "cache: " + StringUtil.formatRectF(cache.ViewRect) + " vs. screen: " + StringUtil.formatRectF(schemeRect) + ", hit = "+ cache.hit(schemeRect) );
-            if (cache!!.scale != scale) {
+            if (drawCache.scale != scale) {
                 postRebuildCache()
-            } else if (!isEntireMapCached && !cache!!.hit(schemeRect)) {
+            } else if (!isEntireMapCached && !drawCache.hit(schemeRect)) {
                 postUpdateCache()
             }
         }
@@ -210,10 +216,13 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     fun rebuildCache() {
         Log.d("AM1", "rebuild cache")
         isCacheRebuilding = true
+        isRebuildPending = false
+        isEntireMapCached = false
         try {
-            recycleCache()
-            isRebuildPending = false
-            isEntireMapCached = false
+            swapCache = cache
+            cache = null
+            recycleCache(noSwap = true, noGC = true)
+
             if (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight) {
                 renderPartialCache()
                 Log.d("AM1", "rebuild cache: end partial 1")
@@ -231,12 +240,13 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 isEntireMapCached = true
                 Log.d("AM1", "rebuild cache: end entire")
             } catch (ex: OutOfMemoryError) {
-                recycleCache()
+                recycleCache(full = true, noSwap = true)
                 renderPartialCache()
                 Log.d("AM1", "rebuild cache: end partial oom")
             }
         } finally {
             isCacheRebuilding = false
+            recycleCache()
         }
     }
 
@@ -395,22 +405,22 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         handler.sendEmptyMessage(MSG_UPDATE_CACHE)
     }
 
-    fun recycleCache() {
-        val cache = this.cache
-        if (cache != null) {
-            this.cache = null
-            cache.image!!.recycle()
-            cache.image = null
-        }
+    private fun recycleCacheSingle(toRecycle: ArrayList<Bitmap>, cache: MapCache?) {
+        if (cache == null) return
+        val image = cache.image
+        cache.image = null
+        image?.let { toRecycle.add(it) }
+    }
 
-        val oldCache = this.oldCache
-        if (oldCache != null) {
-            this.oldCache = null
-            oldCache.image!!.recycle()
-            oldCache.image = null
-        }
+    fun recycleCache(full: Boolean = false, noSwap: Boolean = false, noGC: Boolean = false) {
+        val q: ArrayList<Bitmap> = ArrayList(3)
 
-        System.gc()
+        if (!noSwap) recycleCacheSingle(q, swapCache.also { swapCache = null })
+        recycleCacheSingle(q, oldCache.also { oldCache = null })
+        if (full) recycleCacheSingle(q, cache.also { cache = null })
+
+        q.forEach { it.recycle() }
+        if (!noGC) System.gc()
     }
 
     private class MapCache {
