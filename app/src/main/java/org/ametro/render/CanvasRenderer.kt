@@ -12,39 +12,46 @@ import android.view.View
 import org.ametro.R
 import org.ametro.model.entities.MapScheme
 import org.ametro.render.elements.DrawingElement
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 typealias ElementsToHighlight = (() -> java.util.HashSet<Int>?)?
 
 class CanvasRenderer(private val canvasView: View, private val mapScheme: MapScheme, renderProgram: RenderProgram?) {
 
     private var renderProgram: RenderProgram? = null
-    private var cache: MapCache? = null
-    private var oldCache: MapCache? = null
-    private var swapCache: MapCache? = null
+
+    private val cache: AtomicReference<MapCache?> = AtomicReference(null)
+    private val oldCache: AtomicReference<MapCache?> = AtomicReference(null)
+    private val swapCache: AtomicReference<MapCache?> = AtomicReference(null)
+
     private val matrix = Matrix()
     private val mInvertedMatrix = Matrix()
     private val renderMatrix = Matrix()
+    private val matrixValues = FloatArray(9)
+
     private val screenRect = RectF()
     private val schemeRect = RectF()
     private val renderViewPort = RectF()
     private val renderViewPortVertical = RectF()
     private val renderViewPortHorizontal = RectF()
     private val renderViewPortIntersection = RectF()
+
     private val memoryClass: Int
     private var maximumBitmapWidth = 0
     private var maximumBitmapHeight = 0
+
     private var scale = 0f
     private var currentX = 0f
     private var currentY = 0f
     private var currentWidth = 0f
     private var currentHeight = 0f
-    private val matrixValues = FloatArray(9)
 
-    private var isRenderFailed = false
-    private var isUpdatesEnabled = false
-    private var isRebuildPending = false
-    private var isCacheRebuilding = false
-    private var isEntireMapCached = false
+    private val isRenderFailed = AtomicBoolean(false)
+    private val isUpdatesEnabled = AtomicBoolean(false)
+    private val isRebuildPending = AtomicBoolean(false)
+    private val isCacheRebuilding = AtomicBoolean(false)
+    private val isEntireMapCached = AtomicBoolean(false)
 
     private lateinit var rendererThread: HandlerThread
     private lateinit var handler: Handler
@@ -64,7 +71,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     canvasView.invalidate()
                 }
                 MSG_UPDATE_CACHE -> {
-                    if (oldCache != null && oldCache!!.scale == scale) {
+                    val oldCache = oldCache.get()
+                    if (oldCache != null && oldCache.scale == scale) {
                         updatePartialCache()
                         //canvasView.invalidate();
                     } else {
@@ -117,11 +125,11 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     }
 
     fun setUpdatesEnabled(enabled: Boolean) {
-        isUpdatesEnabled = enabled
+        isUpdatesEnabled.set(enabled)
     }
 
     fun rebuildOnDraw() {
-        isRebuildPending = true
+        isRebuildPending.set(true)
     }
 
     fun highlightElements(lazyIds: ElementsToHighlight) {
@@ -134,8 +142,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     fun draw(canvas: Canvas) {
         canvas.save()
-        val mainCache = this.cache
-        val swapCache = this.swapCache
+
+        val mainCache = this.cache.get()
+        val swapCache = this.swapCache.get()
+        val isCacheRebuilding = isCacheRebuilding.get()
 
         if (isCacheRebuilding && swapCache?.image != null) {
             Log.d("AM1", "draw: rebuilding + swap cache")
@@ -143,7 +153,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         } else if (mainCache?.image != null) {
             Log.d("AM1", "draw: has cache")
             drawImpl(canvas, mainCache, noUpdates = false)
-            if (isRebuildPending)
+            if (isRebuildPending.get())
                 postRebuildCache().also { Log.d("AM1", "draw: rebuild pending") }
         } else {
             Log.d("AM1", "draw: no cache, will rebuild: ${!isCacheRebuilding}")
@@ -151,7 +161,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 postRebuildCache()
         }
 
-        if (isRenderFailed)
+        if (isRenderFailed.get())
             drawFailure(canvas)
 
         canvas.restore()
@@ -180,11 +190,11 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         canvas.clipRect(screenRect)
         canvas.drawColor(Color.WHITE)
         canvas.drawBitmap(drawCache.image!!, m, null)
-        if (!noUpdates && isUpdatesEnabled) {
+        if (!noUpdates && isUpdatesEnabled.get()) {
             //Log.w(TAG, "cache: " + StringUtil.formatRectF(cache.ViewRect) + " vs. screen: " + StringUtil.formatRectF(schemeRect) + ", hit = "+ cache.hit(schemeRect) );
             if (drawCache.scale != scale) {
                 postRebuildCache()
-            } else if (!isEntireMapCached && !drawCache.hit(schemeRect)) {
+            } else if (!isEntireMapCached.get() && !drawCache.hit(schemeRect)) {
                 postUpdateCache()
             }
         }
@@ -202,7 +212,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         currentWidth = mapScheme.width * scale
         currentHeight = mapScheme.height * scale
         updateViewRect()
-        isRenderFailed = false
+        isRenderFailed.set(false)
     }
 
     fun updateViewRect() {
@@ -215,12 +225,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     fun rebuildCache() {
         Log.d("AM1", "rebuild cache")
-        isCacheRebuilding = true
-        isRebuildPending = false
-        isEntireMapCached = false
+        isCacheRebuilding.set(true)
+        isRebuildPending.set(false)
+        isEntireMapCached.set(false)
         try {
-            swapCache = cache
-            cache = null
+            swapCache.set(cache.get())
+            cache.set(null)
             recycleCache(noSwap = true, noGC = true)
 
             if (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight) {
@@ -237,7 +247,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             }
             try {
                 renderEntireCache()
-                isEntireMapCached = true
+                isEntireMapCached.set(true)
                 Log.d("AM1", "rebuild cache: end entire")
             } catch (ex: OutOfMemoryError) {
                 recycleCache(full = true, noSwap = true)
@@ -245,7 +255,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 Log.d("AM1", "rebuild cache: end partial oom")
             }
         } finally {
-            isCacheRebuilding = false
+            isCacheRebuilding.set(false)
             recycleCache(noOld = true)
         }
     }
@@ -260,7 +270,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             val i = Matrix()
             m.invert(i)
             val newCache = MapCache.reuse(
-                oldCache, currentWidth.toInt(), currentHeight.toInt(),
+                oldCache.get(), currentWidth.toInt(), currentHeight.toInt(),
                 m,
                 i, 0f, 0f,
                 scale,
@@ -274,9 +284,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             for (elem in elements) {
                 elem.draw(c)
             }
-            cache = newCache
+            cache.set(newCache)
         } catch (ex: Exception) {
-            isRenderFailed = true
+            isRenderFailed.set(true)
         }
     }
 
@@ -285,7 +295,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         try {
             //Log.w(TAG,"render partial");
             val newCache = MapCache.reuse(
-                oldCache,
+                oldCache.get(),
                 canvasView.width,
                 canvasView.height,
                 matrix,
@@ -303,11 +313,11 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             for (elem in elements) {
                 elem.draw(c)
             }
-            oldCache = cache
-            cache = newCache
+            oldCache.set(cache.get())
+            cache.set(newCache)
         } catch (ex: Exception) {
             //Log.w(TAG,"render partial failed", ex);
-            isRenderFailed = true
+            isRenderFailed.set(true)
         }
     }
 
@@ -316,7 +326,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         try {
             //Log.w(TAG,"update partial");
             val newCache = MapCache.reuse(
-                oldCache,
+                oldCache.get(),
                 canvasView.width,
                 canvasView.height,
                 matrix,
@@ -326,8 +336,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 scale,
                 schemeRect
             )
+            val cache = this.cache.get()!!
             val c = Canvas(newCache.image!!)
-            val renderAll = splitRenderViewPort(newCache.schemeRect, cache!!.schemeRect)
+            val renderAll = splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
             if (renderAll) {
                 c.setMatrix(newCache.cacheMatrix)
                 c.clipRect(newCache.schemeRect)
@@ -347,16 +358,16 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     elem.draw(c)
                 }
                 c.restore()
-                c.drawBitmap(cache!!.image!!, newCache.x - cache!!.x, newCache.y - cache!!.y, null)
+                c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
             }
-            oldCache = cache
-            cache = newCache
+            oldCache.set(cache)
+            this.cache.set(newCache)
             if (!renderAll) {
                 handler.removeMessages(MSG_RENDER_PARTIAL_CACHE)
                 handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, 300)
             }
         } catch (ex: Exception) {
-            isRenderFailed = true
+            isRenderFailed.set(true)
         }
     }
 
@@ -415,9 +426,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     fun recycleCache(full: Boolean = false, noSwap: Boolean = false, noOld: Boolean = false, noGC: Boolean = false) {
         val q: ArrayList<Bitmap> = ArrayList(3)
 
-        if (!noSwap) recycleCacheSingle(q, swapCache.also { swapCache = null })
-        if (!noOld) recycleCacheSingle(q, oldCache.also { oldCache = null })
-        if (full) recycleCacheSingle(q, cache.also { cache = null })
+        if (!noSwap) recycleCacheSingle(q, swapCache.getAndSet(null))
+        if (!noOld) recycleCacheSingle(q, oldCache.getAndSet(null))
+        if (full) recycleCacheSingle(q, cache.getAndSet(null))
 
         q.forEach { it.recycle() }
         if (!noGC) System.gc()
