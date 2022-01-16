@@ -1,6 +1,5 @@
 package org.ametro.ui.bottom_panel
 
-import android.animation.ArgbEvaluator
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
@@ -12,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -32,8 +30,8 @@ import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.AnimUtils
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
+
 
 typealias RoutePagerStation =
         Pair<MapSchemeLine, MapSchemeStation>
@@ -423,6 +421,24 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
             it.dots.setViewPager2(it.pager)
             it.dots.refreshDots()
             this.binding = it
+
+            val t = object : ViewPager2.PageTransformer {
+                override fun transformPage(view: View, position: Float) {
+                    if (position < 0) {
+                        if (position > -1)
+                            view.translationX = view.width * -position
+                        else
+                            view.translationX = 0f
+                    } else {
+                        if (position > 0)
+                            view.translationX = view.width * (1f - position)
+                        else
+                            view.translationX = 0f
+                    }
+                    Log.d("AM2", "pt $position, tx ${view.translationX}")
+                }
+            }
+            it.pager.setPageTransformer(t)
         }
     }
 
