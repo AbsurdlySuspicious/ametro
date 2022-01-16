@@ -422,6 +422,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
             it.pager.registerOnPageChangeCallback(pageChangedCallback)
             it.dots.setViewPager2(it.pager)
             it.dots.refreshDots()
+            this.binding = it
         }
     }
 
@@ -429,6 +430,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         castBind(bind).also {
             it.pager.unregisterOnPageChangeCallback(pageChangedCallback)
             it.dots.pager?.removeOnPageChangeListener()
+            this.binding = null
         }
     }
 
