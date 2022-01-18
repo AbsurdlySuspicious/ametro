@@ -202,7 +202,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
     private val viewStash: MutableList<ImageView> = arrayListOf() // todo remove views from stash?
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
-    private var touchAnimProgram: ArrayList<AnimatedTxf>? = null
+    private var touchAnimProgram: Pair<ArrayList<AnimatedTxf>, TxfWidths>? = null
 
     private val lineHeight: Int = context.resources
         .getDimensionPixelSize(R.dimen.panel_bottom_route_line_long_height)
@@ -327,17 +327,26 @@ class RouteTransfersLayout @JvmOverloads constructor(
     fun touchAnimationStart(targetTransfers: MutableList<RoutePagerTransfer>) {
         if (touchAnimProgram != null)
             silentReset()
+
         val widths = makeWidths(targetTransfers)
-        touchAnimProgram = animProgram(widths, this.transfers, targetTransfers)
+        val program = animProgram(widths, this.transfers, targetTransfers)
+
+        addViews(widths)
+        touchAnimProgram = Pair(program, widths)
     }
 
     fun touchAnimationEnd() {
-        touchAnimProgram = null
-        this.post { silentReset() }
+        touchAnimProgram?.let { program ->
+            touchAnimProgram = null
+            this.post {
+                removeViews(program.second)
+                silentReset()
+            }
+        }
     }
 
     fun touchAnimate(progress: Float) {
-        touchAnimProgram?.let { animateViews(it, progress) }
+        touchAnimProgram?.let { animateViews(it.first, progress) }
     }
 
     private fun animateViews(animTxf: ArrayList<AnimatedTxf>, p: Float) {
@@ -485,7 +494,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
                         else
                             view.translationX = 0f
                     }
-                    Log.d("AM2", "pt $position, tx ${view.translationX}")
+                    // Log.d("AM2", "pt $position, tx ${view.translationX}")
                 }
             }
             it.pager.setPageTransformer(t)
