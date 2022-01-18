@@ -59,6 +59,8 @@ class RoutePagerAdapter(
     RecyclerView.Adapter<RoutePagerAdapter.PageHolder>() {
 
     var leaveTime: Calendar? = null
+    var recycler: RecyclerView? = null
+        private set
 
     private val resources = context.applicationContext.resources
     private val inflater = LayoutInflater.from(context)
@@ -169,7 +171,11 @@ class RoutePagerAdapter(
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
+        this.recycler = recyclerView
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        this.recycler = null
     }
 
     override fun getItemCount(): Int =
@@ -439,6 +445,15 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
                 }
             }
             it.pager.setPageTransformer(t)
+
+            val p = object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageScrolled(position: Int, offset: Float, offsetPx: Int) {
+                    Log.d("AM2", "pcc: pos $position, off $offset, px $offsetPx")
+                    val view = adapter.recycler
+                        ?.findViewHolderForAdapterPosition(position)?.itemView!!
+                }
+            }
+            it.pager.registerOnPageChangeCallback(p)
         }
     }
 
