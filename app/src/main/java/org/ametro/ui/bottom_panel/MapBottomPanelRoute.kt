@@ -30,6 +30,7 @@ import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.AnimUtils
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.max
 
 
@@ -197,7 +198,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
         private const val ACTION_SHOW = 2
     }
 
-    private val viewStash: MutableList<ImageView> = arrayListOf()
+    private val viewStash: MutableList<ImageView> = arrayListOf() // todo remove views from stash?
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
 
     private val lineHeight: Int = context.resources
@@ -298,52 +299,11 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 addViews(w)
                 removeViews(w)
             } else {
-                val oldTxf = this.transfers
-                val animTxf = ArrayList<AnimatedTxf>()
-                for (i in 0 until max(transfers.size, oldTxf.size)) {
-                    val o = oldTxf.getOrNull(i)
-                    val t = transfers.getOrNull(i)
-                    var v = viewStash.getOrNull(i)
-
-                    if (o != null && t != null) {
-                        val pw = v!!.width
-                        val at =
-                            AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(w, i, t) - pw, ACTION_RESIZE)
-                        animTxf.add(at)
-                    } else if (o != null) {
-                        val pw = v!!.width
-                        val color = o.txf.lineColor
-                        val at = AnimatedTxf(color, color, pw, -pw, ACTION_HIDE)
-                        animTxf.add(at)
-                    } else if (t != null) {
-                        if (v == null)
-                            v = createView()
-                        resetView(v)
-
-                        val color = t.txf.lineColor
-                        val at = AnimatedTxf(color, color, 0, calcWidth(w, i, t), ACTION_SHOW)
-                        animTxf.add(at)
-                    }
-                }
-
+                val animTxf = animProgram(w, this.transfers, transfers)
                 addViews(w)
 
                 AnimUtils.getValueAnimator(true, 300, AccelerateDecelerateInterpolator()) { p ->
-                    for ((i, t) in animTxf.withIndex()) {
-                        val v = viewStash[i]
-                        val lp = v.layoutParams as LayoutParams
-
-                        when (t.action) {
-                            ACTION_SHOW -> lp.rightMargin = (lineMargin * p).toInt()
-                            ACTION_HIDE -> lp.rightMargin = (lineMargin - lineMargin * p).toInt()
-                        }
-
-                        lp.width = (t.widthPrev + t.widthDelta * p).toInt()
-                        v.requestLayout()
-
-                        val color = AnimUtils.argbEvaluate(p, t.srcColor, t.dstColor)
-                        (v.drawable as GradientDrawable).setColor(color)
-                    }
+                    animateViews(animTxf, p)
                 }.also {
                     it.doOnEnd { removeViews(w) }
                     it.start()
@@ -352,6 +312,58 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
             this.transfers = transfers
         }
+    }
+
+    private fun animateViews(animTxf: ArrayList<AnimatedTxf>, p: Float) {
+        for ((i, t) in animTxf.withIndex()) {
+            val v = viewStash[i]
+            val lp = v.layoutParams as LayoutParams
+
+            when (t.action) {
+                ACTION_SHOW -> lp.rightMargin = (lineMargin * p).toInt()
+                ACTION_HIDE -> lp.rightMargin = (lineMargin - lineMargin * p).toInt()
+            }
+
+            lp.width = (t.widthPrev + t.widthDelta * p).toInt()
+            v.requestLayout()
+
+            val color = AnimUtils.argbEvaluate(p, t.srcColor, t.dstColor)
+            (v.drawable as GradientDrawable).setColor(color)
+        }
+    }
+
+    private fun animProgram(
+        w: TxfWidths,
+        oldTxf: MutableList<RoutePagerTransfer>,
+        newTxf: MutableList<RoutePagerTransfer>
+    ): ArrayList<AnimatedTxf> {
+        val animTxf = ArrayList<AnimatedTxf>()
+        for (i in 0 until max(newTxf.size, oldTxf.size)) {
+            val o = oldTxf.getOrNull(i)
+            val t = newTxf.getOrNull(i)
+            var v = viewStash.getOrNull(i)
+
+            if (o != null && t != null) {
+                val pw = v!!.width
+                val at =
+                    AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(w, i, t) - pw, ACTION_RESIZE)
+                animTxf.add(at)
+            } else if (o != null) {
+                val pw = v!!.width
+                val color = o.txf.lineColor
+                val at = AnimatedTxf(color, color, pw, -pw, ACTION_HIDE)
+                animTxf.add(at)
+            } else if (t != null) {
+                if (v == null)
+                    v = createView()
+                resetView(v)
+
+                val color = t.txf.lineColor
+                val at = AnimatedTxf(color, color, 0, calcWidth(w, i, t), ACTION_SHOW)
+                animTxf.add(at)
+            }
+        }
+        return animTxf
     }
 
 }
