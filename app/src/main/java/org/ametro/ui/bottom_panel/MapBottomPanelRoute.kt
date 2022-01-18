@@ -29,6 +29,7 @@ import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.AnimUtils
+import org.ametro.utils.misc.epsilonEqual
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.max
@@ -62,10 +63,11 @@ class RoutePagerAdapter(
     var leaveTime: Calendar? = null
     var recycler: RecyclerView? = null
         private set
+    var items: ArrayList<RoutePagerItem> = arrayListOf()
+        private set
 
     private val resources = context.applicationContext.resources
     private val inflater = LayoutInflater.from(context)
-    private var items: ArrayList<RoutePagerItem> = arrayListOf()
 
     fun replaceItems(items: ArrayList<RoutePagerItem>, currentPage: Int, moveToFirst: Boolean) {
         val oldSize = this.items.size
@@ -200,6 +202,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
     private val viewStash: MutableList<ImageView> = arrayListOf() // todo remove views from stash?
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
+    private var touchAnimProgram: ArrayList<AnimatedTxf>? = null
 
     private val lineHeight: Int = context.resources
         .getDimensionPixelSize(R.dimen.panel_bottom_route_line_long_height)
@@ -312,6 +315,29 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
             this.transfers = transfers
         }
+    }
+
+    private fun silentReset() {
+        replaceItems(this.transfers, animate = false, -1)
+    }
+
+    val isTouchAnimationActive: Boolean
+        get() = touchAnimProgram != null
+
+    fun touchAnimationStart(targetTransfers: MutableList<RoutePagerTransfer>) {
+        if (touchAnimProgram != null)
+            silentReset()
+        val widths = makeWidths(targetTransfers)
+        touchAnimProgram = animProgram(widths, this.transfers, targetTransfers)
+    }
+
+    fun touchAnimationEnd() {
+        touchAnimProgram = null
+        this.post { silentReset() }
+    }
+
+    fun touchAnimate(progress: Float) {
+        touchAnimProgram?.let { animateViews(it, progress) }
     }
 
     private fun animateViews(animTxf: ArrayList<AnimatedTxf>, p: Float) {
@@ -467,8 +493,21 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
             val p = object : ViewPager2.OnPageChangeCallback() {
                 override fun onPageScrolled(position: Int, offset: Float, offsetPx: Int) {
                     Log.d("AM2", "pcc: pos $position, off $offset, px $offsetPx")
-                    val view = adapter.recycler
-                        ?.findViewHolderForAdapterPosition(position)?.itemView!!
+                    val holder = adapter.recycler
+                        ?.findViewHolderForAdapterPosition(position)!! as RoutePagerAdapter.PageHolder
+                    val txf = holder.binding.transfersRecycler
+
+                    if (!txf.isTouchAnimationActive) {
+                        adapter.items.getOrNull(position + 1)?.let { page ->
+                            txf.touchAnimationStart(page.transfers.toMutableList())
+                            txf.touchAnimate(offset)
+                        }
+                    } else {
+                        txf.touchAnimate(offset)
+                    }
+
+                    if (epsilonEqual(offset, 1f))
+                        txf.touchAnimationEnd()
                 }
             }
             it.pager.registerOnPageChangeCallback(p)

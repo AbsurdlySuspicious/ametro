@@ -1,6 +1,12 @@
 package org.ametro.utils.misc
 
 import android.util.Pair
+import kotlin.math.abs
+
+const val EPSILON = 1.19209290e-07f
+
+fun epsilonEqual(a: Float, b: Float): Boolean =
+    a == b || abs(a - b) < EPSILON
 
 fun <A, B> convertPair(p: kotlin.Pair<A, B>): Pair<A, B> {
     return Pair(p.first, p.second)
