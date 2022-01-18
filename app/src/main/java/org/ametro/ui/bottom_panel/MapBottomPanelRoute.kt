@@ -191,6 +191,12 @@ class RouteTransfersLayout @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
+    companion object {
+        private const val ACTION_RESIZE = 0
+        private const val ACTION_HIDE = 1
+        private const val ACTION_SHOW = 2
+    }
+
     private val viewStash: MutableList<ImageView> = arrayListOf()
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
 
@@ -206,54 +212,71 @@ class RouteTransfersLayout @JvmOverloads constructor(
         this.orientation = HORIZONTAL
     }
 
+    private fun resetView(v: View) {
+        (v.layoutParams as LayoutParams).also {
+            it.width = 0
+            it.leftMargin = 0
+            it.rightMargin = 0
+        }
+    }
+
+    private fun createView() = ImageView(context).also {
+        it.layoutParams = LayoutParams(0, lineHeight)
+        it.setImageDrawable(lineDrawable.mutate())
+        viewStash.add(it)
+    }
+
+    private fun addViews(w: TxfWidths) {
+        val viewsCount = this.childCount
+        if (w.txfCount > viewsCount)
+            for (i in viewsCount until w.txfCount)
+                this.addView(viewStash[i])
+    }
+
+    private fun removeViews(w: TxfWidths) {
+        val viewsCount = this.childCount
+        if (w.txfCount < viewsCount)
+            this.removeViews(w.txfCount, viewsCount - w.txfCount)
+    }
+
+    private fun makeWidths(transfers: MutableList<RoutePagerTransfer>): TxfWidths {
+        val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
+        val txfCount = transfers.size
+        val txfPartLength =
+            if (txfLengthSum == 0 || txfCount == 0) 0
+            else this.width / txfLengthSum
+        return TxfWidths(txfLengthSum, txfCount, txfPartLength)
+    }
+
+    private fun calcWidth(w: TxfWidths, i: Int, t: RoutePagerTransfer): Int {
+        var width = t.length * w.txfPartLength
+        if (i == w.txfCount - 1)
+            width += this.width % w.txfLengthSum
+        else
+            width -= lineMargin
+        return width
+    }
+
+    data class TxfWidths(
+        val txfLengthSum: Int,
+        val txfCount: Int,
+        val txfPartLength: Int,
+    )
+
+    data class AnimatedTxf(
+        val srcColor: Int,
+        val dstColor: Int,
+        val widthPrev: Int,
+        val widthDelta: Int,
+        val action: Int
+    )
+
     fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean, page: Int) {
         this.post {
-            val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
-            val txfCount = transfers.size
-            val txfPartLength =
-                if (txfLengthSum == 0 || txfCount == 0) 0
-                else this.width / txfLengthSum
-
-            val calcWidth = { i: Int, t: RoutePagerTransfer ->
-                var width = t.length * txfPartLength
-                if (i == txfCount - 1)
-                    width += this.width % txfLengthSum
-                else
-                    width -= lineMargin
-                width
-            }
-
-            val createView = {
-                ImageView(context).also {
-                    it.layoutParams = LayoutParams(0, lineHeight)
-                    it.setImageDrawable(lineDrawable.mutate())
-                    viewStash.add(it)
-                }
-            }
-
-            val resetView = { v: View ->
-                (v.layoutParams as LayoutParams).also {
-                    it.width = 0
-                    it.leftMargin = 0
-                    it.rightMargin = 0
-                }
-            }
-
-            val addViews = {
-                val viewsCount = this.childCount
-                if (txfCount > viewsCount)
-                    for (i in viewsCount until txfCount)
-                        this.addView(viewStash[i])
-            }
-
-            val removeViews = {
-                val viewsCount = this.childCount
-                if (txfCount < viewsCount)
-                    this.removeViews(txfCount, viewsCount - txfCount)
-            }
+            val w = makeWidths(transfers)
 
             if (!animate || page != 0 || viewStash.isEmpty() || transfers.isEmpty()) {
-                for (i in 0 until max(txfCount, viewStash.size)) {
+                for (i in 0 until max(w.txfCount, viewStash.size)) {
                     var v = viewStash.getOrNull(i)
                     val t = transfers.getOrNull(i)
 
@@ -263,7 +286,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
                         (v.drawable as GradientDrawable).setColor(t.txf.lineColor)
                         (v.layoutParams as LayoutParams).also {
-                            it.width = calcWidth(i, t)
+                            it.width = calcWidth(w, i, t)
                             it.rightMargin = lineMargin
                         }
                         v.requestLayout()
@@ -272,8 +295,8 @@ class RouteTransfersLayout @JvmOverloads constructor(
                     }
                 }
 
-                addViews()
-                removeViews()
+                addViews(w)
+                removeViews(w)
             } else {
                 val oldTxf = this.transfers
                 val animTxf = ArrayList<AnimatedTxf>()
@@ -285,7 +308,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
                     if (o != null && t != null) {
                         val pw = v!!.width
                         val at =
-                            AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(i, t) - pw, ACTION_RESIZE)
+                            AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(w, i, t) - pw, ACTION_RESIZE)
                         animTxf.add(at)
                     } else if (o != null) {
                         val pw = v!!.width
@@ -298,12 +321,12 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         resetView(v)
 
                         val color = t.txf.lineColor
-                        val at = AnimatedTxf(color, color, 0, calcWidth(i, t), ACTION_SHOW)
+                        val at = AnimatedTxf(color, color, 0, calcWidth(w, i, t), ACTION_SHOW)
                         animTxf.add(at)
                     }
                 }
 
-                addViews()
+                addViews(w)
 
                 AnimUtils.getValueAnimator(true, 300, AccelerateDecelerateInterpolator()) { p ->
                     for ((i, t) in animTxf.withIndex()) {
@@ -322,7 +345,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
                         (v.drawable as GradientDrawable).setColor(color)
                     }
                 }.also {
-                    it.doOnEnd { removeViews() }
+                    it.doOnEnd { removeViews(w) }
                     it.start()
                 }
             }
@@ -331,19 +354,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
         }
     }
 
-    data class AnimatedTxf(
-        val srcColor: Int,
-        val dstColor: Int,
-        val widthPrev: Int,
-        val widthDelta: Int,
-        val action: Int
-    )
-
-    companion object {
-        private const val ACTION_RESIZE = 0
-        private const val ACTION_HIDE = 1
-        private const val ACTION_SHOW = 2
-    }
 }
 
 class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val listener: MapBottomPanelRouteListener) :
