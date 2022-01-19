@@ -485,11 +485,12 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     override fun attachItem(bind: ViewBinding) {
         castBind(bind).also {
+            this.binding = it
             it.pager.setCurrentItem(currentPage, false)
             it.pager.registerOnPageChangeCallback(pageChangedCallback)
+            it.pager.offscreenPageLimit = 2
             it.dots.setViewPager2(it.pager)
             it.dots.refreshDots()
-            this.binding = it
 
             val t = object : ViewPager2.PageTransformer {
                 override fun transformPage(view: View, position: Float) {
