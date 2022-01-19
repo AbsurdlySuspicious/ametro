@@ -34,7 +34,6 @@ import org.ametro.utils.misc.AnimUtils
 import org.ametro.utils.misc.epsilonEqual
 import org.ametro.utils.misc.saturate
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
 
 
@@ -488,6 +487,16 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     override fun createHolder(bind: ViewBinding) {
         castBind(bind).also {
+            try {
+                val recyclerViewField = ViewPager2::class.java.getDeclaredField("mRecyclerView")
+                recyclerViewField.isAccessible = true
+                val recyclerView = recyclerViewField.get(it.pager)
+                val touchSlopField = RecyclerView::class.java.getDeclaredField("mTouchSlop")
+                touchSlopField.isAccessible = true
+                val touchSlop = touchSlopField.get(recyclerView) as Int
+                touchSlopField.set(recyclerView, (touchSlop * 0.3f).toInt())
+            } catch (_: Exception) {} // fuck it
+
             it.pager.adapter = adapter
         }
     }
