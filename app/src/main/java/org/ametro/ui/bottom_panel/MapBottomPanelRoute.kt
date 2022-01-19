@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.animation.doOnEnd
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
@@ -230,24 +231,12 @@ class RouteTransfersLayout @JvmOverloads constructor(
         it.layoutParams = LayoutParams(0, lineHeight)
         it.setImageDrawable(lineDrawable.mutate())
         viewStash.add(it)
+        this.addView(it)
     }
 
-    private fun addViews(w: TxfWidths) {
-        val viewsCount = this.childCount
-        if (w.txfCount > viewsCount)
-            for (i in viewsCount until w.txfCount)
-                this.addView(viewStash[i])
-    }
-
-    private fun removeViews(w: TxfWidths) {
-        val viewsCount = this.childCount
-        if (w.txfCount < viewsCount)
-            this.removeViews(w.txfCount, viewsCount - w.txfCount)
-    }
-
-    private fun makeWidths(transfers: MutableList<RoutePagerTransfer>): TxfWidths {
-        val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
-        val txfCount = transfers.size
+    private fun makeWidths(newTxf: MutableList<RoutePagerTransfer>): TxfWidths {
+        val txfLengthSum = newTxf.fold(0) { acc, i -> acc + i.length }
+        val txfCount = newTxf.size
         val txfPartLength =
             if (txfLengthSum == 0 || txfCount == 0) 0
             else this.width / txfLengthSum
@@ -282,10 +271,10 @@ class RouteTransfersLayout @JvmOverloads constructor(
         val action: Int
     )
 
-    private fun replaceItemsNoAnim(w: TxfWidths, transfers: MutableList<RoutePagerTransfer>) {
+    private fun replaceItemsNoAnim(w: TxfWidths, newTxf: MutableList<RoutePagerTransfer>) {
         for (i in 0 until max(w.txfCount, viewStash.size)) {
             var v = viewStash.getOrNull(i)
-            val t = transfers.getOrNull(i)
+            val t = newTxf.getOrNull(i)
 
             if (t != null) {
                 if (v == null)
@@ -301,44 +290,45 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 resetView(v)
             }
         }
+    }
 
-        addViews(w)
-        removeViews(w)
+    private fun replaceItemsSetNext(nextPage: MutableList<RoutePagerTransfer>?) {
+        if (nextPage != null) {
+            val nextWidths = makeWidths(nextPage)
+            val nextProgram = animProgram(nextWidths, transfers, nextPage)
+            this.touchAnimProgram = NextPageTxf(nextWidths, nextProgram)
+        } else {
+            this.touchAnimProgram = null
+        }
     }
 
     fun replaceItems(
-        transfers: MutableList<RoutePagerTransfer>,
+        thisPage: MutableList<RoutePagerTransfer>,
         nextPage: MutableList<RoutePagerTransfer>?,
         animate: Boolean,
         page: Int
     ) {
         this.post {
-            val w = makeWidths(transfers)
+            val oldTransfers = this.transfers
+            this.transfers = thisPage
+            val w = makeWidths(thisPage)
 
-            if (!animate || page != 0 || viewStash.isEmpty() || transfers.isEmpty()) {
-                replaceItemsNoAnim(w, transfers)
+            if (!animate || page != 0 || viewStash.isEmpty() || thisPage.isEmpty()) {
+                replaceItemsNoAnim(w, thisPage)
+                this.doOnLayout {
+                    replaceItemsSetNext(nextPage)
+                }
             } else {
-                val animTxf = animProgram(w, this.transfers, transfers)
-                addViews(w)
+                val animTxf = animProgram(w, oldTransfers, thisPage)
 
                 AnimUtils.getValueAnimator(true, 300, AccelerateDecelerateInterpolator()) { p ->
                     animateViews(animTxf, p)
                 }.also {
-                    it.doOnEnd { removeViews(w) }
+                    it.doOnEnd { replaceItemsSetNext(nextPage) }
                     it.start()
                 }
             }
 
-            if (nextPage != null) {
-                val nextWidths = makeWidths(nextPage)
-                val nextProgram = animProgram(nextWidths, transfers, nextPage)
-                addViews(nextWidths)
-                this.touchAnimProgram = NextPageTxf(nextWidths, nextProgram)
-            } else {
-                this.touchAnimProgram = null
-            }
-
-            this.transfers = transfers
         }
     }
 
@@ -346,9 +336,6 @@ class RouteTransfersLayout @JvmOverloads constructor(
         Log.d("AM2", "touch anim reset")
         val currentWidths = makeWidths(this.transfers)
         replaceItemsNoAnim(currentWidths, this.transfers)
-        touchAnimProgram?.let {
-            addViews(it.widths)
-        }
     }
 
     fun touchAnimate(progress: Float) {
