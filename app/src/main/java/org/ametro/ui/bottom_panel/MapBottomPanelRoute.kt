@@ -205,6 +205,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
 
     private val viewStash: MutableList<ImageView> = arrayListOf() // todo remove views from stash?
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
+    private var txfWidths: TxfWidths? = null
     private var touchAnimProgram: NextPageTxf? = null
 
     private val lineHeight: Int = context.resources
@@ -292,10 +293,10 @@ class RouteTransfersLayout @JvmOverloads constructor(
         }
     }
 
-    private fun replaceItemsSetNext(nextPage: MutableList<RoutePagerTransfer>?) {
+    private fun replaceItemsSetNext(thisWidths: TxfWidths, nextPage: MutableList<RoutePagerTransfer>?) {
         if (nextPage != null) {
             val nextWidths = makeWidths(nextPage)
-            val nextProgram = animProgram(nextWidths, transfers, nextPage)
+            val nextProgram = animProgram(thisWidths, transfers, nextWidths, nextPage)
             this.touchAnimProgram = NextPageTxf(nextWidths, nextProgram)
         } else {
             this.touchAnimProgram = null
@@ -310,21 +311,27 @@ class RouteTransfersLayout @JvmOverloads constructor(
     ) {
         this.post {
             val oldTransfers = this.transfers
-            this.transfers = thisPage
+            val oldWidths = this.txfWidths
             val w = makeWidths(thisPage)
 
-            if (!animate || page != 0 || viewStash.isEmpty() || thisPage.isEmpty()) {
+            this.transfers = thisPage
+            this.txfWidths = w
+
+            if (!animate
+                || page != 0
+                || viewStash.isEmpty()
+                || thisPage.isEmpty()
+                || oldWidths == null
+            ) {
                 replaceItemsNoAnim(w, thisPage)
-                this.doOnLayout {
-                    replaceItemsSetNext(nextPage)
-                }
+                replaceItemsSetNext(w, nextPage)
             } else {
-                val animTxf = animProgram(w, oldTransfers, thisPage)
+                val animTxf = animProgram(oldWidths, oldTransfers, w, thisPage)
 
                 AnimUtils.getValueAnimator(true, 300, AccelerateDecelerateInterpolator()) { p ->
                     animateViews(animTxf, p)
                 }.also {
-                    it.doOnEnd { replaceItemsSetNext(nextPage) }
+                    it.doOnEnd { replaceItemsSetNext(w, nextPage) }
                     it.start()
                 }
             }
@@ -365,8 +372,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
     }
 
     private fun animProgram(
-        w: TxfWidths,
+        oldWidths: TxfWidths,
         oldTxf: MutableList<RoutePagerTransfer>,
+        newWidths: TxfWidths,
         newTxf: MutableList<RoutePagerTransfer>
     ): ArrayList<AnimatedTxf> {
         val animTxf = ArrayList<AnimatedTxf>()
@@ -376,14 +384,14 @@ class RouteTransfersLayout @JvmOverloads constructor(
             var v = viewStash.getOrNull(i)
 
             if (o != null && t != null) {
-                val pw = v!!.width
-                val at =
-                    AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(w, i, t) - pw, ACTION_RESIZE)
+                val widthPrev = calcWidth(oldWidths, i, o)
+                val widthNext = calcWidth(newWidths, i, t) - widthPrev
+                val at = AnimatedTxf(o.txf.lineColor, t.txf.lineColor, widthPrev, widthNext, ACTION_RESIZE)
                 animTxf.add(at)
             } else if (o != null) {
-                val pw = v!!.width
                 val color = o.txf.lineColor
-                val at = AnimatedTxf(color, color, pw, -pw, ACTION_HIDE)
+                val widthPrev = calcWidth(oldWidths, i, o)
+                val at = AnimatedTxf(color, color, widthPrev, -widthPrev, ACTION_HIDE)
                 animTxf.add(at)
             } else if (t != null) {
                 if (v == null)
@@ -391,7 +399,8 @@ class RouteTransfersLayout @JvmOverloads constructor(
                 resetView(v)
 
                 val color = t.txf.lineColor
-                val at = AnimatedTxf(color, color, 0, calcWidth(w, i, t), ACTION_SHOW)
+                val widthNext = calcWidth(newWidths, i, t)
+                val at = AnimatedTxf(color, color, 0, widthNext, ACTION_SHOW)
                 animTxf.add(at)
             }
         }
