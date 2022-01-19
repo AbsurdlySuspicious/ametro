@@ -11,13 +11,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.doOnLayout
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
@@ -31,6 +32,7 @@ import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.AnimUtils
 import org.ametro.utils.misc.epsilonEqual
+import org.ametro.utils.misc.saturate
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.max
@@ -132,13 +134,20 @@ class RoutePagerAdapter(
 
     override fun onBindViewHolder(holder: PageHolder, position: Int) {
         val item = items[position]
+        val nextItem = items.getOrNull(position + 1)
         val bind = holder.binding
 
         val time =
             StringUtils.humanReadableTimeRoute(item.delay)
-
         bind.routeTime.text = time.first
         bind.routeTimeSec.text = time.second
+
+        nextItem?.let {
+            val nextTime =
+                StringUtils.humanReadableTimeRoute(nextItem.delay)
+            bind.nextRouteTime.text = nextTime.first
+            bind.nextRouteTimeSec.text = nextTime.second
+        }
 
         setRangeText(item, this.leaveTime, bind)
         bind.routeTimeRangeBg.setOnClickListener {
@@ -155,7 +164,7 @@ class RoutePagerAdapter(
             else
                 item.transfers.toMutableList()
         val txfItemsNextPage =
-            items.getOrNull(position + 1)?.transfers?.toMutableList()
+            nextItem?.transfers?.toMutableList()
         bind.transfersRecycler
             .replaceItems(txfItemsThisPage, txfItemsNextPage, true, position)
 
@@ -483,6 +492,56 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         }
     }
 
+    private val interpolator = DecelerateInterpolator(1.3f)
+
+    private fun halfValue(target: Float, limit: Float): Float {
+        val value =
+            if (target < 0.5f)
+                1f - (1f / 0.5f * target)
+            else
+                1f / 0.5f * (target - 0.5f)
+        return (1f - limit) + limit * value
+    }
+
+    @Suppress("UnnecessaryVariable")
+    private fun animatePage(bind: WidgetBotRoutePageBinding, offset: Float) {
+        bind.transfersRecycler.touchAnimate(offset)
+
+        val timeThis = arrayOf(bind.routeTime, bind.routeTimeSec)
+        val timeNext = arrayOf(bind.nextRouteTime, bind.nextRouteTimeSec)
+
+        val nextWidth = timeNext.fold(0) { acc, v ->
+            val lp = (v.layoutParams as ConstraintLayout.LayoutParams)
+            acc + lp.leftMargin + lp.rightMargin + v.width
+        }
+
+        val interpolatedOffset = interpolator.getInterpolation(offset)
+        val transX = nextWidth * -offset
+        val targetAlpha = saturate(offset, 0.1f, 0f, 0.95f, 1f)
+        val halfAlpha = halfValue(targetAlpha, 1f)
+        val scaleTxf = halfValue(interpolatedOffset, 0.15f).coerceAtLeast(0.95f)
+
+
+        timeThis.forEach {
+            it.translationX = transX
+            it.alpha = 1f - targetAlpha
+        }
+
+        timeNext.forEach {
+            it.translationX = transX
+            it.alpha = targetAlpha
+        }
+
+        bind.transfersRecycler.also {
+            it.alpha = halfAlpha.coerceAtLeast(0.55f)
+            it.scaleX = scaleTxf
+            it.scaleY = scaleTxf
+        }
+
+        /*arrayOf(bind.routeTimeRangeArrive, bind.routeTimeRangeLeave, bind.routeTimeRangeIcon)
+            .forEach { it.alpha = halfAlpha }*/
+    }
+
     override fun attachItem(bind: ViewBinding) {
         castBind(bind).also {
             this.binding = it
@@ -515,9 +574,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
                     Log.d("AM2", "pcc: pos $position, off $offset, px $offsetPx, ee ${epsilonEqual(offset, 1f)}")
                     val holder = adapter.recycler
                         ?.findViewHolderForAdapterPosition(position)!! as RoutePagerAdapter.PageHolder
-                    val txf = holder.binding.transfersRecycler
-
-                    txf.touchAnimate(offset)
+                    animatePage(holder.binding, offset)
                 }
             }
             it.pager.registerOnPageChangeCallback(p)

@@ -8,6 +8,11 @@ const val EPSILON = 1.19209290e-07f
 fun epsilonEqual(a: Float, b: Float): Boolean =
     a == b || abs(a - b) < EPSILON
 
+fun saturate(value: Float, minFrom: Float, minTo: Float, maxFrom: Float, maxTo: Float): Float =
+    if (value > maxFrom) maxTo
+    else if (value < minFrom) minTo
+    else value
+
 fun <A, B> convertPair(p: kotlin.Pair<A, B>): Pair<A, B> {
     return Pair(p.first, p.second)
 }
