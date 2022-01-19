@@ -201,6 +201,8 @@ class RouteTransfersLayout @JvmOverloads constructor(
         private const val ACTION_RESIZE = 0
         private const val ACTION_HIDE = 1
         private const val ACTION_SHOW = 2
+
+        private val txfInterpolator = AccelerateDecelerateInterpolator()
     }
 
     private val viewStash: MutableList<ImageView> = arrayListOf() // todo remove views from stash?
@@ -328,7 +330,7 @@ class RouteTransfersLayout @JvmOverloads constructor(
             } else {
                 val animTxf = animProgram(oldWidths, oldTransfers, w, thisPage)
 
-                AnimUtils.getValueAnimator(true, 300, AccelerateDecelerateInterpolator()) { p ->
+                AnimUtils.getValueAnimator(true, 300, txfInterpolator) { p ->
                     animateViews(animTxf, p)
                 }.also {
                     it.doOnEnd { replaceItemsSetNext(w, nextPage) }
@@ -350,7 +352,9 @@ class RouteTransfersLayout @JvmOverloads constructor(
         if (progress == 0f)
             silentReset()
         else
-            touchAnimProgram?.let { animateViews(it.program, progress) }
+            touchAnimProgram?.let {
+                animateViews(it.program, txfInterpolator.getInterpolation(progress))
+            }
     }
 
     private fun animateViews(animTxf: ArrayList<AnimatedTxf>, p: Float) {
