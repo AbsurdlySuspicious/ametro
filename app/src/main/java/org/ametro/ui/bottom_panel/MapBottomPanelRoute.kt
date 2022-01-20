@@ -195,7 +195,7 @@ class RoutePagerAdapter(
     override fun getItemCount(): Int =
         items.size
 
-    inner class PageHolder(val binding: WidgetBotRoutePageBinding) :
+    class PageHolder(val binding: WidgetBotRoutePageBinding) :
         RecyclerView.ViewHolder(binding.root)
 }
 
@@ -589,6 +589,8 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
             it.dots.setViewPager2(it.pager)
             it.dots.refreshDots()
+
+            adapter.onBindViewHolder(RoutePagerAdapter.PageHolder(it.includeRoutePage), 0)
         }
     }
 

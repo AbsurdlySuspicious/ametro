@@ -17,20 +17,10 @@
             android:id="@+id/pager"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
     />
 
-    <!--<com.tbuonomo.viewpagerdotsindicator.WormDotsIndicator
-            android:id="@+id/dots"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginVertical="8dp"
-            app:dotsColor="@color/panel_dots"
-            app:dotsStrokeColor="@color/panel_dots_inactive"
-            app:dotsSize="6dp"
-            app:dotsStrokeWidth="3dp"
-            app:dotsSpacing="4dp"
-    />-->
+    <include android:id="@+id/include_route_page" layout="@layout/widget_bot_route_page"/>
 
     <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
             android:id="@+id/dots"
