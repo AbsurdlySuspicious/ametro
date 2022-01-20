@@ -8,6 +8,7 @@ import android.text.format.DateFormat
 import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -606,5 +607,28 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     interface MapBottomPanelRouteListener {
         fun onPanelHidden()
         fun onOpenDetails(station: Pair<MapSchemeLine, MapSchemeStation>)
+    }
+}
+
+class RoutePageConstraintLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : ConstraintLayout(context, attrs, defStyleAttr) {
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        ev ?: return false
+
+        val action = MotionEvent.actionToString(ev.action)
+        Log.d("AM4", "icpt $action ${ev.x},${ev.y}")
+
+        when (ev.action) {
+            MotionEvent.ACTION_DOWN ->
+                parent.requestDisallowInterceptTouchEvent(true)
+            MotionEvent.ACTION_UP,
+            MotionEvent.ACTION_CANCEL ->
+                parent.requestDisallowInterceptTouchEvent(false)
+        }
+
+        return false
     }
 }

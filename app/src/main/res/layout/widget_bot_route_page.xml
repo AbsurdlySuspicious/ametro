@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout
+<org.ametro.ui.bottom_panel.RoutePageConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
@@ -250,4 +250,4 @@
             tools:text="Station end"
     />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</org.ametro.ui.bottom_panel.RoutePageConstraintLayout>
