@@ -551,48 +551,51 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
             .forEach { it.alpha = halfAlpha }*/
     }
 
+    private val animationPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageScrolled(position: Int, offset: Float, offsetPx: Int) {
+            Log.d("AM2", "pcc: pos $position, off $offset, px $offsetPx, ee ${epsilonEqual(offset, 1f)}")
+            val holder = adapter.recycler
+                ?.findViewHolderForAdapterPosition(position)!! as RoutePagerAdapter.PageHolder
+            animatePage(holder.binding, offset)
+        }
+    }
+
+    private val animationPageTransformer = object : ViewPager2.PageTransformer {
+        override fun transformPage(view: View, position: Float) {
+            if (position < 0) {
+                if (position > -1)
+                    view.translationX = view.width * -position
+                else
+                    view.translationX = 0f
+            } else {
+                if (position > 0)
+                    view.translationX = view.width * (1f - position)
+                else
+                    view.translationX = 0f
+            }
+            // Log.d("AM2", "pt $position, tx ${view.translationX}")
+        }
+    }
+
     override fun attachItem(bind: ViewBinding) {
         castBind(bind).also {
             this.binding = it
+
             it.pager.setCurrentItem(currentPage, false)
+            it.pager.setPageTransformer(animationPageTransformer)
             it.pager.registerOnPageChangeCallback(pageChangedCallback)
+            it.pager.registerOnPageChangeCallback(animationPageChangeCallback)
             it.pager.offscreenPageLimit = 2
+
             it.dots.setViewPager2(it.pager)
             it.dots.refreshDots()
-
-            val t = object : ViewPager2.PageTransformer {
-                override fun transformPage(view: View, position: Float) {
-                    if (position < 0) {
-                        if (position > -1)
-                            view.translationX = view.width * -position
-                        else
-                            view.translationX = 0f
-                    } else {
-                        if (position > 0)
-                            view.translationX = view.width * (1f - position)
-                        else
-                            view.translationX = 0f
-                    }
-                    // Log.d("AM2", "pt $position, tx ${view.translationX}")
-                }
-            }
-            it.pager.setPageTransformer(t)
-
-            val p = object : ViewPager2.OnPageChangeCallback() {
-                override fun onPageScrolled(position: Int, offset: Float, offsetPx: Int) {
-                    Log.d("AM2", "pcc: pos $position, off $offset, px $offsetPx, ee ${epsilonEqual(offset, 1f)}")
-                    val holder = adapter.recycler
-                        ?.findViewHolderForAdapterPosition(position)!! as RoutePagerAdapter.PageHolder
-                    animatePage(holder.binding, offset)
-                }
-            }
-            it.pager.registerOnPageChangeCallback(p)
         }
     }
 
     override fun detachItem(bind: ViewBinding) {
         castBind(bind).also {
             it.pager.unregisterOnPageChangeCallback(pageChangedCallback)
+            it.pager.unregisterOnPageChangeCallback(animationPageChangeCallback)
             it.dots.pager?.removeOnPageChangeListener()
             this.binding = null
         }
