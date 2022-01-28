@@ -1,6 +1,5 @@
 package org.ametro.ui.bottom_panel
 
-import android.animation.ArgbEvaluator
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
@@ -17,6 +16,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.doOnEnd
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -31,9 +31,11 @@ import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.AnimUtils
+import org.ametro.utils.misc.epsilonEqual
+import org.ametro.utils.misc.saturate
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
+
 
 typealias RoutePagerStation =
         Pair<MapSchemeLine, MapSchemeStation>
@@ -61,10 +63,13 @@ class RoutePagerAdapter(
     RecyclerView.Adapter<RoutePagerAdapter.PageHolder>() {
 
     var leaveTime: Calendar? = null
+    var recycler: RecyclerView? = null
+        private set
+    var items: ArrayList<RoutePagerItem> = arrayListOf()
+        private set
 
     private val resources = context.applicationContext.resources
     private val inflater = LayoutInflater.from(context)
-    private var items: ArrayList<RoutePagerItem> = arrayListOf()
 
     fun replaceItems(items: ArrayList<RoutePagerItem>, currentPage: Int, moveToFirst: Boolean) {
         val oldSize = this.items.size
@@ -128,13 +133,20 @@ class RoutePagerAdapter(
 
     override fun onBindViewHolder(holder: PageHolder, position: Int) {
         val item = items[position]
+        val nextItem = items.getOrNull(position + 1)
         val bind = holder.binding
 
         val time =
             StringUtils.humanReadableTimeRoute(item.delay)
-
         bind.routeTime.text = time.first
         bind.routeTimeSec.text = time.second
+
+        nextItem?.let {
+            val nextTime =
+                StringUtils.humanReadableTimeRoute(nextItem.delay)
+            bind.nextRouteTime.text = nextTime.first
+            bind.nextRouteTimeSec.text = nextTime.second
+        }
 
         setRangeText(item, this.leaveTime, bind)
         bind.routeTimeRangeBg.setOnClickListener {
@@ -145,13 +157,15 @@ class RoutePagerAdapter(
         bindRoutePoint(bind.lineIconStart, bind.stationStart, bind.stationStartBg, item.routeStart)
         bindRoutePoint(bind.lineIconEnd, bind.stationEnd, bind.stationEndBg, item.routeEnd)
 
-        val itemsForTxfBar =
+        val txfItemsThisPage =
             if (item.transfers.isEmpty())
                 mutableListOf(RoutePagerTransfer(item.routeStart.first, 1, 1))
             else
                 item.transfers.toMutableList()
+        val txfItemsNextPage =
+            nextItem?.transfers?.toMutableList()
         bind.transfersRecycler
-            .replaceItems(itemsForTxfBar, true, position)
+            .replaceItems(txfItemsThisPage, txfItemsNextPage, true, position)
 
         if (item.transfers.size < 2) {
             val color = ResourcesCompat.getColor(resources, R.color.route_panel_misc_icon_disabled, null)
@@ -171,7 +185,11 @@ class RoutePagerAdapter(
     }
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
-        super.onAttachedToRecyclerView(recyclerView)
+        this.recycler = recyclerView
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        this.recycler = null
     }
 
     override fun getItemCount(): Int =
@@ -187,8 +205,18 @@ class RouteTransfersLayout @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    private val viewStash: MutableList<ImageView> = arrayListOf()
+    companion object {
+        private const val ACTION_RESIZE = 0
+        private const val ACTION_HIDE = 1
+        private const val ACTION_SHOW = 2
+
+        private val txfInterpolator = AccelerateDecelerateInterpolator()
+    }
+
+    private val viewStash: MutableList<ImageView> = arrayListOf() // todo remove views from stash?
     private var transfers: MutableList<RoutePagerTransfer> = arrayListOf()
+    private var txfWidths: TxfWidths? = null
+    private var touchAnimProgram: NextPageTxf? = null
 
     private val lineHeight: Int = context.resources
         .getDimensionPixelSize(R.dimen.panel_bottom_route_line_long_height)
@@ -202,130 +230,49 @@ class RouteTransfersLayout @JvmOverloads constructor(
         this.orientation = HORIZONTAL
     }
 
-    fun replaceItems(transfers: MutableList<RoutePagerTransfer>, animate: Boolean, page: Int) {
-        this.post {
-            val txfLengthSum = transfers.fold(0) { acc, i -> acc + i.length }
-            val txfCount = transfers.size
-            val txfPartLength =
-                if (txfLengthSum == 0 || txfCount == 0) 0
-                else this.width / txfLengthSum
-
-            val calcWidth = { i: Int, t: RoutePagerTransfer ->
-                var width = t.length * txfPartLength
-                if (i == txfCount - 1)
-                    width += this.width % txfLengthSum
-                else
-                    width -= lineMargin
-                width
-            }
-
-            val createView = {
-                ImageView(context).also {
-                    it.layoutParams = LayoutParams(0, lineHeight)
-                    it.setImageDrawable(lineDrawable.mutate())
-                    viewStash.add(it)
-                }
-            }
-
-            val resetView = { v: View ->
-                (v.layoutParams as LayoutParams).also {
-                    it.width = 0
-                    it.leftMargin = 0
-                    it.rightMargin = 0
-                }
-            }
-
-            val addViews = {
-                val viewsCount = this.childCount
-                if (txfCount > viewsCount)
-                    for (i in viewsCount until txfCount)
-                        this.addView(viewStash[i])
-            }
-
-            val removeViews = {
-                val viewsCount = this.childCount
-                if (txfCount < viewsCount)
-                    this.removeViews(txfCount, viewsCount - txfCount)
-            }
-
-            if (!animate || page != 0 || viewStash.isEmpty() || transfers.isEmpty()) {
-                for (i in 0 until max(txfCount, viewStash.size)) {
-                    var v = viewStash.getOrNull(i)
-                    val t = transfers.getOrNull(i)
-
-                    if (t != null) {
-                        if (v == null)
-                            v = createView()
-
-                        (v.drawable as GradientDrawable).setColor(t.txf.lineColor)
-                        (v.layoutParams as LayoutParams).also {
-                            it.width = calcWidth(i, t)
-                            it.rightMargin = lineMargin
-                        }
-                        v.requestLayout()
-                    } else if (v != null) {
-                        resetView(v)
-                    }
-                }
-
-                addViews()
-                removeViews()
-            } else {
-                val oldTxf = this.transfers
-                val animTxf = ArrayList<AnimatedTxf>()
-                for (i in 0 until max(transfers.size, oldTxf.size)) {
-                    val o = oldTxf.getOrNull(i)
-                    val t = transfers.getOrNull(i)
-                    var v = viewStash.getOrNull(i)
-
-                    if (o != null && t != null) {
-                        val pw = v!!.width
-                        val at =
-                            AnimatedTxf(o.txf.lineColor, t.txf.lineColor, pw, calcWidth(i, t) - pw, ACTION_RESIZE)
-                        animTxf.add(at)
-                    } else if (o != null) {
-                        val pw = v!!.width
-                        val color = o.txf.lineColor
-                        val at = AnimatedTxf(color, color, pw, -pw, ACTION_HIDE)
-                        animTxf.add(at)
-                    } else if (t != null) {
-                        if (v == null)
-                            v = createView()
-                        resetView(v)
-
-                        val color = t.txf.lineColor
-                        val at = AnimatedTxf(color, color, 0, calcWidth(i, t), ACTION_SHOW)
-                        animTxf.add(at)
-                    }
-                }
-
-                addViews()
-
-                AnimUtils.getValueAnimator(true, 300, AccelerateDecelerateInterpolator()) { p ->
-                    for ((i, t) in animTxf.withIndex()) {
-                        val v = viewStash[i]
-                        val lp = v.layoutParams as LayoutParams
-
-                        when (t.action) {
-                            ACTION_SHOW -> lp.rightMargin = (lineMargin * p).toInt()
-                            ACTION_HIDE -> lp.rightMargin = (lineMargin - lineMargin * p).toInt()
-                        }
-
-                        lp.width = (t.widthPrev + t.widthDelta * p).toInt()
-                        v.requestLayout()
-
-                        val color = AnimUtils.argbEvaluate(p, t.srcColor, t.dstColor)
-                        (v.drawable as GradientDrawable).setColor(color)
-                    }
-                }.also {
-                    it.doOnEnd { removeViews() }
-                    it.start()
-                }
-            }
-
-            this.transfers = transfers
+    private fun resetView(v: View) {
+        (v.layoutParams as LayoutParams).also {
+            it.width = 0
+            it.leftMargin = 0
+            it.rightMargin = 0
         }
     }
+
+    private fun createView() = ImageView(context).also {
+        it.layoutParams = LayoutParams(0, lineHeight)
+        it.setImageDrawable(lineDrawable.mutate())
+        viewStash.add(it)
+        this.addView(it)
+    }
+
+    private fun makeWidths(newTxf: MutableList<RoutePagerTransfer>): TxfWidths {
+        val txfLengthSum = newTxf.fold(0) { acc, i -> acc + i.length }
+        val txfCount = newTxf.size
+        val txfPartLength =
+            if (txfLengthSum == 0 || txfCount == 0) 0
+            else this.width / txfLengthSum
+        return TxfWidths(txfLengthSum, txfCount, txfPartLength)
+    }
+
+    private fun calcWidth(w: TxfWidths, i: Int, t: RoutePagerTransfer): Int {
+        var width = t.length * w.txfPartLength
+        if (i == w.txfCount - 1)
+            width += this.width % w.txfLengthSum
+        else
+            width -= lineMargin
+        return width
+    }
+
+    data class NextPageTxf(
+        val widths: TxfWidths,
+        val program: ArrayList<AnimatedTxf>
+    )
+
+    data class TxfWidths(
+        val txfLengthSum: Int,
+        val txfCount: Int,
+        val txfPartLength: Int,
+    )
 
     data class AnimatedTxf(
         val srcColor: Int,
@@ -335,11 +282,143 @@ class RouteTransfersLayout @JvmOverloads constructor(
         val action: Int
     )
 
-    companion object {
-        private const val ACTION_RESIZE = 0
-        private const val ACTION_HIDE = 1
-        private const val ACTION_SHOW = 2
+    private fun replaceItemsNoAnim(w: TxfWidths, newTxf: MutableList<RoutePagerTransfer>) {
+        for (i in 0 until max(w.txfCount, viewStash.size)) {
+            var v = viewStash.getOrNull(i)
+            val t = newTxf.getOrNull(i)
+
+            if (t != null) {
+                if (v == null)
+                    v = createView()
+
+                (v.drawable as GradientDrawable).setColor(t.txf.lineColor)
+                (v.layoutParams as LayoutParams).also {
+                    it.width = calcWidth(w, i, t)
+                    it.rightMargin = lineMargin
+                }
+                v.requestLayout()
+            } else if (v != null) {
+                resetView(v)
+            }
+        }
     }
+
+    private fun replaceItemsSetNext(thisWidths: TxfWidths, nextPage: MutableList<RoutePagerTransfer>?) {
+        if (nextPage != null) {
+            val nextWidths = makeWidths(nextPage)
+            val nextProgram = animProgram(thisWidths, transfers, nextWidths, nextPage)
+            this.touchAnimProgram = NextPageTxf(nextWidths, nextProgram)
+        } else {
+            this.touchAnimProgram = null
+        }
+    }
+
+    fun replaceItems(
+        thisPage: MutableList<RoutePagerTransfer>,
+        nextPage: MutableList<RoutePagerTransfer>?,
+        animate: Boolean,
+        page: Int
+    ) {
+        this.post {
+            val oldTransfers = this.transfers
+            val oldWidths = this.txfWidths
+            val w = makeWidths(thisPage)
+
+            this.transfers = thisPage
+            this.txfWidths = w
+
+            if (!animate
+                || page != 0
+                || viewStash.isEmpty()
+                || thisPage.isEmpty()
+                || oldWidths == null
+            ) {
+                replaceItemsNoAnim(w, thisPage)
+                replaceItemsSetNext(w, nextPage)
+            } else {
+                val animTxf = animProgram(oldWidths, oldTransfers, w, thisPage)
+
+                AnimUtils.getValueAnimator(true, 300, txfInterpolator) { p ->
+                    animateViews(animTxf, p)
+                }.also {
+                    it.doOnEnd { replaceItemsSetNext(w, nextPage) }
+                    it.start()
+                }
+            }
+
+        }
+    }
+
+    private fun silentReset() {
+        Log.d("AM2", "touch anim reset")
+        val currentWidths = makeWidths(this.transfers)
+        replaceItemsNoAnim(currentWidths, this.transfers)
+    }
+
+    fun touchAnimate(progress: Float) {
+        Log.d("AM2", "touch anim $progress")
+        if (progress == 0f)
+            silentReset()
+        else
+            touchAnimProgram?.let {
+                animateViews(it.program, txfInterpolator.getInterpolation(progress))
+            }
+    }
+
+    private fun animateViews(animTxf: ArrayList<AnimatedTxf>, p: Float) {
+        for ((i, t) in animTxf.withIndex()) {
+            val v = viewStash[i]
+            val lp = v.layoutParams as LayoutParams
+
+            when (t.action) {
+                ACTION_SHOW -> lp.rightMargin = (lineMargin * p).toInt()
+                ACTION_HIDE -> lp.rightMargin = (lineMargin - lineMargin * p).toInt()
+            }
+
+            lp.width = (t.widthPrev + t.widthDelta * p).toInt()
+            v.requestLayout()
+
+            val color = AnimUtils.argbEvaluate(p, t.srcColor, t.dstColor)
+            (v.drawable as GradientDrawable).setColor(color)
+        }
+    }
+
+    private fun animProgram(
+        oldWidths: TxfWidths,
+        oldTxf: MutableList<RoutePagerTransfer>,
+        newWidths: TxfWidths,
+        newTxf: MutableList<RoutePagerTransfer>
+    ): ArrayList<AnimatedTxf> {
+        val animTxf = ArrayList<AnimatedTxf>()
+        for (i in 0 until max(newTxf.size, oldTxf.size)) {
+            val o = oldTxf.getOrNull(i)
+            val t = newTxf.getOrNull(i)
+            var v = viewStash.getOrNull(i)
+
+            if (o != null && t != null) {
+                val widthPrev = calcWidth(oldWidths, i, o)
+                val widthNext = calcWidth(newWidths, i, t) - widthPrev
+                val at = AnimatedTxf(o.txf.lineColor, t.txf.lineColor, widthPrev, widthNext, ACTION_RESIZE)
+                animTxf.add(at)
+            } else if (o != null) {
+                val color = o.txf.lineColor
+                val widthPrev = calcWidth(oldWidths, i, o)
+                val at = AnimatedTxf(color, color, widthPrev, -widthPrev, ACTION_HIDE)
+                animTxf.add(at)
+            } else if (t != null) {
+                if (v == null)
+                    v = createView()
+                resetView(v)
+
+                val color = t.txf.lineColor
+                val widthNext = calcWidth(newWidths, i, t)
+                val at = AnimatedTxf(color, color, 0, widthNext, ACTION_SHOW)
+                animTxf.add(at)
+            }
+        }
+        return animTxf
+    }
+
 }
 
 class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val listener: MapBottomPanelRouteListener) :
@@ -365,12 +444,8 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     fun show(routes: ArrayList<RoutePagerItem>, leaveTime: Calendar?, setPage: Int) {
         sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, false) {
             adapter.leaveTime = leaveTime
-            if (setPage > 0) {
-                adapter.replaceItems(routes, currentPage, false)
-                binding?.pager?.post { this.setPage(setPage) }
-            } else {
-                adapter.replaceItems(routes, currentPage, true)
-            }
+            adapter.replaceItems(routes, currentPage, setPage <= 0)
+            this.setPage(setPage)
             sheet.adapter.showRoute = true
         }
     }
@@ -412,23 +487,115 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     override fun createHolder(bind: ViewBinding) {
         castBind(bind).also {
+            try {
+                val recyclerViewField = ViewPager2::class.java.getDeclaredField("mRecyclerView")
+                recyclerViewField.isAccessible = true
+                val recyclerView = recyclerViewField.get(it.pager)
+                val touchSlopField = RecyclerView::class.java.getDeclaredField("mTouchSlop")
+                touchSlopField.isAccessible = true
+                val touchSlop = touchSlopField.get(recyclerView) as Int
+                touchSlopField.set(recyclerView, (touchSlop * 0.3f).toInt())
+            } catch (_: Exception) {} // fuck it
+
             it.pager.adapter = adapter
+        }
+    }
+
+    private val interpolator = DecelerateInterpolator(1.3f)
+
+    private fun halfValue(target: Float, limit: Float): Float {
+        val value =
+            if (target < 0.5f)
+                1f - (1f / 0.5f * target)
+            else
+                1f / 0.5f * (target - 0.5f)
+        return (1f - limit) + limit * value
+    }
+
+    @Suppress("UnnecessaryVariable")
+    private fun animatePage(bind: WidgetBotRoutePageBinding, offset: Float) {
+        bind.transfersRecycler.touchAnimate(offset)
+
+        val timeThis = arrayOf(bind.routeTime, bind.routeTimeSec)
+        val timeNext = arrayOf(bind.nextRouteTime, bind.nextRouteTimeSec)
+
+        val nextWidth = timeNext.fold(0) { acc, v ->
+            val lp = (v.layoutParams as ConstraintLayout.LayoutParams)
+            acc + lp.leftMargin + lp.rightMargin + v.width
+        }
+
+        val interpolatedOffset = interpolator.getInterpolation(offset)
+        val transX = nextWidth * -offset
+        val targetAlpha = saturate(offset, 0.1f, 0f, 0.95f, 1f)
+        val halfAlpha = halfValue(targetAlpha, 1f)
+        val scaleTxf = halfValue(interpolatedOffset, 0.15f).coerceAtLeast(0.95f)
+
+
+        timeThis.forEach {
+            it.translationX = transX
+            it.alpha = 1f - targetAlpha
+        }
+
+        timeNext.forEach {
+            it.translationX = transX
+            it.alpha = targetAlpha
+        }
+
+        bind.transfersRecycler.also {
+            it.alpha = halfAlpha.coerceAtLeast(0.55f)
+            it.scaleX = scaleTxf
+            it.scaleY = scaleTxf
+        }
+
+        /*arrayOf(bind.routeTimeRangeArrive, bind.routeTimeRangeLeave, bind.routeTimeRangeIcon)
+            .forEach { it.alpha = halfAlpha }*/
+    }
+
+    private val animationPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
+        override fun onPageScrolled(position: Int, offset: Float, offsetPx: Int) {
+            Log.d("AM2", "pcc: pos $position, off $offset, px $offsetPx, ee ${epsilonEqual(offset, 1f)}")
+            val holder = adapter.recycler
+                ?.findViewHolderForAdapterPosition(position)!! as RoutePagerAdapter.PageHolder
+            animatePage(holder.binding, offset)
+        }
+    }
+
+    private val animationPageTransformer = object : ViewPager2.PageTransformer {
+        override fun transformPage(view: View, position: Float) {
+            if (position < 0) {
+                if (position > -1)
+                    view.translationX = view.width * -position
+                else
+                    view.translationX = 0f
+            } else {
+                if (position > 0)
+                    view.translationX = view.width * (1f - position)
+                else
+                    view.translationX = 0f
+            }
+            // Log.d("AM2", "pt $position, tx ${view.translationX}")
         }
     }
 
     override fun attachItem(bind: ViewBinding) {
         castBind(bind).also {
+            this.binding = it
+
             it.pager.setCurrentItem(currentPage, false)
+            it.pager.setPageTransformer(animationPageTransformer)
             it.pager.registerOnPageChangeCallback(pageChangedCallback)
+            it.pager.registerOnPageChangeCallback(animationPageChangeCallback)
+            it.pager.offscreenPageLimit = 2
+
             it.dots.setViewPager2(it.pager)
             it.dots.refreshDots()
-            this.binding = it
         }
     }
 
     override fun detachItem(bind: ViewBinding) {
         castBind(bind).also {
             it.pager.unregisterOnPageChangeCallback(pageChangedCallback)
+            it.pager.unregisterOnPageChangeCallback(animationPageChangeCallback)
             it.dots.pager?.removeOnPageChangeListener()
             this.binding = null
         }
