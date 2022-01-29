@@ -24,10 +24,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private val cache: AtomicReference<MapCache?> = AtomicReference(null)
     private val oldCache: AtomicReference<MapCache?> = AtomicReference(null)
     private val swapCache: AtomicReference<MapCache?> = AtomicReference(null)
+    private val mipmapCache: AtomicReference<MapCache?> = AtomicReference(null)
 
     private val matrix = Matrix()
-    private val mInvertedMatrix = Matrix()
+    private val invertedMatrix = Matrix()
     private val renderMatrix = Matrix()
+    private val bgMatrix = Matrix()
     private val matrixValues = FloatArray(9)
 
     private val screenRect = RectF()
@@ -175,6 +177,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private fun drawImpl(canvas: Canvas, drawCache: MapCache, noUpdates: Boolean) {
         maximumBitmapWidth = canvas.maximumBitmapWidth
         maximumBitmapHeight = canvas.maximumBitmapHeight
+        val entireMapCached = isEntireMapCached.get()
+        var mipmap: MapCache? = null
+        val bgColor = Color.WHITE
 
         // prepare transform matrix
         val m = renderMatrix
@@ -187,14 +192,23 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             // if we're using cache - simple translate origin
             m.setTranslate(currentX - drawCache.x, currentY - drawCache.y)
         }
-        canvas.clipRect(screenRect)
-        canvas.drawColor(Color.WHITE)
+
+        if (!entireMapCached && mipmapCache.get().also { mipmap = it } != null) {
+            canvas.drawColor(bgColor)
+            canvas.drawBitmap(mipmap!!.image!!, matrix, null)
+            Log.d("AM1", "draw: mipmap path")
+        } else {
+            canvas.clipRect(screenRect)
+            canvas.drawColor(bgColor)
+            Log.d("AM1", "draw: entire path")
+        }
         canvas.drawBitmap(drawCache.image!!, m, null)
+
         if (!noUpdates && isUpdatesEnabled.get()) {
             //Log.w(TAG, "cache: " + StringUtil.formatRectF(cache.ViewRect) + " vs. screen: " + StringUtil.formatRectF(schemeRect) + ", hit = "+ cache.hit(schemeRect) );
             if (drawCache.scale != scale) {
                 postRebuildCache()
-            } else if (!isEntireMapCached.get() && !drawCache.hit(schemeRect)) {
+            } else if (!entireMapCached && !drawCache.hit(schemeRect)) {
                 postUpdateCache()
             }
         }
@@ -204,7 +218,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     fun setMatrix(newMatrix: Matrix?) {
         matrix.set(newMatrix)
-        matrix.invert(mInvertedMatrix)
+        matrix.invert(invertedMatrix)
         matrix.getValues(matrixValues)
         scale = matrixValues[Matrix.MSCALE_X]
         currentX = matrixValues[Matrix.MTRANS_X]
@@ -217,9 +231,16 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     fun updateViewRect() {
         schemeRect[0f, 0f, canvasView.width.toFloat()] = canvasView.height.toFloat()
-        mInvertedMatrix.mapRect(schemeRect)
+        invertedMatrix.mapRect(schemeRect)
         screenRect.set(schemeRect)
         matrix.mapRect(screenRect)
+    }
+
+    @Synchronized
+    fun rebuildMipmap() {
+        Log.d("AM1", "rebuild mipmap")
+        mipmapCache.getAndSet(null)?.let { recycleCacheSingleNow(it) }
+        renderEntireCacheTo(mipmapCache, null)
     }
 
     @Synchronized
@@ -262,6 +283,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     @Synchronized
     private fun renderEntireCache() {
+        renderEntireCacheTo(cache, oldCache.get())
+    }
+
+    private fun renderEntireCacheTo(to: AtomicReference<MapCache?>, reuse: MapCache?) {
         try {
             //Log.w(TAG,"render entire");
             val viewRect = RectF(0f, 0f, currentWidth, currentHeight)
@@ -270,7 +295,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             val i = Matrix()
             m.invert(i)
             val newCache = MapCache.reuse(
-                oldCache.get(), currentWidth.toInt(), currentHeight.toInt(),
+                reuse, currentWidth.toInt(), currentHeight.toInt(),
                 m,
                 i, 0f, 0f,
                 scale,
@@ -284,7 +309,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             for (elem in elements) {
                 elem.draw(c)
             }
-            cache.set(newCache)
+            to.set(newCache)
         } catch (ex: Exception) {
             isRenderFailed.set(true)
         }
@@ -299,7 +324,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 canvasView.width,
                 canvasView.height,
                 matrix,
-                mInvertedMatrix,
+                invertedMatrix,
                 currentX,
                 currentY,
                 scale,
@@ -330,7 +355,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 canvasView.width,
                 canvasView.height,
                 matrix,
-                mInvertedMatrix,
+                invertedMatrix,
                 currentX,
                 currentY,
                 scale,
@@ -414,6 +439,16 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private fun postUpdateCache() {
         clearQueue()
         handler.sendEmptyMessage(MSG_UPDATE_CACHE)
+    }
+
+    private fun recycleCacheSingleNow(cache: MapCache?, noGC: Boolean = false) {
+        if (cache == null) return
+        val image = cache.image
+        cache.image = null
+        image?.let {
+            it.recycle()
+            if (!noGC) System.gc()
+        }
     }
 
     private fun recycleCacheSingle(toRecycle: ArrayList<Bitmap>, cache: MapCache?) {

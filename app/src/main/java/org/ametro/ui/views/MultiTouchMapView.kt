@@ -47,6 +47,7 @@ class MultiTouchMapView @JvmOverloads constructor(
         rendererProgram = RenderProgram(container, schemeName!!)
         renderer = CanvasRenderer(this, mapScheme, rendererProgram)
         initializeViewport()
+        renderer.rebuildMipmap()
     }
 
     override fun computeVerticalScrollOffset(): Int {
