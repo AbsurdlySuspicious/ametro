@@ -143,11 +143,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     fun draw(canvas: Canvas) {
         canvas.save()
 
-        val isCacheRebuilding = isCacheRebuilding.get()
         val swapCache = this.swapCache.get()
         val mainCache = this.cache.get()
 
-        if (isCacheRebuilding && swapCache?.image != null) {
+        if (isCacheRebuilding.get() && swapCache?.image != null) {
             Log.d("AM1", "draw: rebuilding + swap cache")
             drawImpl(canvas, swapCache, noUpdates = true)
         } else if (mainCache?.image != null) {
@@ -156,8 +155,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             if (isRebuildPending.get())
                 postRebuildCache().also { Log.d("AM1", "draw: rebuild pending") }
         } else {
-            Log.d("AM1", "draw: no cache, will rebuild: ${!isCacheRebuilding}")
-            if (!isCacheRebuilding)
+            val willRebuild = isCacheRebuilding.get()
+            Log.d("AM1", "draw: no cache, will rebuild: ${!willRebuild}")
+            if (!willRebuild)
                 postRebuildCache()
         }
 
