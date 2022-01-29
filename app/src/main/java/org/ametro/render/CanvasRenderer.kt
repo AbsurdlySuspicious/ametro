@@ -146,9 +146,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     fun draw(canvas: Canvas) {
         canvas.save()
 
-        val mainCache = this.cache.get()
-        val swapCache = this.swapCache.get()
         val isCacheRebuilding = isCacheRebuilding.get()
+        val swapCache = this.swapCache.get()
+        val mainCache = this.cache.get()
 
         if (isCacheRebuilding && swapCache?.image != null) {
             Log.d("AM1", "draw: rebuilding + swap cache")
