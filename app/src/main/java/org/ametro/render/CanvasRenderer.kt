@@ -19,6 +19,16 @@ typealias ElementsToHighlight = (() -> java.util.HashSet<Int>?)?
 
 class CanvasRenderer(private val canvasView: View, private val mapScheme: MapScheme, renderProgram: RenderProgram?) {
 
+    companion object {
+        private const val MSG_HIGHLIGHT_ELEMENTS = 1
+        private const val MSG_RENDER_PARTIAL_CACHE = 2
+        private const val MSG_REBUILD_CACHE = 3
+        private const val MSG_UPDATE_CACHE = 4
+
+        private val rendererThread =
+            HandlerThread("map-renderer").also { it.start() }
+    }
+
     private var renderProgram: RenderProgram? = null
 
     private val cache: AtomicReference<MapCache?> = AtomicReference(null)
@@ -55,9 +65,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private val isCacheRebuilding = AtomicBoolean(false)
     private val isEntireMapCached = AtomicBoolean(false)
 
-    private lateinit var rendererThread: HandlerThread
-    private lateinit var handler: Handler
-
     private val density: Float
     private val renderFailedErrorText: String
     private val renderFailedTextPaint = Paint().also {
@@ -65,7 +72,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         it.textAlign = Paint.Align.CENTER
     }
 
-    private fun createHandler(looper: Looper) = object : Handler(looper) {
+    private val handler = object : Handler(rendererThread.looper) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
                 MSG_REBUILD_CACHE -> {
@@ -107,16 +114,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         val ac = canvasView.context.getSystemService(Activity.ACTIVITY_SERVICE) as ActivityManager
         memoryClass = ac.memoryClass
         setScheme(renderProgram)
-    }
-
-    fun onAttachedToWindow() {
-        rendererThread = HandlerThread("map-renderer")
-        rendererThread.start()
-        handler = createHandler(rendererThread.looper)
-    }
-
-    fun onDetachedFromWindow() {
-        rendererThread.looper.quit()
     }
 
     fun setScheme(renderProgram: RenderProgram?) {
@@ -520,12 +517,5 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 return newCache
             }
         }
-    }
-
-    companion object {
-        private const val MSG_HIGHLIGHT_ELEMENTS = 1
-        private const val MSG_RENDER_PARTIAL_CACHE = 2
-        private const val MSG_REBUILD_CACHE = 3
-        private const val MSG_UPDATE_CACHE = 4
     }
 }

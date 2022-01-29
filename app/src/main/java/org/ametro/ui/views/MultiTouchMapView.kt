@@ -66,16 +66,6 @@ class MultiTouchMapView @JvmOverloads constructor(
         return horizontalScrollRange
     }
 
-    override fun onAttachedToWindow() {
-        renderer.onAttachedToWindow()
-        super.onAttachedToWindow()
-    }
-
-    override fun onDetachedFromWindow() {
-        renderer.onDetachedFromWindow()
-        super.onDetachedFromWindow()
-    }
-
     override fun onDraw(canvas: Canvas) {
         renderer.draw(canvas)
         super.onDraw(canvas)
