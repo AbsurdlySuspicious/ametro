@@ -191,13 +191,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             m.setTranslate(currentX - drawCache.x, currentY - drawCache.y)
         }
 
+        canvas.clipRect(screenRect)
+        canvas.drawColor(bgColor)
         if (!entireMapCached && mipmapCache.get().also { mipmap = it } != null) {
-            canvas.drawColor(bgColor)
             canvas.drawBitmap(mipmap!!.image!!, matrix, null)
             Log.d("AM1", "draw: mipmap path")
         } else {
-            canvas.clipRect(screenRect)
-            canvas.drawColor(bgColor)
             Log.d("AM1", "draw: entire path")
         }
         canvas.drawBitmap(drawCache.image!!, m, null)
