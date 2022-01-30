@@ -235,7 +235,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     fun rebuildMipmap() {
         Log.d("AM1", "rebuild mipmap")
-        Log.d("AM1", "mm: ${currentWidth}x${currentHeight}, scale $scale")
         val mipmapOld = mipmapCache.getAndSet(null)
         renderEntireCacheTo(mipmapCache, mipmapOld, bgMatrix)
     }
