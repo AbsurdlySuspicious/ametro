@@ -15,6 +15,7 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageInfo
 import org.ametro.databinding.ActivityAboutViewBinding
 import org.ametro.utils.FileUtils
+import org.ametro.utils.misc.getAppVersion
 import java.io.IOException
 import java.lang.RuntimeException
 
@@ -58,12 +59,7 @@ open class About : AppCompatActivityEx() {
             Linkify.addLinks(builder, Linkify.ALL)
             return SpannableString(builder)
         }
+
     private val versionNumber: String
-        get() {
-            return try {
-                packageManager.getPackageInfo(packageName, 0).versionName
-            } catch (e: PackageManager.NameNotFoundException) {
-                "0.0.0.0"
-            }
-        }
+        get() = getAppVersion(this)
 }

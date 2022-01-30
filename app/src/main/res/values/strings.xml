@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE resources [
+        <!ENTITY appname "aMetro">
+        ]>
 <resources>
-    <string name="app_name">aMetro</string>
+    <string name="app_name">&appname;</string>
     <string name="render_failed">Render failed!</string>
 
     <string name="title_activity_map_view">aMetro</string>
@@ -33,6 +36,7 @@
     <string name="btn_close">Close</string>
     <string name="btn_download">Download</string>
     <string name="btn_cancel">Cancel</string>
+    <string name="btn_ok">OK</string>
 
     <string name="drawer_open">Navigation opened</string>
     <string name="drawer_close">Navigation closed</string>
@@ -105,4 +109,14 @@
     <string name="delay_weekdays_type_sunday" >Su.</string>
     <string name="delay_weekdays_type_workdays" >Mo.Fr.</string>
     <string name="delay_weekdays_type_weekend" >Sa.Su.</string>
+    <string name="settings_about">About &appname;</string>
+    <string name="settings_max_routes">Max routes to show</string>
+    <string name="settings_dt_zoom_sensitivity">Double-tap + swipe zoom sensitivity</string>
+    <string name="settings_app_lang">App language</string>
+    <string name="settings_map_lang">Preferred map language</string>
+    <string name="settings_app_lang_default">System default</string>
+    <string name="settings_map_lang_default">Same as app</string>
+    <string name="language_selector_title">Select language</string>
+    <string name="language_selector_search">Search</string>
+    <string name="language_selector_default">Use default language</string>
 </resources>

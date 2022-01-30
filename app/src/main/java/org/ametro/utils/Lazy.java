@@ -24,4 +24,8 @@ public class Lazy<T> {
         }
         return instance;
     }
+
+    public void clearInstance() {
+        instance = null;
+    }
 }

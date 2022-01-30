@@ -8,6 +8,8 @@
     <color name="navigationColor">#ffffff</color>
     <color name="navigationColorForceDark">#000000</color>
 
+    <drawable name="list_selected">#9EC07D</drawable>
+
     <color name="secondary_text">#727272</color>
     <color name="secondary_disabled_text">#89727272</color>
     <color name="icons">#FFFFFF</color>

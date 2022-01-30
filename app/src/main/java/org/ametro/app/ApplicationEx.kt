@@ -18,11 +18,11 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.text.format.DateFormat
+import android.util.Log
 import androidx.loader.content.AsyncTaskLoader
 import androidx.multidex.MultiDexApplication
 import kotlinx.parcelize.Parcelize
 import org.ametro.utils.Lazy
-import org.ametro.utils.misc.*
 import java.util.*
 
 @Parcelize
@@ -117,7 +117,7 @@ class ApplicationEx : MultiDexApplication() {
                 ServiceTransport(),
                 Constants.MAP_SERVICE_URI,
                 filesDir,
-                applicationSettingsProvider.defaultLanguage,
+                applicationSettingsProvider.preferredMapLanguage,
                 Constants.MAP_EXPIRATION_PERIOD_MILLISECONDS
             )
         }
@@ -155,11 +155,22 @@ class ApplicationEx : MultiDexApplication() {
         return localMapCatalogManager!!.instance
     }
 
+    fun clearMapListCache() {
+        mapServiceCache!!.clearInstance()
+        localizedMapInfoProvider!!.clearInstance()
+        remoteMapCatalogProvider!!.clearInstance()
+        localMapCatalogManager!!.clearInstance()
+    }
+
     fun setCurrentMapViewState(container: MapContainer?, schemeName: String?, enabledTransports: Array<String>?) {
         clearCurrentMapViewState()
         this.container = container
         this.schemeName = schemeName
         this.enabledTransports = enabledTransports
+    }
+
+    fun clearContainer() {
+        this.container = null
     }
 
     fun clearCurrentMapViewState() {

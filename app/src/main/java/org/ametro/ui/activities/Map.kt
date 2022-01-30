@@ -5,7 +5,6 @@ import android.app.SearchManager
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PointF
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -13,10 +12,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
@@ -50,9 +46,7 @@ import org.ametro.ui.views.MultiTouchMapView
 import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
-import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.convertPair
-import java.lang.StringBuilder
 import java.util.*
 
 class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControllerListener,
@@ -310,8 +304,15 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
                     )
                 ).execute()
             }
-            OPEN_STATION_DETAILS -> {
+            OPEN_STATION_DETAILS_ACTION -> {
                 mapBottomStation.detailsClosed()
+            }
+            OPEN_SETTINGS_ACTION -> {
+                if (resultCode == CONFIGURATION_CHANGED_RESULT) {
+                    app.clearMapListCache()
+                    app.clearContainer()
+                    recreate()
+                }
             }
         }
         super.onActivityResult(requestCode, resultCode, data)
@@ -460,7 +461,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         intent.putExtra(Constants.LINE_NAME, line.name)
         intent.putExtra(Constants.STATION_NAME, station.name)
         intent.putExtra(Constants.STATION_UID, station.uid)
-        startActivityForResult(intent, OPEN_STATION_DETAILS)
+        startActivityForResult(intent, OPEN_STATION_DETAILS_ACTION)
     }
 
     override fun onSelectBeginStation(line: MapSchemeLine?, station: MapSchemeStation?) {
@@ -507,7 +508,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             end.second.uid
         )
 
-        val routes = MapRouteProvider.findRoutes(routeParams, maxRoutes = 5)
+        val routes = MapRouteProvider.findRoutes(routeParams, settingsProvider.maxRoutes)
 
         if (routes.isEmpty()) {
             mapView!!.highlightsElements(null)
@@ -558,8 +559,10 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             )
         }
 
-        val initRoute =
+        var initRoute =
             app.currentRoute.selectedRoute.let { if (it > 0) it else 0 }
+        if (initRoute >= routes.size)
+            initRoute = routes.size - 1
         highlightRoute(routes[initRoute])
 
         if (!isResuming || app.lastLeaveTime == null) {
@@ -600,6 +603,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
     companion object {
         private const val OPEN_MAPS_ACTION = 1
         private const val OPEN_SETTINGS_ACTION = 2
-        private const val OPEN_STATION_DETAILS = 3
+        private const val OPEN_STATION_DETAILS_ACTION = 3
+
+        const val CONFIGURATION_CHANGED_RESULT = 2
     }
 }

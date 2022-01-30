@@ -1,5 +1,7 @@
 package org.ametro.utils.misc
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.util.Pair
 import kotlin.math.abs
 
@@ -56,4 +58,10 @@ inline fun <T, reified R> Iterable<T>.mapToArraySizedExact(size: Int, noinline m
         throw IndexOutOfBoundsException("Iterable size $total is not equal to defined size $size")
     @Suppress("UNCHECKED_CAST")
     return out as Array<R>
+}
+
+fun getAppVersion(context: Context) = try {
+    context.packageManager.getPackageInfo(context.packageName, 0).versionName
+} catch (e: PackageManager.NameNotFoundException) {
+    ""
 }

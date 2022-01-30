@@ -11,6 +11,7 @@ import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.ViewConfiguration
 import android.widget.Scroller
+import org.ametro.app.ApplicationEx
 import org.ametro.utils.AnimationInterpolator
 import kotlin.math.min
 
@@ -120,6 +121,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private var velocityTracker: VelocityTracker?
     private val displayMetrics: DisplayMetrics
     private val density: Float
+    private val swipeZoomDensityMultiplier: Float
     private val animationEndPoint = PointF()
     private val animationStartPoint = PointF()
 
@@ -137,6 +139,9 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
         velocityTracker = null
         displayMetrics = context.resources.displayMetrics
         density = displayMetrics.density
+        swipeZoomDensityMultiplier =
+            ApplicationEx.getInstanceContext(context.applicationContext)!!
+                .applicationSettingsProvider.dtZoomSensitivityF
     }
     
     private fun sendMessage(msgId: Int) {
@@ -189,7 +194,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
 
     fun updateBounds() {
         // calculate zoom bounds
-        swipeZoomBase = 60f * density
+        swipeZoomBase = 60f * density * swipeZoomDensityMultiplier
         maxScale = 2.0f * density
         minScale = min(displayRect!!.width() / contentWidth, displayRect!!.height() / contentHeight)
         adjustScale()
