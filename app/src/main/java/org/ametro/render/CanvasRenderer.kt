@@ -5,7 +5,6 @@ import android.app.ActivityManager
 import android.graphics.*
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
@@ -236,8 +235,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     fun rebuildMipmap() {
         Log.d("AM1", "rebuild mipmap")
-        mipmapCache.getAndSet(null)?.let { recycleCacheSingleNow(it) }
-        renderEntireCacheTo(mipmapCache, null, bgMatrix)
+        val mipmapOld = mipmapCache.getAndSet(null)
+        renderEntireCacheTo(mipmapCache, mipmapOld, bgMatrix)
     }
 
     @Synchronized
