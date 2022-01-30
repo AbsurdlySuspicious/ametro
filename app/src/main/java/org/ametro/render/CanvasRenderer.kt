@@ -236,7 +236,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     fun rebuildMipmap() {
         Log.d("AM1", "rebuild mipmap")
         val mipmapOld = mipmapCache.getAndSet(null)
-        renderEntireCacheTo(mipmapCache, mipmapOld, bgMatrix)
+        renderEntireCacheTo(mipmapCache, mipmapOld, bgMatrix, cn = "mipmap")
     }
 
     @Synchronized
@@ -284,7 +284,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         renderEntireCacheTo(cache, oldCache.get(), m)
     }
 
-    private fun renderEntireCacheTo(to: AtomicReference<MapCache?>, reuse: MapCache?, m: Matrix) {
+    private fun renderEntireCacheTo(to: AtomicReference<MapCache?>, reuse: MapCache?, m: Matrix, cn: String = "other") {
         try {
             //Log.w(TAG,"render entire");
             val viewRect = RectF(0f, 0f, currentWidth, currentHeight)
@@ -294,7 +294,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 m,
                 i, 0f, 0f,
                 scale,
-                viewRect
+                viewRect,
+                cacheName = cn
             )
             val c = Canvas(newCache.image!!)
             c.drawColor(Color.WHITE)
@@ -490,17 +491,23 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 x: Float,
                 y: Float,
                 scale: Float,
-                schemeRect: RectF?
+                schemeRect: RectF?,
+                cacheName: String = "other"
             ): MapCache {
                 val newCache: MapCache
+                Log.d("AM1", "mc $cacheName: try reuse")
                 if (oldCache != null) {
                     newCache = oldCache
+                    Log.d("AM1", "mc $cacheName: old cache present")
                     if (!newCache.equals(width, height)) {
+                        Log.d("AM1", "mc $cacheName: old cache bad size")
+                        Log.d("AM1", "mc $cacheName: old ${newCache.image!!.width}x${newCache.image!!.height}, new: ${width}x${height}")
                         newCache.image!!.recycle()
                         newCache.image = null
                         System.gc()
                     }
                 } else {
+                    Log.d("AM1", "mc $cacheName: old cache NOT present")
                     newCache = MapCache()
                 }
                 if (newCache.image == null) {
