@@ -235,8 +235,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     fun rebuildMipmap() {
         Log.d("AM1", "rebuild mipmap")
+        val r = RectF(0f, 0f, mapScheme.width.toFloat(), mapScheme.height.toFloat())
         val mipmapOld = mipmapCache.getAndSet(null)
-        renderEntireCacheTo(mipmapCache, mipmapOld, bgMatrix)
+        renderEntireCacheTo(mipmapCache, mipmapOld, bgMatrix, r, 1f)
     }
 
     @Synchronized
@@ -279,18 +280,19 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     @Synchronized
     private fun renderEntireCache() {
+        val r = RectF(0f, 0f, currentWidth, currentHeight)
         val m = Matrix(matrix)
         m.postTranslate(-currentX, -currentY)
-        renderEntireCacheTo(cache, oldCache.get(), m)
+        renderEntireCacheTo(cache, oldCache.get(), m, r, scale)
     }
 
-    private fun renderEntireCacheTo(to: AtomicReference<MapCache?>, reuse: MapCache?, m: Matrix) {
+    private fun renderEntireCacheTo(to: AtomicReference<MapCache?>, reuse: MapCache?, m: Matrix,
+                                    viewRect: RectF, scale: Float) {
         try {
             //Log.w(TAG,"render entire");
-            val viewRect = RectF(0f, 0f, currentWidth, currentHeight)
             val i = Matrix().also { m.invert(it) }
             val newCache = MapCache.reuse(
-                reuse, currentWidth.toInt(), currentHeight.toInt(),
+                reuse, viewRect.right.toInt(), viewRect.bottom.toInt(),
                 m,
                 i, 0f, 0f,
                 scale,
