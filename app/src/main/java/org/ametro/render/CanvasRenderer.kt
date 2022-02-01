@@ -23,6 +23,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         private const val MSG_RENDER_PARTIAL_CACHE = 2
         private const val MSG_REBUILD_CACHE = 3
         private const val MSG_UPDATE_CACHE = 4
+        private const val MSG_REBUILD_MIPMAP = 5
 
         private val rendererThread =
             HandlerThread("map-renderer").also { it.start() }
@@ -93,13 +94,17 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     canvasView.invalidate()
                 }
                 MSG_HIGHLIGHT_ELEMENTS -> {
+                    Log.d("AM5", "highlight msg")
                     @Suppress("UNCHECKED_CAST")
                     val lazyIds = msg.obj as ElementsToHighlight
                     renderProgram!!.highlightsElements(lazyIds?.invoke())
                     // rebuildOnDraw()
                     // canvasView.invalidate()
-                    rebuildMipmap()
+                    postRebuildMipmap()
                     postRebuildCache()
+                }
+                MSG_REBUILD_MIPMAP -> {
+                    rebuildMipmap()
                 }
             }
         }
@@ -437,6 +442,11 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private fun postUpdateCache() {
         clearQueue()
         handler.sendEmptyMessage(MSG_UPDATE_CACHE)
+    }
+
+    fun postRebuildMipmap() {
+        handler.removeMessages(MSG_REBUILD_MIPMAP)
+        handler.sendEmptyMessage(MSG_REBUILD_MIPMAP)
     }
 
     private fun recycleCacheSingleNow(cache: MapCache?, noGC: Boolean = false) {
