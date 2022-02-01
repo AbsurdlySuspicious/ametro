@@ -286,6 +286,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         renderEntireCacheTo(cache, oldCache.get(), m, r, scale)
     }
 
+    @Synchronized
     private fun renderEntireCacheTo(to: AtomicReference<MapCache?>, reuse: MapCache?, m: Matrix,
                                     viewRect: RectF, scale: Float) {
         try {
