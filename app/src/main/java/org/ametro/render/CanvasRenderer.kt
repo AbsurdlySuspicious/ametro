@@ -145,6 +145,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     }
 
     fun draw(canvas: Canvas) {
+        maximumBitmapWidth = canvas.maximumBitmapWidth
+        maximumBitmapHeight = canvas.maximumBitmapHeight
         canvas.save()
 
         val swapCache = this.swapCache.get()
@@ -177,8 +179,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     }
 
     private fun drawImpl(canvas: Canvas, drawCache: MapCache, noUpdates: Boolean) {
-        maximumBitmapWidth = canvas.maximumBitmapWidth
-        maximumBitmapHeight = canvas.maximumBitmapHeight
         val entireMapCached = isEntireMapCached.get()
         var mipmap: MapCache? = null
         val bgColor = Color.WHITE
@@ -256,7 +256,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             cache.set(null)
             recycleCache(noSwap = true, noGC = true)
 
-            if (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight) {
+            Log.d("AM1", "cw $currentWidth, mw $maximumBitmapWidth")
+            Log.d("AM1", "ch $currentHeight, mh $maximumBitmapHeight")
+
+            if ((maximumBitmapWidth > 0 || maximumBitmapHeight > 0) &&
+                (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight)
+            ) {
                 renderPartialCache()
                 Log.d("AM1", "rebuild cache: end partial 1")
                 return
@@ -292,8 +297,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     }
 
     @Synchronized
-    private fun renderEntireCacheTo(to: AtomicReference<MapCache?>, reuse: MapCache?, m: Matrix,
-                                    viewRect: RectF, scale: Float) {
+    private fun renderEntireCacheTo(
+        to: AtomicReference<MapCache?>, reuse: MapCache?, m: Matrix,
+        viewRect: RectF, scale: Float
+    ) {
         try {
             //Log.w(TAG,"render entire");
             val i = Matrix().also { m.invert(it) }
