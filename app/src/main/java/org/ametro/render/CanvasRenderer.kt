@@ -11,6 +11,7 @@ import android.view.View
 import org.ametro.R
 import org.ametro.model.entities.MapScheme
 import org.ametro.render.elements.DrawingElement
+import org.ametro.utils.misc.epsilonEqual
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -60,7 +61,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var currentHeight = 0f
 
     private val isRenderFailed = AtomicBoolean(false)
-    private val isUpdatesEnabled = AtomicBoolean(false)
+    private val isUpdatesEnabled = AtomicBoolean(true)
     private val isRebuildPending = AtomicBoolean(false)
     private val isCacheRebuilding = AtomicBoolean(false)
     private val isEntireMapCached = AtomicBoolean(false)
@@ -221,6 +222,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         matrix.set(newMatrix)
         matrix.invert(invertedMatrix)
         matrix.getValues(matrixValues)
+        Log.d("AM1", "matrix: " +
+                "TRANS_X ${matrixValues[Matrix.MTRANS_X]}, " +
+                "TRANS_Y ${matrixValues[Matrix.MTRANS_Y]}, " +
+                "SCALE_X ${matrixValues[Matrix.MSCALE_X]}")
+
+        val oldScale = scale
         scale = matrixValues[Matrix.MSCALE_X]
         currentX = matrixValues[Matrix.MTRANS_X]
         currentY = matrixValues[Matrix.MTRANS_Y]
@@ -228,6 +235,11 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         currentHeight = mapScheme.height * scale
         updateViewRect()
         isRenderFailed.set(false)
+        Log.d("AM1", "matrix: scale old $oldScale, new $scale, equal ${epsilonEqual(scale, oldScale)}")
+        if (!epsilonEqual(scale, oldScale) && isUpdatesEnabled.get()) {
+            Log.d("AM1", "matrix: post rebuild")
+            postRebuildCache()
+        }
     }
 
     fun updateViewRect() {
@@ -247,7 +259,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     @Synchronized
     fun rebuildCache() {
-        Log.d("AM1", "rebuild cache")
         isCacheRebuilding.set(true)
         isRebuildPending.set(false)
         isEntireMapCached.set(false)
@@ -256,8 +267,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             cache.set(null)
             recycleCache(noSwap = true, noGC = true)
 
-            Log.d("AM1", "cw $currentWidth, mw $maximumBitmapWidth")
-            Log.d("AM1", "ch $currentHeight, mh $maximumBitmapHeight")
+            Log.d("AM1", "rebuild cache\n" +
+                    "cw $currentWidth, mw $maximumBitmapWidth \n" +
+                    "ch $currentHeight, mh $maximumBitmapHeight \n" +
+                    "scale $scale")
 
             if ((maximumBitmapWidth > 0 || maximumBitmapHeight > 0) &&
                 (currentWidth > maximumBitmapWidth || currentHeight > maximumBitmapHeight)
