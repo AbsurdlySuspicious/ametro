@@ -65,7 +65,6 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private val isRebuildPending = AtomicBoolean(false)
     private val isCacheRebuilding = AtomicBoolean(false)
     private val isEntireMapCached = AtomicBoolean(false)
-    private val isInitialRender = AtomicBoolean(true)
 
     private val density: Float
     private val renderFailedErrorText: String
@@ -159,16 +158,14 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             drawImpl(canvas, swapCache, noUpdates = true)
         } else if (mainCache?.image != null) {
             Log.d("AM1", "draw: has cache")
-            isInitialRender.compareAndSet(true, false)
             drawImpl(canvas, mainCache, noUpdates = false)
             if (isRebuildPending.get())
                 postRebuildCache().also { Log.d("AM1", "draw: rebuild pending") }
         } else {
             val willRebuild = isCacheRebuilding.get()
-            val delay = if (isInitialRender.get()) 100L else 0L
-            Log.d("AM1", "draw: no cache, will rebuild: ${!willRebuild}, delay $delay")
+            Log.d("AM1", "draw: no cache, will rebuild: ${!willRebuild}")
             if (!willRebuild)
-                postRebuildCache(delay)
+                postRebuildCache()
         }
 
         if (isRenderFailed.get())
@@ -457,12 +454,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         handler.removeMessages(MSG_UPDATE_CACHE)
     }
 
-    private fun postRebuildCache(delay: Long = 0) {
+    private fun postRebuildCache() {
         clearQueue()
-        if (delay > 0)
-            handler.sendEmptyMessageDelayed(MSG_REBUILD_CACHE, delay)
-        else
-            handler.sendEmptyMessage(MSG_REBUILD_CACHE)
+        handler.sendEmptyMessage(MSG_REBUILD_CACHE)
     }
 
     private fun postUpdateCache() {
