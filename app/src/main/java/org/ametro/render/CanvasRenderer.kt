@@ -14,6 +14,8 @@ import org.ametro.render.elements.DrawingElement
 import org.ametro.utils.misc.epsilonEqual
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.floor
+import kotlin.math.round
 
 typealias ElementsToHighlight = (() -> java.util.HashSet<Int>?)?
 
@@ -341,7 +343,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     private fun renderPartialCache() {
         try {
-            //Log.w(TAG,"render partial");
+            Log.d("AM1", "render partial")
             val newCache = MapCache.reuse(
                 oldCache.get(),
                 canvasView.width,
@@ -385,6 +387,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 schemeRect
             )
             val cache = this.cache.get()!!
+            Log.d("AM1", "upd: \n" +
+                    "      x $currentX, y $currentY\n" +
+                    " old: x ${cache.x}, y ${cache.y}\n" +
+                    "diff: x ${newCache.x - cache.x}, y ${newCache.y - cache.y}")
             val c = Canvas(newCache.image!!)
             val renderAll = splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
             if (renderAll) {
@@ -414,6 +420,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 handler.removeMessages(MSG_RENDER_PARTIAL_CACHE)
                 handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, 150)
             }
+            Log.d("AM1", "upd end")
         } catch (ex: Exception) {
             isRenderFailed.set(true)
         }
