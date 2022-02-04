@@ -412,7 +412,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             this.cache.set(newCache)
             if (!renderAll) {
                 handler.removeMessages(MSG_RENDER_PARTIAL_CACHE)
-                handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, 300)
+                handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, 150)
             }
         } catch (ex: Exception) {
             isRenderFailed.set(true)
