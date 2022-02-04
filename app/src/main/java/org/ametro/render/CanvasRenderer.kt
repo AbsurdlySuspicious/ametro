@@ -201,7 +201,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         canvas.clipRect(screenRect)
         canvas.drawColor(bgColor)
         if (!entireMapCached && mipmapCache.get().also { mipmap = it } != null) {
-            canvas.drawBitmap(mipmap!!.image!!, matrix, null)
+            // canvas.drawBitmap(mipmap!!.image!!, matrix, null)
             Log.d("AM1", "draw: mipmap path")
         } else {
             Log.d("AM1", "draw: entire path")
@@ -405,12 +405,13 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 c.save()
                 c.setMatrix(newCache.cacheMatrix)
                 c.clipRect(newCache.schemeRect)
-                val elements: List<DrawingElement> =
+                /*val elements: List<DrawingElement> =
                     renderProgram!!.getClippedDrawingElements(renderViewPortHorizontal, renderViewPortVertical)
                 c.drawColor(Color.WHITE)
                 for (elem in elements) {
                     elem.draw(c)
-                }
+                }*/
+                c.drawBitmap(mipmapCache.get()?.image!!, 0f, 0f, null)
                 c.restore()
                 c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
             }
