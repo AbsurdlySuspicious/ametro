@@ -14,7 +14,6 @@ import org.ametro.render.elements.DrawingElement
 import org.ametro.utils.misc.epsilonEqual
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.math.abs
 
 typealias ElementsToHighlight = (() -> java.util.HashSet<Int>?)?
 
@@ -373,54 +372,45 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     private fun updatePartialCache() {
         try {
-            var renderAll = false
-            var threshHit = false
+            //Log.w(TAG,"update partial");
+            val newCache = MapCache.reuse(
+                oldCache.get(),
+                canvasView.width,
+                canvasView.height,
+                matrix,
+                invertedMatrix,
+                currentX,
+                currentY,
+                scale,
+                schemeRect
+            )
             val cache = this.cache.get()!!
-            val thresh = 1f // increase gradually (?)
-            if (abs(currentX - cache.x) < thresh && abs(currentY - cache.y) < thresh) {
-                Log.d("AM6", "upd thresh hit: x ${currentX - cache.x}, y ${currentY - cache.y}")
-                threshHit = true
-            }
-
-            if (!threshHit) {
-                val newCache = MapCache.reuse(
-                    oldCache.get(),
-                    canvasView.width,
-                    canvasView.height,
-                    matrix,
-                    invertedMatrix,
-                    currentX,
-                    currentY,
-                    scale,
-                    schemeRect
-                )
-                val c = Canvas(newCache.image!!)
-                renderAll = splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
-                if (renderAll) {
-                    c.setMatrix(newCache.cacheMatrix)
-                    c.clipRect(newCache.schemeRect)
-                    val elements = renderProgram!!.getClippedDrawingElements(newCache.schemeRect)
-                    c.drawColor(Color.WHITE)
-                    for (elem in elements) {
-                        elem.draw(c)
-                    }
-                } else {
-                    c.save()
-                    c.setMatrix(newCache.cacheMatrix)
-                    c.clipRect(newCache.schemeRect)
-                    val elements: List<DrawingElement> =
-                        renderProgram!!.getClippedDrawingElements(renderViewPortHorizontal, renderViewPortVertical)
-                    c.drawColor(Color.WHITE)
-                    for (elem in elements) {
-                        elem.draw(c)
-                    }
-                    c.restore()
-                    c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
+            val c = Canvas(newCache.image!!)
+            val renderAll = splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
+            if (renderAll) {
+                c.setMatrix(newCache.cacheMatrix)
+                c.clipRect(newCache.schemeRect)
+                val elements = renderProgram!!.getClippedDrawingElements(newCache.schemeRect)
+                c.drawColor(Color.WHITE)
+                for (elem in elements) {
+                    elem.draw(c)
                 }
-                oldCache.set(cache)
-                this.cache.set(newCache)
+            } else {
+                c.save()
+                c.setMatrix(newCache.cacheMatrix)
+                c.clipRect(newCache.schemeRect)
+                val elements: List<DrawingElement> =
+                    renderProgram!!.getClippedDrawingElements(renderViewPortHorizontal, renderViewPortVertical)
+                c.drawColor(Color.WHITE)
+                for (elem in elements) {
+                    elem.draw(c)
+                }
+                c.restore()
+                c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
             }
-            if (threshHit || !renderAll) {
+            oldCache.set(cache)
+            this.cache.set(newCache)
+            if (!renderAll) {
                 handler.removeMessages(MSG_RENDER_PARTIAL_CACHE)
                 handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, 150)
             }
