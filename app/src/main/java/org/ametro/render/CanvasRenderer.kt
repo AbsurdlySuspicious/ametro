@@ -402,17 +402,17 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     elem.draw(c)
                 }
             } else {
+                c.drawColor(Color.WHITE)
+                c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
                 c.save()
                 c.setMatrix(newCache.cacheMatrix)
                 c.clipRect(newCache.schemeRect)
                 val elements: List<DrawingElement> =
                     renderProgram!!.getClippedDrawingElements(renderViewPortHorizontal, renderViewPortVertical)
-                c.drawColor(Color.WHITE)
                 for (elem in elements) {
                     elem.draw(c)
                 }
                 c.restore()
-                c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
             }
             oldCache.set(cache)
             this.cache.set(newCache)
