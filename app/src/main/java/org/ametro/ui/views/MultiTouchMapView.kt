@@ -78,6 +78,7 @@ class MultiTouchMapView @JvmOverloads constructor(
                 multiTouchController.verticalPaddingFixed
             updateScrollBars(matrix, verticalPaddingScroll)
             renderer.setMatrix(matrix)
+            renderer.setVelocity(multiTouchController.getVelocity())
             viewportChangedListener!!.onViewportChanged(matrix)
         }
 

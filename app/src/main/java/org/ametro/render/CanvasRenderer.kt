@@ -14,6 +14,7 @@ import org.ametro.render.elements.DrawingElement
 import org.ametro.utils.misc.epsilonEqual
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.round
 
@@ -61,6 +62,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private var currentY = 0f
     private var currentWidth = 0f
     private var currentHeight = 0f
+    private var currentVelocity = 0f
 
     private val isRenderFailed = AtomicBoolean(false)
     private val isUpdatesEnabled = AtomicBoolean(true)
@@ -216,6 +218,10 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                 postUpdateCache()
             }
         }
+    }
+
+    fun setVelocity(velocity: Float) {
+        currentVelocity = velocity
     }
 
     /** set transformation matrix for content  */
@@ -391,8 +397,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     "      x $currentX, y $currentY\n" +
                     " old: x ${cache.x}, y ${cache.y}\n" +
                     "diff: x ${newCache.x - cache.x}, y ${newCache.y - cache.y}")
+            Log.d("AM1", "velocity at upd: $currentVelocity")
             val c = Canvas(newCache.image!!)
-            val renderAll = splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
+            val renderAll = abs(currentVelocity) < 200 || splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
             if (renderAll) {
                 c.setMatrix(newCache.cacheMatrix)
                 c.clipRect(newCache.schemeRect)
