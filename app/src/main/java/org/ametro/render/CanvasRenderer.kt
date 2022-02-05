@@ -14,6 +14,7 @@ import org.ametro.render.elements.DrawingElement
 import org.ametro.utils.misc.epsilonEqual
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.round
 
@@ -374,51 +375,60 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     @Synchronized
     private fun updatePartialCache() {
         try {
-            //Log.w(TAG,"update partial");
-            val newCache = MapCache.reuse(
-                oldCache.get(),
-                canvasView.width,
-                canvasView.height,
-                matrix,
-                invertedMatrix,
-                currentX,
-                currentY,
-                scale,
-                schemeRect
-            )
             val cache = this.cache.get()!!
-            Log.d("AM1", "upd: \n" +
-                    "      x $currentX, y $currentY\n" +
-                    " old: x ${cache.x}, y ${cache.y}\n" +
-                    "diff: x ${newCache.x - cache.x}, y ${newCache.y - cache.y}")
-            val c = Canvas(newCache.image!!)
-            val renderAll = splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
-            if (renderAll) {
-                c.setMatrix(newCache.cacheMatrix)
-                c.clipRect(newCache.schemeRect)
-                val elements = renderProgram!!.getClippedDrawingElements(newCache.schemeRect)
-                c.drawColor(Color.WHITE)
-                for (elem in elements) {
-                    elem.draw(c)
+            val thresh = 150f
+            val threshHit = abs(currentX - cache.x) < thresh && abs(currentY - cache.y) < thresh
+            var renderAll = false
+
+            //Log.w(TAG,"update partial");
+            if (!threshHit) {
+                val newCache = MapCache.reuse(
+                    oldCache.get(),
+                    canvasView.width,
+                    canvasView.height,
+                    matrix,
+                    invertedMatrix,
+                    currentX,
+                    currentY,
+                    scale,
+                    schemeRect
+                )
+                Log.d(
+                    "AM1", "upd: \n" +
+                            "      x $currentX, y $currentY\n" +
+                            " old: x ${cache.x}, y ${cache.y}\n" +
+                            "diff: x ${newCache.x - cache.x}, y ${newCache.y - cache.y}"
+                )
+                val c = Canvas(newCache.image!!)
+                renderAll = splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
+                if (renderAll) {
+                    c.setMatrix(newCache.cacheMatrix)
+                    c.clipRect(newCache.schemeRect)
+                    val elements = renderProgram!!.getClippedDrawingElements(newCache.schemeRect)
+                    c.drawColor(Color.WHITE)
+                    for (elem in elements) {
+                        elem.draw(c)
+                    }
+                } else {
+                    c.save()
+                    c.setMatrix(newCache.cacheMatrix)
+                    c.clipRect(newCache.schemeRect)
+                    val elements: List<DrawingElement> =
+                        renderProgram!!.getClippedDrawingElements(renderViewPortHorizontal, renderViewPortVertical)
+                    c.drawColor(Color.WHITE)
+                    for (elem in elements) {
+                        elem.draw(c)
+                    }
+                    c.restore()
+                    c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
                 }
-            } else {
-                c.save()
-                c.setMatrix(newCache.cacheMatrix)
-                c.clipRect(newCache.schemeRect)
-                val elements: List<DrawingElement> =
-                    renderProgram!!.getClippedDrawingElements(renderViewPortHorizontal, renderViewPortVertical)
-                c.drawColor(Color.WHITE)
-                for (elem in elements) {
-                    elem.draw(c)
-                }
-                c.restore()
-                c.drawBitmap(cache.image!!, newCache.x - cache.x, newCache.y - cache.y, null)
+                oldCache.set(cache)
+                this.cache.set(newCache)
             }
-            oldCache.set(cache)
-            this.cache.set(newCache)
             if (!renderAll) {
+                val delay: Long = if (threshHit) 30 else 150
                 handler.removeMessages(MSG_RENDER_PARTIAL_CACHE)
-                handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, 150)
+                handler.sendEmptyMessageDelayed(MSG_RENDER_PARTIAL_CACHE, delay)
             }
             Log.d("AM1", "upd end")
         } catch (ex: Exception) {
