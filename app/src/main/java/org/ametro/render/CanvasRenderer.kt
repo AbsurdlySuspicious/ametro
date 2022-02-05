@@ -375,14 +375,16 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     private fun updatePartialCache() {
         try {
             //Log.w(TAG,"update partial");
+            val offsetW = 300f
+            val offsetH = 300f
             val newCache = MapCache.reuse(
                 oldCache.get(),
-                canvasView.width,
-                canvasView.height,
+                canvasView.width + offsetW.toInt(),
+                canvasView.height + offsetH.toInt(),
                 matrix,
                 invertedMatrix,
-                currentX,
-                currentY,
+                currentX - (offsetW / 2),
+                currentY - (offsetH / 2),
                 scale,
                 schemeRect
             )
