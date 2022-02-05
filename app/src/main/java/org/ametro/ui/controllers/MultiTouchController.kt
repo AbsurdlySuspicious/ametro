@@ -13,6 +13,7 @@ import android.view.ViewConfiguration
 import android.widget.Scroller
 import org.ametro.app.ApplicationEx
 import org.ametro.utils.AnimationInterpolator
+import kotlin.math.max
 import kotlin.math.min
 
 class MultiTouchController(context: Context, private val listener: IMultiTouchListener) {
@@ -124,6 +125,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private val swipeZoomDensityMultiplier: Float
     private val animationEndPoint = PointF()
     private val animationStartPoint = PointF()
+    private var lastVelocity: Float = 0f
 
     private val contentHeight: Float
         get() = contentHeightReal + verticalPaddingFixed
@@ -157,6 +159,15 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     private fun removeMessages(msgId: Int) {
         MultiTouchHandler.removeMessages(msgId)
     }
+
+    private fun compoundVelocity(t: VelocityTracker): Float =
+        max(t.xVelocity, t.yVelocity)
+
+    fun getVelocity() =
+        velocityTracker?.let {
+            it.computeCurrentVelocity(1000)
+            compoundVelocity(it)
+        } ?: lastVelocity
 
     /** Map point from model to screen coordinates  */
     fun mapPoint(point: PointF) {
@@ -362,9 +373,10 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                 removeMessages(MSG_SWITCH_TO_LONGPRESS)
                 sendMessageDelay(MSG_DO_SHORTPRESS, DELAY_MSG_DOUBLETAP)
                 doubleTapZoomInit = true
-                if (velocityTracker != null) {
-                    velocityTracker!!.recycle()
+                velocityTracker?.let {
                     velocityTracker = null
+                    lastVelocity = 0f
+                    it.recycle()
                 }
                 controllerMode = MODE_NONE
                 return true
@@ -376,6 +388,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                 if (event.eventTime - touchStartTime <= MIN_FLING_TIME) {
                     velocityTracker!!.addMovement(event.getEvent())
                     velocityTracker!!.computeCurrentVelocity(1000)
+                    lastVelocity = compoundVelocity(velocityTracker!!)
                     matrix.getValues(matrixValues)
                     val currentY = matrixValues[Matrix.MTRANS_Y]
                     val currentX = matrixValues[Matrix.MTRANS_X]
@@ -388,11 +401,13 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                     val maxY = Math.max(currentHeight - displayRect!!.height(), 0f).toInt()
                     scroller.fling(-currentX.toInt(), -currentY.toInt(), vx, vy, 0, maxX, 0, maxY)
                     sendMessage(MSG_PROCESS_FLING)
+                } else {
+                    lastVelocity = 0f
                 }
         }
-        if (velocityTracker != null) {
-            velocityTracker!!.recycle()
+        velocityTracker?.let {
             velocityTracker = null
+            it.recycle()
         }
         controllerMode = MODE_NONE
         return true
