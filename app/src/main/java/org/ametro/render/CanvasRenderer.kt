@@ -29,6 +29,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         private const val MSG_UPDATE_CACHE = 4
         private const val MSG_REBUILD_MIPMAP = 5
 
+        const val VELOCITY_THRESH = 200
+
         private val rendererThread =
             HandlerThread("map-renderer").also { it.start() }
     }
@@ -399,7 +401,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     "diff: x ${newCache.x - cache.x}, y ${newCache.y - cache.y}")
             Log.d("AM1", "velocity at upd: $currentVelocity")
             val c = Canvas(newCache.image!!)
-            val renderAll = abs(currentVelocity) < 200 || splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
+            val renderAll =
+                abs(currentVelocity) < VELOCITY_THRESH ||
+                    splitRenderViewPort(newCache.schemeRect, cache.schemeRect)
             if (renderAll) {
                 c.setMatrix(newCache.cacheMatrix)
                 c.clipRect(newCache.schemeRect)
