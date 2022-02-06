@@ -12,6 +12,7 @@ import android.view.VelocityTracker
 import android.view.ViewConfiguration
 import android.widget.Scroller
 import org.ametro.app.ApplicationEx
+import org.ametro.render.CanvasRenderer
 import org.ametro.utils.AnimationInterpolator
 import kotlin.math.max
 import kotlin.math.min
@@ -388,7 +389,7 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
                 if (event.eventTime - touchStartTime <= MIN_FLING_TIME) {
                     velocityTracker!!.addMovement(event.getEvent())
                     velocityTracker!!.computeCurrentVelocity(1000)
-                    lastVelocity = compoundVelocity(velocityTracker!!)
+                    lastVelocity = CanvasRenderer.VELOCITY_THRESH + compoundVelocity(velocityTracker!!) // always be above thresh when fling
                     matrix.getValues(matrixValues)
                     val currentY = matrixValues[Matrix.MTRANS_Y]
                     val currentX = matrixValues[Matrix.MTRANS_X]
