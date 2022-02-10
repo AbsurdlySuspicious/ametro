@@ -8,6 +8,7 @@ import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
+import org.ametro.utils.misc.BottomSheetUtils
 import java.util.concurrent.ConcurrentLinkedQueue
 
 interface BottomPanelSheetListener {
@@ -72,7 +73,7 @@ class MapBottomPanelSheet(
 
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(sheetView: View, newState: Int) {
-            // Log.i("MEME", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
+            Log.d("AM2", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
 
             when (newState) {
                 BottomSheetBehavior.STATE_DRAGGING,

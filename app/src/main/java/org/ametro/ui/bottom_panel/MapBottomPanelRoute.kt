@@ -350,13 +350,11 @@ class RouteTransfersLayout @JvmOverloads constructor(
     }
 
     private fun silentReset() {
-        Log.d("AM2", "touch anim reset")
         val currentWidths = makeWidths(this.transfers)
         replaceItemsNoAnim(currentWidths, this.transfers)
     }
 
     fun touchAnimate(progress: Float) {
-        Log.d("AM2", "touch anim $progress")
         if (progress == 0f)
             silentReset()
         else
@@ -553,7 +551,6 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     private val animationPageChangeCallback = object : ViewPager2.OnPageChangeCallback() {
         override fun onPageScrolled(position: Int, offset: Float, offsetPx: Int) {
-            Log.d("AM2", "pcc: pos $position, off $offset, px $offsetPx, ee ${epsilonEqual(offset, 1f)}")
             val holder = adapter.recycler
                 ?.findViewHolderForAdapterPosition(position)!! as RoutePagerAdapter.PageHolder
             animatePage(holder.binding, offset)
@@ -573,7 +570,6 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
                 else
                     view.translationX = 0f
             }
-            // Log.d("AM2", "pt $position, tx ${view.translationX}")
         }
     }
 
