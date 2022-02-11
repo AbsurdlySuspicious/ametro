@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.util.Log
 import android.view.View
+import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import org.ametro.R
@@ -12,24 +13,38 @@ import org.ametro.app.ApplicationEx
 import java.util.*
 
 
-open class AppCompatActivityEx: AppCompatActivity() {
+open class AppCompatActivityEx : AppCompatActivity() {
 
-    protected fun setupNavbar() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.navigationBarColor = ResourcesCompat.getColor(resources, R.color.navigationColor, null)
-            window.decorView.apply {
-                systemUiVisibility = systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+    companion object {
+        protected const val NAVBAR_LIGHT = 0
+        protected const val NAVBAR_DARK = 1
+    }
+
+    protected fun setupNavbar(variant: Int) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+            return
+        when (variant) {
+            NAVBAR_DARK -> {
+                window.navigationBarColor = ResourcesCompat.getColor(resources, R.color.navigationColorForceDark, null)
+                window.decorView.apply {
+                    systemUiVisibility = systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+                }
+            }
+            NAVBAR_LIGHT -> {
+                window.navigationBarColor = ResourcesCompat.getColor(resources, R.color.navigationColor, null)
+                window.decorView.apply {
+                    systemUiVisibility = systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                }
             }
         }
     }
 
+    protected fun setupNavbar() {
+        setupNavbar(NAVBAR_LIGHT)
+    }
+
     protected fun setupNavbarForceDark() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.navigationBarColor = ResourcesCompat.getColor(resources, R.color.navigationColorForceDark, null)
-            window.decorView.apply {
-                systemUiVisibility = systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-            }
-        }
+        setupNavbar(NAVBAR_DARK)
     }
 
     protected fun setLocale(localeCode: String) {
