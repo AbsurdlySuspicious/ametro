@@ -115,6 +115,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         navigationController = NavigationController(
             this,
             this,
+            binding,
             TransportIconsProvider(this),
             ApplicationEx.getInstanceActivity(this).getCountryFlagProvider(),
             ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
