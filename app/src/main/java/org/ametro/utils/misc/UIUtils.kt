@@ -19,6 +19,23 @@ object UIUtils {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
+    fun requestApplyInsetsWhenAttached(view: View) {
+        if (view.isAttachedToWindow) {
+            view.requestApplyInsets()
+        } else {
+            view.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(v: View) {
+                    v.removeOnAttachStateChangeListener(this)
+                    v.requestApplyInsets()
+                }
+
+                override fun onViewDetachedFromWindow(v: View) = Unit
+            })
+        }
+    }
+
+
     @ColorInt
     fun colorArgb(alpha: Float, red: Float, green: Float, blue: Float): Int {
         return (alpha * 255.0f + 0.5f).toInt() shl 24 or

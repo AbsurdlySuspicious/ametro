@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import org.ametro.R
 import android.os.Build
+import android.util.Log
 import android.view.View
 import androidx.core.view.updatePadding
 import org.ametro.app.Constants
@@ -27,6 +28,7 @@ internal class NavigationHeaderHolderFactory : IHolderFactory {
                 topInset(insets)
                 insets
             }
+            UIUtils.requestApplyInsetsWhenAttached(view)
         }
         return view
     }
