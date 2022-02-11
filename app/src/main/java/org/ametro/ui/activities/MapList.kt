@@ -56,9 +56,9 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
     }
 
     override fun onOpenMap(map: MapInfo) {
-        with(Intent()) {
-            putExtra(Constants.MAP_PATH, map.fileName)
-            setResult(RESULT_OK, this)
+        Intent().also {
+            it.putExtra(Constants.MAP_PATH, map.fileName)
+            setResult(RESULT_OK, it)
         }
         finish()
     }
@@ -114,6 +114,14 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
             }
             R.id.action_delete -> {
                 listFragment.startContextActionMode()
+                return true
+            }
+            R.id.action_close_map -> {
+                Intent().also {
+                    it.putExtra(Constants.MAP_PATH, null as String?)
+                    setResult(RESULT_OK, it)
+                }
+                finish()
                 return true
             }
         }

@@ -25,5 +25,9 @@
         android:icon="@drawable/ic_delete_black_24dp"
         app:showAsAction="ifRoom|withText|collapseActionView"/>
 
+    <item android:id="@+id/action_close_map"
+          android:title="@string/action_close_map"
+          app:showAsAction="never|withText|collapseActionView"/>
+
 
 </menu>

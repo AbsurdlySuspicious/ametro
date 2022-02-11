@@ -46,6 +46,7 @@
     <string name="action_delete">Delete</string>
     <string name="action_update">Update</string>
     <string name="action_search">Search</string>
+    <string name="action_close_map">Close map</string>
     <string name="action_select_all">Select All</string>
     <string name="action_test_outdated">Test Outdated</string>
     <string name="action_settings">Settings</string>

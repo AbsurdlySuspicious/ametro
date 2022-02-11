@@ -13,11 +13,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
-import androidx.core.graphics.alpha
-import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -328,17 +325,16 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         when (requestCode) {
             OPEN_MAPS_ACTION -> if (resultCode == RESULT_OK) {
                 app.clearCurrentMapViewState()
-                val localMapCatalogManager = app.getLocalMapCatalogManager()
-                MapLoadAsyncTask(
-                    this, this, MapContainer(
-                        localMapCatalogManager.getMapFile(
-                            localMapCatalogManager.findMapByName(
-                                data!!.getStringExtra(Constants.MAP_PATH)
-                            )
-                        ),
-                        settingsProvider.preferredMapLanguage
-                    )
-                ).execute()
+                val mapPath = data?.getStringExtra(Constants.MAP_PATH)
+                if (mapPath != null) {
+                    val localMapCatalogManager = app.getLocalMapCatalogManager()
+                    val map = localMapCatalogManager.findMapByName(mapPath)
+                    val mapFile = localMapCatalogManager.getMapFile(map)
+                    val mapContainer = MapContainer(mapFile, settingsProvider.preferredMapLanguage)
+                    MapLoadAsyncTask(this, this, mapContainer).execute()
+                } else {
+                    onMapLoadComplete(null, null, null, 0)
+                }
             }
             OPEN_STATION_DETAILS_ACTION -> {
                 mapBottomStation.detailsClosed()
@@ -376,16 +372,21 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
     }
 
     override fun onMapLoadComplete(
-        container: MapContainer,
-        schemeName: String,
+        container: MapContainer?,
+        schemeName: String?,
         enabledTransports: Array<String>?,
         time: Long
     ) {
         dismissLoadingDialog()
-        DebugToast.show(this, getString(R.string.msg_map_loaded, time.toString()), Toast.LENGTH_LONG)
-        app.setCurrentMapViewState(container, schemeName, enabledTransports)
+        if (container != null && schemeName != null) {
+            DebugToast.show(this, getString(R.string.msg_map_loaded, time.toString()), Toast.LENGTH_LONG)
+            app.setCurrentMapViewState(container, schemeName, enabledTransports)
+            settingsProvider.currentMap = container.mapFile
+        } else {
+            app.clearCurrentMapViewState()
+            settingsProvider.currentMap = null
+        }
         initMapViewState()
-        settingsProvider.currentMap = container.mapFile
     }
 
     private fun initMapViewState() {
