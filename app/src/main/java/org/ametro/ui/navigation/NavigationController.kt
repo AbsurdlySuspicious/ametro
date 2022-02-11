@@ -44,6 +44,7 @@ class NavigationController(
 ) : OnItemClickListener {
     private val drawerMenuAdapter: NavigationDrawerAdapter
     private val drawerToggle: ActionBarDrawerToggle
+    private val drawerView: ListView
     private val resources: Resources
     private val context: AppCompatActivity
 
@@ -63,10 +64,11 @@ class NavigationController(
 
         drawerMenuAdapter =
             NavigationDrawerAdapter(activity, createNavigationItems(null, null, null, null))
-        binding.drawer.apply {
-            adapter = drawerMenuAdapter
-            onItemClickListener = this@NavigationController
-            choiceMode = ListView.CHOICE_MODE_NONE
+        binding.drawer.also {
+            it.adapter = drawerMenuAdapter
+            it.onItemClickListener = this
+            it.choiceMode = ListView.CHOICE_MODE_NONE
+            drawerView = it
         }
 
         drawerLayout = binding.drawerLayout
@@ -77,14 +79,34 @@ class NavigationController(
             R.string.drawer_open,
             R.string.drawer_close
         )
-        drawerLayout.addDrawerListener(drawerToggle)
         drawerToggle.isDrawerIndicatorEnabled = true
+        drawerLayout.addDrawerListener(drawerToggle)
+        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                listener.onDrawerSlide(drawerView, slideOffset)
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+                listener.onDrawerSlide(drawerView, 1f)
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                listener.onDrawerSlide(drawerView, 0f)
+            }
+
+            override fun onDrawerStateChanged(newState: Int) {}
+        })
 
         activity.supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
             setHomeButtonEnabled(true)
             setDisplayShowHomeEnabled(true)
         }
+    }
+
+    fun callDrawerSlideListener() {
+        val state = if (drawerLayout.isDrawerOpen(drawerView)) 1f else 0f
+        listener.onDrawerSlide(drawerView, state)
     }
 
     fun setNavigation(

@@ -132,19 +132,12 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
                 toolbarTopInset(insets)
                 insets
             }
-            navigationController.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
-                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                    window.statusBarColor = UIUtils.colorArgb(0.4f * slideOffset, 0f, 0f, 0f)
-                }
-
-                override fun onDrawerClosed(drawerView: View) {
-                    window.statusBarColor = Color.TRANSPARENT
-                }
-
-                override fun onDrawerOpened(drawerView: View) {}
-                override fun onDrawerStateChanged(newState: Int) {}
-            })
         }
+    }
+
+    override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API)
+            window.statusBarColor = UIUtils.colorArgb(0.4f * slideOffset, 0f, 0f, 0f)
     }
 
     override fun updatePanelPadding(newPadding: Int) {
@@ -213,6 +206,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
                 ).execute()
             }
         }
+
+        navigationController.callDrawerSlideListener()
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
