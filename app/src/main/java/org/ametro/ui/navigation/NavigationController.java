@@ -64,9 +64,10 @@ public class NavigationController implements AdapterView.OnItemClickListener {
     private final MapInfoLocalizationProvider localizationProvider;
     private final NavigationDrawerAdapter drawerMenuAdapter;
     private final ActionBarDrawerToggle drawerToggle;
-    private final DrawerLayout drawerLayout;
     private final Resources resources;
     private final AppCompatActivity context;
+    public final DrawerLayout drawerLayout;
+    public final Toolbar toolbar;
 
     private NavigationItem[] delayItems;
 
@@ -83,7 +84,7 @@ public class NavigationController implements AdapterView.OnItemClickListener {
         this.countryIconProvider = countryIconProvider;
         this.localizationProvider = localizationProvider;
 
-        Toolbar toolbar = (Toolbar) activity.findViewById(R.id.toolbar);
+        toolbar = (Toolbar) activity.findViewById(R.id.toolbar);
         activity.setSupportActionBar(toolbar);
 
         context = activity;

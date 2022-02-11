@@ -4,15 +4,19 @@ import android.app.ProgressDialog
 import android.app.SearchManager
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.PointF
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
@@ -112,6 +116,28 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             ApplicationEx.getInstanceActivity(this).getCountryFlagProvider(),
             ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
         )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.statusBarColor = Color.TRANSPARENT
+            binding.root.apply {
+                systemUiVisibility = systemUiVisibility or
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            }
+
+            val toolbar = navigationController.toolbar
+            val toolbarHeight = toolbar.layoutParams.height
+            toolbar.setOnApplyWindowInsetsListener { view, insets ->
+                (view.layoutParams as LinearLayout.LayoutParams)
+                    .height = toolbarHeight + insets.systemWindowInsetTop
+                view.updatePadding(top = insets.systemWindowInsetTop)
+                insets
+            }
+            navigationController.drawerLayout.setOnApplyWindowInsetsListener { view, insets ->
+                binding.drawer.updatePadding(top = insets.systemWindowInsetTop) // todo padding should be applied to header instead
+                insets
+            }
+        }
     }
 
     override fun updatePanelPadding(newPadding: Int) {
