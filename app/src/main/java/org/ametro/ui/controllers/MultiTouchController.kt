@@ -206,9 +206,10 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
 
     fun updateBounds() {
         // calculate zoom bounds
+        val displayRect = this.displayRect ?: return
         swipeZoomBase = 60f * density * swipeZoomDensityMultiplier
         maxScale = 2.0f * density
-        minScale = min(displayRect!!.width() / contentWidth, displayRect!!.height() / contentHeight)
+        minScale = min(displayRect.width() / contentWidth, displayRect.height() / contentHeight)
         adjustScale()
         adjustPan()
         listener.positionAndScaleMatrix = matrix

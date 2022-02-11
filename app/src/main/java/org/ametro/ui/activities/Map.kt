@@ -571,7 +571,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
                 if (!p.isTransfer) continue
 
                 val station = ModelUtil.findStationByUid(scheme!!, p.from.toLong())
-                txfs.add(RoutePagerTransfer(station.first, lastPartsCount, lastPartsDelays.toInt()))
+                if (station != null)
+                    txfs.add(RoutePagerTransfer(station.first, lastPartsCount, lastPartsDelays.toInt()))
 
                 lastTxf = p
                 lastPartsCount = 0
@@ -580,7 +581,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
             if (lastTxf != null) {
                 val lastStation = ModelUtil.findStationByUid(scheme!!, lastTxf.to.toLong())
-                txfs.add(RoutePagerTransfer(lastStation.first, lastPartsCount, lastPartsDelays.toInt()))
+                if (lastStation != null)
+                    txfs.add(RoutePagerTransfer(lastStation.first, lastPartsCount, lastPartsDelays.toInt()))
             }
 
             RoutePagerItem(
