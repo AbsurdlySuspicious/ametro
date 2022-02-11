@@ -467,6 +467,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             } else {
                 enabledTransportsSet!!.remove(transportName)
             }
+            refreshRoute()
             true
         } catch (e: MapSerializationException) {
             false
@@ -475,6 +476,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
     override fun onDelayChanged(delay: MapDelay): Boolean {
         currentDelay = delay
+        refreshRoute()
         return true
     }
 
@@ -526,6 +528,13 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         mapView!!.highlightsElements {
             RouteUtils.convertRouteToSchemeObjectIds(route, scheme!!)
         }
+    }
+
+    fun refreshRoute() {
+        val begin = app.currentRoute.routeStart
+        val end = app.currentRoute.routeEnd
+        if (begin != null && end != null)
+            onRouteSelectionComplete(begin, end)
     }
 
     override fun onRouteSelectionComplete(
