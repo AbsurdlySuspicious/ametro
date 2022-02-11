@@ -50,6 +50,7 @@ import org.ametro.ui.views.MultiTouchMapView
 import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
+import org.ametro.utils.misc.UIUtils
 import org.ametro.utils.misc.convertPair
 import java.util.*
 
@@ -117,7 +118,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
         )
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             window.statusBarColor = Color.TRANSPARENT
             binding.root.apply {
                 systemUiVisibility = systemUiVisibility or
@@ -126,15 +127,9 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             }
 
             val toolbar = navigationController.toolbar
-            val toolbarHeight = toolbar.layoutParams.height
-            toolbar.setOnApplyWindowInsetsListener { view, insets ->
-                (view.layoutParams as LinearLayout.LayoutParams)
-                    .height = toolbarHeight + insets.systemWindowInsetTop
-                view.updatePadding(top = insets.systemWindowInsetTop)
-                insets
-            }
-            navigationController.drawerLayout.setOnApplyWindowInsetsListener { view, insets ->
-                binding.drawer.updatePadding(top = insets.systemWindowInsetTop) // todo padding should be applied to header instead
+            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar)
+            toolbar.setOnApplyWindowInsetsListener { _, insets ->
+                toolbarTopInset(insets)
                 insets
             }
         }

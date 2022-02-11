@@ -1,5 +1,6 @@
 package org.ametro.app
 
+import android.os.Build
 import java.net.URI
 
 object Constants {
@@ -14,4 +15,5 @@ object Constants {
     const val STATION_UID = "STATION_UID"
     const val LOG = "AMETRO"
     const val ANIMATION_DURATION: Long = 100
+    const val INSETS_MIN_API = Build.VERSION_CODES.LOLLIPOP
 }
