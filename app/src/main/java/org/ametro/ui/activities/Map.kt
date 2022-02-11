@@ -16,7 +16,9 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.graphics.alpha
 import androidx.core.view.updatePadding
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
@@ -132,6 +134,18 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
                 toolbarTopInset(insets)
                 insets
             }
+            navigationController.drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+                    window.statusBarColor = UIUtils.colorArgb(0.4f * slideOffset, 0f, 0f, 0f)
+                }
+
+                override fun onDrawerClosed(drawerView: View) {
+                    window.statusBarColor = Color.TRANSPARENT
+                }
+
+                override fun onDrawerOpened(drawerView: View) {}
+                override fun onDrawerStateChanged(newState: Int) {}
+            })
         }
     }
 
