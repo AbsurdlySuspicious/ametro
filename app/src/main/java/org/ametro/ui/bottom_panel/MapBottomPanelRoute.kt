@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.text.format.DateFormat
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -31,7 +30,6 @@ import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.utils.StringUtils
 import org.ametro.utils.misc.AnimUtils
-import org.ametro.utils.misc.epsilonEqual
 import org.ametro.utils.misc.saturate
 import java.util.*
 import kotlin.math.max

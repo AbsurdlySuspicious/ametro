@@ -41,6 +41,11 @@
     <string name="drawer_open">Navigation opened</string>
     <string name="drawer_close">Navigation closed</string>
 
+    <string name="no_route_text">No route found</string>
+    <string name="no_route_from">from</string>
+    <string name="no_route_to">to</string>
+    <string name="no_route_text_help">Check enabled transports?</string>
+    <string name="no_route_open_transports">Open transport list</string>
 
     <string name="action_add">Add</string>
     <string name="action_delete">Delete</string>

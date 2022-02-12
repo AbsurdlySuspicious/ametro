@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="5dp"
+        android:minHeight="0dp"
+>
+    <TextView
+            android:id="@+id/text_main"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_route_text"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+    />
+
+    <TextView
+            android:id="@+id/text_from"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_route_from"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/station_start"
+            app:layout_constraintBaseline_toBaselineOf="@id/station_start"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintHorizontal_bias="0"
+    />
+
+    <TextView
+            android:id="@+id/text_to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_route_to"
+            app:layout_constraintBaseline_toBaselineOf="@id/station_start"
+            app:layout_constraintStart_toEndOf="@id/station_start"
+            app:layout_constraintEnd_toStartOf="@id/station_end"
+    />
+
+    <TextView
+            android:id="@+id/text_help"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no_route_text_help"
+            app:layout_constraintTop_toBottomOf="@id/route_barrier_bot"
+    />
+
+    <ImageView
+            android:id="@+id/line_icon_start"
+            android:layout_width="@dimen/panel_bottom_route_line_icon_h"
+            android:layout_height="@dimen/panel_bottom_route_line_icon_h"
+            android:src="@drawable/line_long"
+            android:layout_marginStart="5dp"
+            app:layout_constraintTop_toTopOf="@id/station_start"
+            app:layout_constraintBottom_toBottomOf="@id/station_start"
+            app:layout_constraintStart_toStartOf="@id/station_start"
+    />
+
+    <TextView
+            android:id="@+id/station_start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bottom_panel_sub"
+            android:includeFontPadding="false"
+            android:paddingVertical="3dp"
+            android:paddingStart="13dp"
+            android:paddingEnd="3dp"
+            android:layout_marginHorizontal="5dp"
+            tools:text="station-start"
+            app:layout_constraintTop_toBottomOf="@id/text_main"
+            app:layout_constraintStart_toEndOf="@id/text_from"
+            app:layout_constraintEnd_toStartOf="@id/text_to"
+    />
+
+    <ImageView
+            android:id="@+id/line_icon_end"
+            android:layout_width="@dimen/panel_bottom_route_line_icon_h"
+            android:layout_height="@dimen/panel_bottom_route_line_icon_h"
+            android:src="@drawable/line_long"
+            android:layout_marginStart="5dp"
+            app:layout_constraintTop_toTopOf="@id/station_end"
+            app:layout_constraintBottom_toBottomOf="@id/station_end"
+            app:layout_constraintStart_toStartOf="@id/station_end"
+    />
+
+    <TextView
+            android:id="@+id/station_end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bottom_panel_sub"
+            android:includeFontPadding="false"
+            android:paddingVertical="3dp"
+            android:paddingStart="13dp"
+            android:paddingEnd="3dp"
+            android:layout_marginHorizontal="5dp"
+            tools:text="station-end"
+            app:layout_constraintTop_toBottomOf="@id/text_main"
+            app:layout_constraintStart_toEndOf="@id/text_to"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
+
+    <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/route_barrier_bot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="station_start,station_end,line_icon_start,line_icon_end"
+            app:barrierDirection="bottom"
+    />
+
+    <Button
+            android:layout_width="130dp"
+            android:layout_height="40dp"
+            android:text="@string/no_route_open_transports"
+            android:background="@drawable/bottom_panel_sub"
+            android:textColor="@android:color/tertiary_text_light"
+            android:textSize="12sp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+    />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
