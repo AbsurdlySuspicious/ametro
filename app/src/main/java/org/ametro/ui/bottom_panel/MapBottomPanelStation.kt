@@ -5,11 +5,8 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.PaintDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
-import android.util.Log
 import android.view.View
 import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.viewbinding.ViewBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.databinding.WidgetItemBotStationBinding
@@ -20,7 +17,7 @@ import org.ametro.utils.misc.ColorUtils
 class MapBottomPanelStation(
     private val sheet: MapBottomPanelSheet,
     private val listener: MapBottomPanelStationListener
-) : PanelAdapterBinder {
+) : PanelAdapterBinder<WidgetItemBotStationBinding> {
 
     private val adapter = sheet.adapter
     private val context = sheet.sheetView.context
@@ -29,16 +26,15 @@ class MapBottomPanelStation(
     private val stationTintFg = ColorUtils.fromColorInt(Color.parseColor("#a9a9a9"))
     private val stationTintBg = ColorUtils.fromColorInt(Color.parseColor("#2a2a2a"))
 
-    private var doOnBind: (() -> Unit)? = null
-    private var binding: WidgetItemBotStationBinding? = null
-    private val stationTextView get() = binding!!.station
-    private val lineTextView get() = binding!!.line
-    private val stationLayout get() = binding!!.stationLayout
-    private val detailsHint get() = binding!!.detailsIcon
-    private val detailsProgress get() = binding!!.detailsLoading
-    private val lineIcon get() = binding!!.lineIcon
-    private val beginButton get() = binding!!.actionStart
-    private val endButton get() = binding!!.actionEnd
+    private lateinit var binding: WidgetItemBotStationBinding
+    private val stationTextView get() = binding.station
+    private val lineTextView get() = binding.line
+    private val stationLayout get() = binding.stationLayout
+    private val detailsHint get() = binding.detailsIcon
+    private val detailsProgress get() = binding.detailsLoading
+    private val lineIcon get() = binding.lineIcon
+    private val beginButton get() = binding.actionStart
+    private val endButton get() = binding.actionEnd
 
     init {
         sheet.addSheetStateCallbackPre { sheetView, newState ->
@@ -46,7 +42,7 @@ class MapBottomPanelStation(
                 BottomSheetBehavior.STATE_HIDDEN -> {
                     if (sheet.pendingOpen == MapBottomPanelSheet.PENDING_OPEN_NO) {
                         hideCleanup()
-                        detachItem()
+                        detach()
                     }
                 }
                 else -> {}
@@ -55,9 +51,11 @@ class MapBottomPanelStation(
         adapter.stationBinder = this
     }
 
-    override fun bindItem(bind: ViewBinding) {
-        binding = bind as WidgetItemBotStationBinding
+    override fun createPanel(bind: WidgetItemBotStationBinding) {
+        binding = bind
+    }
 
+    override fun attachItem() {
         val progressTint =
             context.resources.getColor(R.color.panel_secondary_icon)
         detailsProgress.indeterminateDrawable.mutate().apply {
@@ -79,11 +77,6 @@ class MapBottomPanelStation(
         stationLayout.setOnClickListener(clickListener)
         beginButton.setOnClickListener(clickListener)
         endButton.setOnClickListener(clickListener)
-
-        doOnBind?.let {
-            it()
-            doOnBind = null
-        }
     }
 
     private fun viewVisible(visible: Boolean): Int {
@@ -170,17 +163,11 @@ class MapBottomPanelStation(
         get() = viewVisible(hasDetails)
 
     fun detailsClosed() {
-        binding ?: return
         detailsProgress.visibility = View.INVISIBLE
         detailsHint.visibility = detailsVisibility
     }
 
     private fun showImpl() {
-        if (binding == null) {
-            doOnBind = { showImpl() }
-            return
-        }
-
         stationTextView.text = station!!.displayName
         lineTextView.text = line!!.displayName
         detailsProgress.visibility = View.INVISIBLE
@@ -189,16 +176,16 @@ class MapBottomPanelStation(
 
         routeStation(
             sheet.app.currentRoute.routeStart,
-            binding!!.textStartHint,
-            binding!!.replaceIconStart,
-            binding!!.textStartStation
+            binding.textStartHint,
+            binding.replaceIconStart,
+            binding.textStartStation
         )
 
         routeStation(
             sheet.app.currentRoute.routeEnd,
-            binding!!.textEndHint,
-            binding!!.replaceIconEnd,
-            binding!!.textEndStation
+            binding.textEndHint,
+            binding.replaceIconEnd,
+            binding.textEndStation
         )
 
         sheet.app.bottomPanelOpen = true
@@ -226,7 +213,7 @@ class MapBottomPanelStation(
         }
     }
 
-    private fun detachItem() {
+    private fun detach() {
         adapter.showStation = false
     }
 
@@ -239,9 +226,9 @@ class MapBottomPanelStation(
         hideCleanup()
         if (sheet.adapter.showStation) {
             if (sheet.adapter.showRoute)
-                sheet.panelExpandCollapse(true) { detachItem() }
+                sheet.panelExpandCollapse(true) { detach() }
             else
-                sheet.panelHide { detachItem() }
+                sheet.panelHide { detach() }
         }
     }
 

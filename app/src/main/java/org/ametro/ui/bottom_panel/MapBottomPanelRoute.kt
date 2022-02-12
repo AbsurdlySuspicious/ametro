@@ -15,9 +15,9 @@ import org.ametro.utils.misc.saturate
 import java.util.*
 
 class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val listener: MapBottomPanelRouteListener) :
-    PanelAdapterBinder {
+    PanelAdapterBinder<WidgetItemBotRouteBinding> {
 
-    private var binding: WidgetItemBotRouteBinding? = null
+    private lateinit var binding: WidgetItemBotRouteBinding
     private var slideHandler: ((Int) -> Unit)? = null
     private var currentPage: Int = 0
     private val adapter = RoutePagerAdapter(sheet.sheetView.context, listener)
@@ -32,6 +32,39 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
             }
         }
         sheet.adapter.routeBinder = this
+    }
+
+    override fun createPanel(bind: WidgetItemBotRouteBinding) {
+        binding = bind
+        bind.pager.adapter = adapter
+
+        try {
+            val recyclerViewField = ViewPager2::class.java.getDeclaredField("mRecyclerView")
+            recyclerViewField.isAccessible = true
+            val recyclerView = recyclerViewField.get(bind.pager)
+            val touchSlopField = RecyclerView::class.java.getDeclaredField("mTouchSlop")
+            touchSlopField.isAccessible = true
+            val touchSlop = touchSlopField.get(recyclerView) as Int
+            touchSlopField.set(recyclerView, (touchSlop * 0.3f).toInt())
+        } catch (_: Exception) {
+        } // fuck it
+    }
+
+    override fun attachItem() {
+        binding.pager.setCurrentItem(currentPage, false)
+        binding.pager.setPageTransformer(animationPageTransformer)
+        binding.pager.registerOnPageChangeCallback(pageChangedCallback)
+        binding.pager.registerOnPageChangeCallback(animationPageChangeCallback)
+        binding.pager.offscreenPageLimit = 2
+
+        binding.dots.setViewPager2(binding.pager)
+        binding.dots.refreshDots()
+    }
+
+    override fun detachItem() {
+        binding.pager.unregisterOnPageChangeCallback(pageChangedCallback)
+        binding.pager.unregisterOnPageChangeCallback(animationPageChangeCallback)
+        binding.dots.pager?.removeOnPageChangeListener()
     }
 
     fun show(routes: ArrayList<RoutePagerItem>, leaveTime: Calendar?, setPage: Int) {
@@ -71,28 +104,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         }
     }
 
-    private fun castBind(bind: ViewBinding) =
-        bind as WidgetItemBotRouteBinding
-
-    override fun bindItem(bind: ViewBinding) {
-        // nope
-    }
-
-    override fun createHolder(bind: ViewBinding) {
-        castBind(bind).also {
-            try {
-                val recyclerViewField = ViewPager2::class.java.getDeclaredField("mRecyclerView")
-                recyclerViewField.isAccessible = true
-                val recyclerView = recyclerViewField.get(it.pager)
-                val touchSlopField = RecyclerView::class.java.getDeclaredField("mTouchSlop")
-                touchSlopField.isAccessible = true
-                val touchSlop = touchSlopField.get(recyclerView) as Int
-                touchSlopField.set(recyclerView, (touchSlop * 0.3f).toInt())
-            } catch (_: Exception) {} // fuck it
-
-            it.pager.adapter = adapter
-        }
-    }
+    // == animations ==
 
     private val interpolator = DecelerateInterpolator(1.3f)
 
@@ -165,30 +177,6 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
                 else
                     view.translationX = 0f
             }
-        }
-    }
-
-    override fun attachItem(bind: ViewBinding) {
-        castBind(bind).also {
-            this.binding = it
-
-            it.pager.setCurrentItem(currentPage, false)
-            it.pager.setPageTransformer(animationPageTransformer)
-            it.pager.registerOnPageChangeCallback(pageChangedCallback)
-            it.pager.registerOnPageChangeCallback(animationPageChangeCallback)
-            it.pager.offscreenPageLimit = 2
-
-            it.dots.setViewPager2(it.pager)
-            it.dots.refreshDots()
-        }
-    }
-
-    override fun detachItem(bind: ViewBinding) {
-        castBind(bind).also {
-            it.pager.unregisterOnPageChangeCallback(pageChangedCallback)
-            it.pager.unregisterOnPageChangeCallback(animationPageChangeCallback)
-            it.dots.pager?.removeOnPageChangeListener()
-            this.binding = null
         }
     }
 
