@@ -488,6 +488,14 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         onShowMapDetail(station.first, station.second)
     }
 
+    override fun onOpenTransports() {
+        navigationController.also {
+            val pos = it.drawerMenuAdapter.getPositionByTag("transports")
+            it.drawerLayout.openDrawer(it.drawerView)
+            if (pos >= 0) it.drawerView.smoothScrollToPosition(pos)
+        }
+    }
+
     override fun onShowMapDetail(line: MapSchemeLine?, station: MapSchemeStation?) {
         if (waitingForActivityResult || station == null || line == null) return
         waitingForActivityResult = true
@@ -553,16 +561,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
         if (routes.isEmpty()) {
             mapView!!.highlightsElements(null)
-            mapBottomRoute.hide()
-            Toast.makeText(
-                this,
-                String.format(
-                    getString(R.string.msg_no_route_found),
-                    begin.second.displayName,
-                    end.second.displayName
-                ),
-                Toast.LENGTH_LONG
-            ).show()
+            mapBottomRoute.showNoRoute(begin, end)
             return
         }
 

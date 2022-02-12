@@ -1,10 +1,14 @@
 package org.ametro.ui.bottom_panel
 
+import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.databinding.WidgetBotRoutePageBinding
@@ -26,9 +30,8 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
         sheet.addSheetStateCallbackPre { _, state ->
             when (state) {
                 BottomSheetBehavior.STATE_HIDDEN ->
-                    if (sheet.adapter.showRoute) {
+                    if (sheet.adapter.showRoute)
                         listener.onPanelHidden()
-                    }
             }
         }
         sheet.adapter.routeBinder = this
@@ -37,6 +40,9 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     override fun createPanel(bind: WidgetItemBotRouteBinding) {
         binding = bind
         bind.pager.adapter = adapter
+        bind.includeRouteMissing.listButton.setOnClickListener {
+            listener.onOpenTransports()
+        }
 
         try {
             val recyclerViewField = ViewPager2::class.java.getDeclaredField("mRecyclerView")
@@ -72,7 +78,29 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
             adapter.leaveTime = leaveTime
             adapter.replaceItems(routes, currentPage, setPage <= 0)
             this.setPage(setPage)
+
             sheet.adapter.showRoute = true
+            binding.pagerLayout.isVisible = true
+            binding.includeRouteMissing.root.isVisible = false
+        }
+    }
+
+    private fun bindNoRouteStation(station: RoutePagerStation, icon: ImageView, name: AppCompatTextView) {
+        (icon.drawable as GradientDrawable).setColor(station.first.lineColor)
+        name.text = station.second.displayName
+    }
+
+    fun showNoRoute(start: RoutePagerStation, end: RoutePagerStation) {
+        sheet.panelShow(MapBottomPanelSheet.OPENED_CHANGE_VIEW, false) {
+            binding.includeRouteMissing.apply {
+                bindNoRouteStation(start, lineIconStart, stationStart)
+                bindNoRouteStation(end, lineIconEnd, stationEnd)
+
+                root.isVisible = true
+            }
+
+            sheet.adapter.showRoute = true
+            binding.pagerLayout.isVisible = false
         }
     }
 
@@ -94,7 +122,7 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
 
     fun setPage(i: Int, smooth: Boolean = false) {
         currentPage = i
-        binding?.pager?.setCurrentItem(i, smooth)
+        binding.pager.setCurrentItem(i, smooth)
     }
 
     private val pageChangedCallback = object : ViewPager2.OnPageChangeCallback() {
@@ -183,5 +211,6 @@ class MapBottomPanelRoute(private val sheet: MapBottomPanelSheet, private val li
     interface MapBottomPanelRouteListener {
         fun onPanelHidden()
         fun onOpenDetails(station: Pair<MapSchemeLine, MapSchemeStation>)
+        fun onOpenTransports()
     }
 }

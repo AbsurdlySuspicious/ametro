@@ -1,5 +1,7 @@
 package org.ametro.ui.navigation.entities;
 
+import androidx.annotation.Nullable;
+
 public abstract class NavigationItem {
 
     public final static int INVALID_ACTION = -1;
@@ -9,6 +11,8 @@ public abstract class NavigationItem {
 
     private boolean enabled;
     private boolean selected;
+
+    protected String tag = null;
 
     public NavigationItem() {
         this(INVALID_ACTION, false);
@@ -56,5 +60,9 @@ public abstract class NavigationItem {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+
+    @Nullable public String getTag() {
+        return tag;
     }
 }

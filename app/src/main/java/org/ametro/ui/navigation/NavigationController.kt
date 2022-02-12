@@ -42,12 +42,12 @@ class NavigationController(
     private val countryIconProvider: IconProvider,
     private val localizationProvider: MapInfoLocalizationProvider
 ) : OnItemClickListener {
-    private val drawerMenuAdapter: NavigationDrawerAdapter
     private val drawerToggle: ActionBarDrawerToggle
-    private val drawerView: ListView
     private val resources: Resources
     private val context: AppCompatActivity
 
+    val drawerMenuAdapter: NavigationDrawerAdapter
+    val drawerView: ListView
     val drawerLayout: DrawerLayout
     val toolbar: Toolbar
 
@@ -185,7 +185,8 @@ class NavigationController(
         val items = ArrayList(listOf(createHeaderNavigationItem(container)))
         items.add(
             NavigationSubHeader(
-                resources.getString(R.string.nav_options), arrayOf(
+                resources.getString(R.string.nav_options),
+                arrayOf(
                     NavigationTextItem(
                         OPEN_MAPS_ACTION,
                         ContextCompat.getDrawable(context, R.drawable.ic_public_black_18dp),
@@ -209,9 +210,9 @@ class NavigationController(
         if (delayItems.size > 1) {
             items.add(
                 NavigationSubHeader(
-                    NavigationItem.INVALID_ACTION,
                     resources.getString(R.string.nav_delays),
-                    delayItems
+                    delayItems,
+                    "delays"
                 )
             )
             items.add(NavigationSplitter())
@@ -220,9 +221,9 @@ class NavigationController(
         if (transportItems.size > 1) {
             items.add(
                 NavigationSubHeader(
-                    NavigationItem.INVALID_ACTION,
                     resources.getString(R.string.nav_using),
-                    transportItems
+                    transportItems,
+                    "transports"
                 )
             )
             items.add(NavigationSplitter())
@@ -231,9 +232,9 @@ class NavigationController(
         if (schemeItems.size > 1) {
             items.add(
                 NavigationSubHeader(
-                    NavigationItem.INVALID_ACTION,
                     resources.getString(R.string.nav_schemes),
-                    schemeItems
+                    schemeItems,
+                    "schemes"
                 )
             )
             items.add(NavigationSplitter())

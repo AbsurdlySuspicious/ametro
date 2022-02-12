@@ -32,7 +32,7 @@ class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : 
         viewItemHolderFactories[NavigationSplitter::class.java] = NavigationSplitterHolderFactory()
         viewItemHolderFactories[NavigationSubHeader::class.java] = NavigationSubHeaderHolderFactory()
         viewItemHolderFactories[NavigationCheckBoxItem::class.java] = NavigationCheckBoxItemHolderFactory()
-        inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        inflater = LayoutInflater.from(context)
         this.items = flattenItems(items)
     }
 
@@ -41,6 +41,9 @@ class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : 
         this.items.addAll(flattenItems(items))
         notifyDataSetChanged()
     }
+
+    fun getPositionByTag(tag: String): Int =
+        items.indexOfFirst { it.tag == tag }
 
     override fun areAllItemsEnabled(): Boolean {
         return false

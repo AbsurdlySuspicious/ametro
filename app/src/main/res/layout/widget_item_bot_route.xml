@@ -14,11 +14,9 @@
         android:paddingBottom="@dimen/panel_bottom_padding"
 >
 
-    <FrameLayout
-            android:id="@+id/no_route_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
+    <include
+            android:id="@+id/include_route_missing"
+            layout="@layout/widget_bot_route_missing"
     />
 
     <LinearLayout

@@ -8,6 +8,9 @@
         android:layout_height="wrap_content"
         android:paddingHorizontal="5dp"
         android:minHeight="0dp"
+
+        android:visibility="gone"
+        tools:visibility="visible"
 >
     <TextView
             android:id="@+id/text_main"
@@ -59,7 +62,7 @@
             app:layout_constraintStart_toStartOf="@id/station_start"
     />
 
-    <TextView
+    <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/station_start"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -86,7 +89,7 @@
             app:layout_constraintStart_toStartOf="@id/station_end"
     />
 
-    <TextView
+    <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/station_end"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -111,6 +114,7 @@
     />
 
     <Button
+            android:id="@+id/list_button"
             android:layout_width="130dp"
             android:layout_height="40dp"
             android:text="@string/no_route_open_transports"

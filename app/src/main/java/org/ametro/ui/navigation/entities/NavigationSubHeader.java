@@ -1,18 +1,21 @@
 package org.ametro.ui.navigation.entities;
 
+import androidx.annotation.Nullable;
+
 public class NavigationSubHeader extends NavigationItem implements INavigationItemGroup {
 
     private final CharSequence text;
     private final NavigationItem[] items;
 
     public NavigationSubHeader(CharSequence text, NavigationItem[] items){
-        this(INVALID_ACTION, text, items);
+        this(text, items, null);
     }
 
-    public NavigationSubHeader(int action, CharSequence text, NavigationItem[] items){
-        super(action);
+    public NavigationSubHeader(CharSequence text, NavigationItem[] items, String tag){
+        super(INVALID_ACTION);
         this.text = text;
         this.items = items;
+        this.tag = tag;
     }
 
     public CharSequence getText() {
