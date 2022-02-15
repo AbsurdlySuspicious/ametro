@@ -38,7 +38,13 @@
         <item name="colorAccent">@color/accent</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="android:activatedBackgroundIndicator">@drawable/item_background</item>
+        <item name="searchViewStyle">@style/SearchViewStyle</item>
     </style>
+
+    <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
+        <item name="queryBackground">@drawable/search_view_bg</item>
+    </style>
+
 
     <style name="primaryText" parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:textSize">16sp</item>
