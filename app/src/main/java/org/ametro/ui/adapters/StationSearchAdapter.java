@@ -22,15 +22,21 @@ import java.util.List;
 public class StationSearchAdapter extends CursorAdapter {
 
     private List<StationInfo> stations;
+    private String query;
 
     public static StationSearchAdapter createFromMapScheme(Context context, MapScheme scheme, String query){
         List<StationInfo> items = getStations(scheme, query);
-        return new StationSearchAdapter(context, createStationNameCursor(items), items);
+        return new StationSearchAdapter(context, createStationNameCursor(items), items, query);
     }
 
-    protected StationSearchAdapter(Context context, Cursor cursor, List<StationInfo> items) {
+    protected StationSearchAdapter(Context context, Cursor cursor, List<StationInfo> items, String query) {
         super(context, cursor, false);
         this.stations = items;
+        this.query = query;
+    }
+
+    public String getQuery() {
+        return query;
     }
 
     @Override
@@ -44,6 +50,10 @@ public class StationSearchAdapter extends CursorAdapter {
         View v = inflater.inflate(R.layout.station_search_view_list_item, parent, false);
         v.setTag(new StationInfoHolder(v));
         return v;
+    }
+
+    public int getStationCount() {
+        return stations.size();
     }
 
     public MapSchemeStation getStation(int position) {

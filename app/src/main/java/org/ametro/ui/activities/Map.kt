@@ -85,6 +85,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
     private lateinit var settingsProvider: ApplicationSettingsProvider
     private lateinit var navigationController: NavigationController
 
+    private var density: Float = 1f
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -117,6 +119,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
             ApplicationEx.getInstanceActivity(this).getCountryFlagProvider(),
             ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
         )
+
+        density = resources.displayMetrics.density
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             window.statusBarColor = Color.TRANSPARENT
@@ -231,13 +235,31 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
         val manager = getSystemService(SEARCH_SERVICE) as SearchManager
         val searchMenuItem = menu.findItem(R.id.action_search)
         val searchView = searchMenuItem.actionView as SearchView
-        val selectedStation = arrayOfNulls<MapSchemeStation>(1)
+
+        val searchViewShowStation = { station: MapSchemeStation ->
+            if (scheme != null) ModelUtil.findStationByUid(scheme, station.uid.toLong())?.let { stationInfo ->
+                val mapView = mapView ?: return@let
+
+                var newScale = mapView.scale
+                val targetScale = density * 1.5f
+                if (newScale < targetScale)
+                    newScale = targetScale
+
+                val stationInformation = container!!
+                    .findStationInformation(stationInfo.first.name, stationInfo.second.name)
+                val p = PointF(station.position.x, station.position.y)
+                mapView.setCenterPositionAndScale(p, newScale, true)
+                mapBottomStation.show(
+                    stationInfo.first,
+                    stationInfo.second,
+                    stationInformation?.mapFilePath != null
+                )
+                searchMenuItem.collapseActionView()
+            }
+        }
+
         searchView.isSubmitButtonEnabled = false
         searchView.setSearchableInfo(manager.getSearchableInfo(componentName))
-        searchView.setOnCloseListener {
-            selectedStation[0] = null
-            true
-        }
         searchView.setOnSuggestionListener(object : SearchView.OnSuggestionListener {
             override fun onSuggestionSelect(position: Int): Boolean {
                 return true
@@ -245,30 +267,18 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
             override fun onSuggestionClick(position: Int): Boolean {
                 val station = (searchView.suggestionsAdapter as StationSearchAdapter).getStation(position)
-                searchView.setQuery(station.displayName, true)
-                selectedStation[0] = station
+                // searchView.setQuery(station.displayName, false)
+                searchViewShowStation(station)
                 return true
             }
         })
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                if (scheme == null) {
-                    return true
-                }
-                selectedStation[0]?.let {
-                    ModelUtil.findStationByUid(scheme, it.uid.toLong())
-                }?.let { stationInfo ->
-                    val stationInformation = container!!
-                        .findStationInformation(stationInfo.first.name, stationInfo.second.name)
-                    val p = PointF(selectedStation[0]!!.position.x, selectedStation[0]!!.position.y)
-                    mapView!!.setCenterPositionAndScale(p, mapView!!.scale, true)
-                    mapBottomStation.show(
-                        stationInfo.first,
-                        stationInfo.second,
-                        stationInformation?.mapFilePath != null
-                    )
-                    searchMenuItem.collapseActionView()
-                }
+                var adapter = searchView.suggestionsAdapter as StationSearchAdapter
+                if (adapter.query != query && scheme != null)
+                    adapter = StationSearchAdapter.createFromMapScheme(this@Map, scheme, query)
+                if (adapter.stationCount > 0)
+                    searchViewShowStation(adapter.getStation(0))
                 return true
             }
 
