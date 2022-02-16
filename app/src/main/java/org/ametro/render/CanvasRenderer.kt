@@ -3,9 +3,7 @@ package org.ametro.render
 import android.app.Activity
 import android.app.ActivityManager
 import android.graphics.*
-import android.os.Handler
-import android.os.HandlerThread
-import android.os.Message
+import android.os.*
 import android.util.Log
 import android.view.View
 import org.ametro.R
@@ -84,21 +82,21 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             when (msg.what) {
                 MSG_REBUILD_CACHE -> {
                     rebuildCache()
-                    canvasView.invalidate()
+                    invalidateCanvasView()
                 }
                 MSG_UPDATE_CACHE -> {
                     val oldCache = oldCache.get()
                     if (oldCache != null && oldCache.scale == scale) {
                         updatePartialCache()
-                        //canvasView.invalidate();
+                        // invalidateCanvasView()
                     } else {
                         renderPartialCache()
-                        canvasView.invalidate()
+                        invalidateCanvasView()
                     }
                 }
                 MSG_RENDER_PARTIAL_CACHE -> {
                     renderPartialCache()
-                    canvasView.invalidate()
+                    invalidateCanvasView()
                 }
                 MSG_HIGHLIGHT_ELEMENTS -> {
                     Log.d("AM5", "highlight msg")
@@ -106,7 +104,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
                     val lazyIds = msg.obj as ElementsToHighlight
                     renderProgram!!.highlightsElements(lazyIds?.invoke())
                     // rebuildOnDraw()
-                    // canvasView.invalidate()
+                    // invalidateCanvasView()
                     postRebuildMipmap()
                     postRebuildCache()
                 }
@@ -125,6 +123,13 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
         val ac = canvasView.context.getSystemService(Activity.ACTIVITY_SERVICE) as ActivityManager
         memoryClass = ac.memoryClass
         setScheme(renderProgram)
+    }
+
+    private fun invalidateCanvasView() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P)
+            canvasView.postInvalidate()
+        else
+            canvasView.invalidate()
     }
 
     fun setScheme(renderProgram: RenderProgram?) {
