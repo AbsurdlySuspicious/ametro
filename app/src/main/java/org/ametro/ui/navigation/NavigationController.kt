@@ -29,14 +29,13 @@ import org.ametro.ui.navigation.adapter.NavigationDrawerAdapter
 import org.ametro.ui.navigation.entities.*
 import org.ametro.ui.navigation.helpers.DelayResources
 import org.ametro.utils.ListUtils
-import org.ametro.utils.ListUtils.IPredicate
 import org.ametro.utils.StringUtils.isNullOrEmpty
 import java.util.*
 import kotlin.collections.ArrayList
 
 class NavigationController(
     activity: AppCompatActivity,
-    private val listener: INavigationControllerListener,
+    private val listener: NavigationControllerListener,
     binding: ActivityMapViewBinding,
     private val transportIconProvider: TransportIconsProvider,
     private val countryIconProvider: IconProvider,

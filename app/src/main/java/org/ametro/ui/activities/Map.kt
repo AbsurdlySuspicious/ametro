@@ -38,7 +38,7 @@ import org.ametro.routes.entities.MapRoutePart
 import org.ametro.routes.entities.MapRouteQueryParameters
 import org.ametro.ui.adapters.StationSearchAdapter
 import org.ametro.ui.bottom_panel.*
-import org.ametro.ui.navigation.INavigationControllerListener
+import org.ametro.ui.navigation.NavigationControllerListener
 import org.ametro.ui.navigation.NavigationController
 import org.ametro.ui.tasks.MapLoadAsyncTask
 import org.ametro.ui.tasks.MapLoadAsyncTask.IMapLoadingEventListener
@@ -52,7 +52,7 @@ import org.ametro.utils.misc.UIUtils
 import org.ametro.utils.misc.convertPair
 import java.util.*
 
-class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControllerListener,
+class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControllerListener,
     IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener,
     BottomPanelSheetListener {
 
