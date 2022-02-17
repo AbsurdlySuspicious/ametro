@@ -7,6 +7,11 @@ import org.ametro.R
 import org.ametro.ui.navigation.entities.NavigationItem
 import org.ametro.ui.navigation.entities.NavigationTextItem
 
+internal object NavigationTextItemHolderFactory : HolderFactory {
+    override fun layoutRes(): Int = R.layout.drawer_text_item
+    override fun spawnHolder(convertView: View): Holder = NavigationTextItemHolder(convertView)
+}
+
 internal class NavigationTextItemHolder(view: View) : Holder {
     private val imageView: ImageView
     private val textView: TextView

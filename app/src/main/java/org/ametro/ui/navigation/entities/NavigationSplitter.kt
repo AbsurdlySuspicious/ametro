@@ -1,3 +1,7 @@
 package org.ametro.ui.navigation.entities
 
-class NavigationSplitter : NavigationItem(0)
+import org.ametro.ui.navigation.adapter.NavigationSplitterHolderFactory
+
+class NavigationSplitter : NavigationItem(0) {
+    override val factory = NavigationSplitterHolderFactory
+}

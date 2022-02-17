@@ -10,20 +10,15 @@ import org.ametro.ui.navigation.entities.*
 class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : BaseAdapter() {
     private val items: MutableList<NavigationItem>
     private val inflater: LayoutInflater
-    private val viewItemTypes: MutableMap<Class<*>, Int> = HashMap()
-    private val viewItemHolderFactories: MutableMap<Class<*>, HolderFactory> = HashMap()
+    private val viewItemTypes = HashMap<Class<*>, Int>().also {
+        it[NavigationHeader::class.java] = 0
+        it[NavigationTextItem::class.java] = 1
+        it[NavigationSplitter::class.java] = 2
+        it[NavigationSubHeader::class.java] = 3
+        it[NavigationCheckBoxItem::class.java] = 4
+    }
 
     init {
-        viewItemTypes[NavigationHeader::class.java] = 0
-        viewItemTypes[NavigationTextItem::class.java] = 1
-        viewItemTypes[NavigationSplitter::class.java] = 2
-        viewItemTypes[NavigationSubHeader::class.java] = 3
-        viewItemTypes[NavigationCheckBoxItem::class.java] = 4
-        viewItemHolderFactories[NavigationHeader::class.java] = NavigationHeaderHolderFactory()
-        viewItemHolderFactories[NavigationTextItem::class.java] = NavigationTextItemHolderFactory()
-        viewItemHolderFactories[NavigationSplitter::class.java] = NavigationSplitterHolderFactory()
-        viewItemHolderFactories[NavigationSubHeader::class.java] = NavigationSubHeaderHolderFactory()
-        viewItemHolderFactories[NavigationCheckBoxItem::class.java] = NavigationCheckBoxItemHolderFactory()
         inflater = LayoutInflater.from(context)
         this.items = flattenItems(items)
     }
@@ -65,7 +60,7 @@ class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : 
         var view = convertView
         val holder: Holder
         if (view == null) {
-            val factory = viewItemHolderFactories[items[position].javaClass]!!
+            val factory = items[position].factory
             view = factory.createView(inflater, parent)!!
             holder = factory.createHolder(view)
         } else {
