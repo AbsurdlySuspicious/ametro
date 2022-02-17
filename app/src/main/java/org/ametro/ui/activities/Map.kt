@@ -15,7 +15,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
@@ -60,7 +59,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
     private var backPressTime = 0L
     private var backPressCount = 0
 
-    private var enabledTransportsSet: MutableSet<String?>? = null
+    private var enabledTransportsSet: MutableSet<String>? = null
     private var container: MapContainer? = null
     private var scheme: MapScheme? = null
     private var schemeName: String? = null
@@ -411,6 +410,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
                 *app.enabledTransports ?: container!!.getScheme(schemeName).defaultTransports
             )
         )
+        currentDelay = app.delay
         navigationController.setNavigation(container, schemeName, app.enabledTransports, currentDelay)
         mapPanelView.visibility = View.VISIBLE
         mapSelectionIndicators.clearSelection()
@@ -468,15 +468,16 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
     override fun onToggleTransport(transportName: String, checked: Boolean): Boolean {
         return try {
+            val transportsArray: Array<String>
             if (checked) {
                 enabledTransportsSet!!.add(transportName)
-                container!!.loadSchemeWithTransports(
-                    schemeName,
-                    enabledTransportsSet!!.toTypedArray()
-                )
+                transportsArray = enabledTransportsSet!!.toTypedArray()
+                container!!.loadSchemeWithTransports(schemeName, transportsArray)
             } else {
                 enabledTransportsSet!!.remove(transportName)
+                transportsArray = enabledTransportsSet!!.toTypedArray()
             }
+            app.enabledTransports = transportsArray
             refreshRoute()
             true
         } catch (e: MapSerializationException) {
@@ -486,6 +487,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, INavigationControll
 
     override fun onDelayChanged(delay: MapDelay): Boolean {
         currentDelay = delay
+        app.delay = delay
         refreshRoute()
         return true
     }

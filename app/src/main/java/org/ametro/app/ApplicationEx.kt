@@ -18,10 +18,10 @@ import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.text.format.DateFormat
-import android.util.Log
 import androidx.loader.content.AsyncTaskLoader
 import androidx.multidex.MultiDexApplication
 import kotlinx.parcelize.Parcelize
+import org.ametro.model.entities.MapDelay
 import org.ametro.utils.Lazy
 import java.util.*
 
@@ -61,7 +61,7 @@ class ApplicationEx : MultiDexApplication() {
     var schemeName: String? = null
         private set
     var enabledTransports: Array<String>? = null
-        private set
+    var delay: MapDelay? = null
     var centerPositionAndScale: Pair<PointF, Float>? = null
 
     var currentRoute = SavedRoute()
@@ -177,6 +177,7 @@ class ApplicationEx : MultiDexApplication() {
         container = null
         schemeName = null
         enabledTransports = null
+        delay = null
         centerPositionAndScale = null
         currentRoute = SavedRoute()
         previousRoute = null
