@@ -1,25 +1,17 @@
 package org.ametro.ui.navigation.adapter
 
 import android.content.Context
-import org.ametro.ui.navigation.entities.NavigationItem
-import android.widget.BaseAdapter
 import android.view.LayoutInflater
 import android.view.View
-import org.ametro.ui.navigation.entities.NavigationHeader
-import org.ametro.ui.navigation.entities.NavigationTextItem
-import org.ametro.ui.navigation.entities.NavigationSplitter
-import org.ametro.ui.navigation.entities.NavigationSubHeader
-import org.ametro.ui.navigation.entities.NavigationCheckBoxItem
 import android.view.ViewGroup
-import org.ametro.ui.navigation.entities.NavigationItemGroup
-import java.util.ArrayList
-import java.util.HashMap
+import android.widget.BaseAdapter
+import org.ametro.ui.navigation.entities.*
 
 class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : BaseAdapter() {
     private val items: MutableList<NavigationItem>
     private val inflater: LayoutInflater
     private val viewItemTypes: MutableMap<Class<*>, Int> = HashMap()
-    private val viewItemHolderFactories: MutableMap<Class<*>, IHolderFactory> = HashMap()
+    private val viewItemHolderFactories: MutableMap<Class<*>, HolderFactory> = HashMap()
 
     init {
         viewItemTypes[NavigationHeader::class.java] = 0
@@ -71,13 +63,13 @@ class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : 
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         var view = convertView
-        val holder: IHolder
+        val holder: Holder
         if (view == null) {
             val factory = viewItemHolderFactories[items[position].javaClass]!!
             view = factory.createView(inflater, parent)!!
             holder = factory.createHolder(view)
         } else {
-            holder = view.tag as IHolder
+            holder = view.tag as Holder
         }
         holder.update(items[position])
         return view
