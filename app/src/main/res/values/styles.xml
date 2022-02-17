@@ -45,7 +45,6 @@
         <item name="queryBackground">@drawable/search_view_bg</item>
     </style>
 
-
     <style name="primaryText" parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:textSize">16sp</item>
         <item name="android:ellipsize">end</item>
