@@ -11,7 +11,7 @@ import org.ametro.ui.navigation.entities.NavigationSplitter
 import org.ametro.ui.navigation.entities.NavigationSubHeader
 import org.ametro.ui.navigation.entities.NavigationCheckBoxItem
 import android.view.ViewGroup
-import org.ametro.ui.navigation.entities.INavigationItemGroup
+import org.ametro.ui.navigation.entities.NavigationItemGroup
 import java.util.ArrayList
 import java.util.HashMap
 
@@ -99,8 +99,8 @@ class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : 
         val flattenList: MutableList<NavigationItem> = ArrayList()
         for (item in items) {
             flattenList.add(item)
-            if (item is INavigationItemGroup) {
-                val group = item as INavigationItemGroup
+            if (item is NavigationItemGroup) {
+                val group = item as NavigationItemGroup
                 flattenList.addAll(flattenItems(group.items))
             }
         }

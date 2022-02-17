@@ -14,8 +14,8 @@ class TransportIconsProvider(context: Context) {
         return icons[transportType]
     }
 
-    fun getTransportIcons(transportTypes: Array<TransportType>): Array<Drawable?> {
-        return transportTypes.mapArray { icons[it] }
+    fun getTransportIcons(transportTypes: Array<TransportType>): Array<Drawable> {
+        return transportTypes.asSequence().mapNotNull { icons[it] }.toMutableList().toTypedArray()
     }
 
     companion object {

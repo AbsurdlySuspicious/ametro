@@ -189,17 +189,17 @@ class NavigationController(
                 arrayOf(
                     NavigationTextItem(
                         OPEN_MAPS_ACTION,
-                        ContextCompat.getDrawable(context, R.drawable.ic_public_black_18dp),
+                        ContextCompat.getDrawable(context, R.drawable.ic_public_black_18dp)!!,
                         resources.getString(R.string.nav_select_map)
                     ),
                     NavigationTextItem(
                         OPEN_SETTINGS_ACTION,
-                        ContextCompat.getDrawable(context, R.drawable.ic_settings_black_18dp),
+                        ContextCompat.getDrawable(context, R.drawable.ic_settings_black_18dp)!!,
                         resources.getString(R.string.nav_settings)
                     ),
                     NavigationTextItem(
                         OPEN_ABOUT_ACTION,
-                        ContextCompat.getDrawable(context, R.drawable.ic_info_black_24dp),
+                        ContextCompat.getDrawable(context, R.drawable.ic_info_black_24dp)!!,
                         resources.getString(R.string.nav_about)
                     ),
                     NavigationSplitter()
