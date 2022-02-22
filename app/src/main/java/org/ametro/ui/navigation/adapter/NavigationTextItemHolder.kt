@@ -21,10 +21,12 @@ internal class NavigationTextItemHolder(view: View) : Holder {
 
     private val activatedColor =
         ResourcesCompat.getColor(view.context.resources, R.color.activated_color, null)
+    private val noIcon =
+        ResourcesCompat.getDrawable(view.context.resources, R.drawable.ic_unknown_item2, null)
 
     override fun update(item: NavigationItem) {
         val textItem = item as NavigationTextItem
-        imageView.setImageDrawable(textItem.drawable)
+        imageView.setImageDrawable(textItem.drawable ?: noIcon)
         textView.text = textItem.text
 
         val filter = if (item.isSelected) PorterDuff.Mode.DARKEN else PorterDuff.Mode.DST_IN
