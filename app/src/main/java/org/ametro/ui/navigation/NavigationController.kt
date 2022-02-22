@@ -201,7 +201,6 @@ class NavigationController(
                         ContextCompat.getDrawable(context, R.drawable.ic_info_black_24dp)!!,
                         resources.getString(R.string.nav_about)
                     ),
-                    NavigationSplitter()
                 )
             )
         )
@@ -214,7 +213,6 @@ class NavigationController(
                     "delays"
                 )
             )
-            items.add(NavigationSplitter())
         }
         val transportItems = createTransportNavigationItems(container, schemeName, enabledTransports)
         if (transportItems.size > 1) {
@@ -225,7 +223,6 @@ class NavigationController(
                     "transports"
                 )
             )
-            items.add(NavigationSplitter())
         }
         val schemeItems = createSchemeNavigationItems(container, schemeName)
         if (schemeItems.size > 1) {
@@ -236,7 +233,6 @@ class NavigationController(
                     "schemes"
                 )
             )
-            items.add(NavigationSplitter())
         }
         return items.toTypedArray()
     }

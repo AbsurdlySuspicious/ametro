@@ -1,8 +1,10 @@
 package org.ametro.ui.navigation.adapter
 
+import android.graphics.PorterDuff
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import org.ametro.R
 import org.ametro.ui.navigation.entities.NavigationItem
 import org.ametro.ui.navigation.entities.NavigationTextItem
@@ -13,20 +15,19 @@ internal object NavigationTextItemHolderFactory : HolderFactory {
 }
 
 internal class NavigationTextItemHolder(view: View) : Holder {
-    private val imageView: ImageView
-    private val textView: TextView
-    private val container: View
+    private val imageView: ImageView = view.findViewById(R.id.icon)
+    private val textView: TextView = view.findViewById(R.id.text)
+    private val bg: View = view.findViewById(R.id.bg)
 
-    init {
-        imageView = view.findViewById(R.id.icon)
-        textView = view.findViewById(R.id.text)
-        container = view
-    }
+    private val activatedColor =
+        ResourcesCompat.getColor(view.context.resources, R.color.activated_color, null)
 
     override fun update(item: NavigationItem) {
         val textItem = item as NavigationTextItem
         imageView.setImageDrawable(textItem.drawable)
         textView.text = textItem.text
-        container.setBackgroundResource(if (textItem.isSelected) R.color.activated_color else android.R.color.transparent)
+
+        val filter = if (item.isSelected) PorterDuff.Mode.DARKEN else PorterDuff.Mode.DST_IN
+        bg.background.setColorFilter(activatedColor, filter)
     }
 }

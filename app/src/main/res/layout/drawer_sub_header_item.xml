@@ -1,24 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
-    android:layout_height="@dimen/drawer_item_height"
-    android:orientation="horizontal"
-    android:paddingBottom="@dimen/drawer_item_padding_top_bottom"
-    android:paddingLeft="@dimen/drawer_item_padding_left_right"
-    android:paddingRight="@dimen/drawer_item_padding_left_right"
-    android:paddingTop="@dimen/drawer_item_padding_top_bottom" >
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="8dp"
+    android:paddingHorizontal="@dimen/drawer_item_padding_left_right"
+>
 
     <TextView
         android:id="@+id/text"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:background="@drawable/drawer_sub_header_bg"
+        android:padding="10dp"
         android:ellipsize="end"
-        android:paddingLeft="@dimen/drawer_sub_header_text_padding_left"
-        android:paddingRight="@dimen/drawer_sub_header_text_padding_left"
         android:singleLine="true"
         style="@style/drawerSubHeaderText"
+        tools:text="Foobar:"
         />
 
 </LinearLayout>

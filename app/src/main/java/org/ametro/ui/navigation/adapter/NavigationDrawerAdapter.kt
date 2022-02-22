@@ -13,9 +13,8 @@ class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : 
     private val viewItemTypes = HashMap<Class<*>, Int>().also {
         it[NavigationHeader::class.java] = 0
         it[NavigationTextItem::class.java] = 1
-        it[NavigationSplitter::class.java] = 2
-        it[NavigationSubHeader::class.java] = 3
-        it[NavigationCheckBoxItem::class.java] = 4
+        it[NavigationSubHeader::class.java] = 2
+        it[NavigationCheckBoxItem::class.java] = 3
     }
 
     init {
