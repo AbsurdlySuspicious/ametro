@@ -41,6 +41,15 @@
         <item name="searchViewStyle">@style/SearchViewStyle</item>
     </style>
 
+    <style name="SplashTheme.Base" parent="AppTheme">
+        <item name="colorPrimary">@android:color/transparent</item>
+        <item name="colorPrimaryDark">@android:color/transparent</item>
+        <item name="colorAccent">@android:color/transparent</item>
+        <item name="android:windowBackground">@drawable/splash_bg</item>
+    </style>
+
+    <style name="SplashTheme.Real" parent="SplashTheme.Base" />
+
     <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
         <item name="queryBackground">@drawable/search_view_bg</item>
     </style>
