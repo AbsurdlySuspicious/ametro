@@ -43,13 +43,19 @@ internal class NavigationHeaderHolder(view: View) : Holder {
 
     override fun update(item: NavigationItem) {
         val header = item as NavigationHeader
-        icon.visibility = if (header.icon == null) View.INVISIBLE else View.VISIBLE
+
+        icon.visibility =
+            if (header.icon == null) View.INVISIBLE else View.VISIBLE
         icon.setImageDrawable(header.icon)
         city.text = header.city
         country.text = header.country
         comment.text = header.comment
+
+        val transportIcons = header.transportTypeIcons
         transportsContainer.removeAllViews()
-        for (icon in header.transportTypeIcons) {
+        transportsContainer.visibility =
+            if (transportIcons.isEmpty()) View.INVISIBLE else View.VISIBLE
+        for (icon in transportIcons) {
             val img = ImageView(transportsContainer.context)
             img.setImageDrawable(icon)
             transportsContainer.addView(img)
