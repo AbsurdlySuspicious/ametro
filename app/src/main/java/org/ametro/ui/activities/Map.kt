@@ -127,11 +127,10 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             setFitSystemWindowsFlags(binding.root)
             val emptyView = binding.includeEmptyMap.mapEmptyPanel
             val toolbar = navigationController.toolbar
-            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar) { topHeight, _ ->
-                emptyView.updatePadding(bottom = topHeight)
-            }
+            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar)
             toolbar.setOnApplyWindowInsetsListener { _, insets ->
                 toolbarTopInset(insets)
+                emptyView.updatePadding(bottom = toolbar.layoutParams.height)
                 insets
             }
         }

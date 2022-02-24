@@ -9,7 +9,7 @@ import androidx.core.view.updatePadding
 
 object UIUtils {
     @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-    fun makeTopInsetsApplier(view: View, additional: (Int, WindowInsets) -> Unit): (WindowInsets) -> Unit {
+    fun makeTopInsetsApplier(view: View): (WindowInsets) -> Unit {
         val viewHeight = view.layoutParams.height
         val viewPadding = view.paddingTop
         return { insets ->
@@ -17,13 +17,8 @@ object UIUtils {
             val newHeight = viewHeight + topInset
             view.layoutParams.height = newHeight
             view.updatePadding(top = viewPadding + topInset)
-            additional(newHeight, insets)
         }
     }
-
-    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
-    fun makeTopInsetsApplier(view: View) =
-        makeTopInsetsApplier(view) { _, _ -> }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
     fun requestApplyInsetsWhenAttached(view: View) {
