@@ -9,6 +9,8 @@
    id="svg5"
    inkscape:version="1.2-alpha1 (2a6a4ad09f, 2022-02-24, custom)"
    sodipodi:docname="icon-inkscape.svg"
+   inkscape:export-xdpi="37.629631"
+   inkscape:export-ydpi="37.629631"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -29,14 +31,14 @@
      inkscape:snap-perpendicular="true"
      inkscape:snap-tangential="true"
      inkscape:zoom="0.25000001"
-     inkscape:cx="489.99999"
-     inkscape:cy="911.99998"
+     inkscape:cx="265.99999"
+     inkscape:cy="911.99996"
      inkscape:window-width="1904"
      inkscape:window-height="1047"
      inkscape:window-x="1285"
      inkscape:window-y="22"
      inkscape:window-maximized="0"
-     inkscape:current-layer="layer3"
+     inkscape:current-layer="layer6"
      showguides="false"
      inkscape:guide-bbox="true"
      inkscape:deskcolor="#d1d1d1">
@@ -86,7 +88,7 @@
        start_point="267.957,86.351319"
        end_point="267.957,453.22283"
        center_point="267.957,269.78707"
-       id="path-effect2191"
+       id="path-effect1313"
        is_visible="true"
        lpeversion="1.2"
        lpesatellites=""
@@ -267,12 +269,24 @@
      inkscape:highlight-color="#5a91c9"
      style="display:inline;fill:#29262f;fill-opacity:1">
     <rect
-       style="fill:#241f31;fill-opacity:1;stroke-width:0.264999;-inkscape-stroke:none;stop-color:#000000"
+       style="display:inline;fill:#241f31;fill-opacity:1;stroke-width:0.264999;-inkscape-stroke:none;stop-color:#000000"
        id="rect145816"
        width="540"
        height="540"
        x="0"
-       y="2.587899e-07" />
+       y="2.587899e-07"
+       inkscape:label="bg_color"
+       clip-path="none" />
+    <rect
+       style="display:none;fill:#000000;fill-opacity:1;stroke-width:0.264999;-inkscape-stroke:none;stop-color:#000000"
+       id="rect1887"
+       width="540"
+       height="540"
+       x="0"
+       y="2.587899e-07"
+       inkscape:label="rounded_square_mask"
+       rx="80.34845"
+       ry="80.34845" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -305,7 +319,7 @@
   </g>
   <path
      id="rect229107"
-     style="display:inline;fill:#888888;fill-opacity:1;stroke-width:0.264999;-inkscape-stroke:none;stop-color:#000000"
+     style="display:none;fill:#888888;fill-opacity:1;stroke-width:0.264999;-inkscape-stroke:none;stop-color:#000000"
      d="M 0,0 V 540.00011 H 272.20147 A 267.79846,269.99999 0 0 1 4.402832,270.00006 267.79846,269.99999 0 0 1 272.20147,0 Z M 272.20147,0 A 267.79846,269.99999 0 0 1 540.00011,270.00006 V 0 Z M 540.00011,270.00006 A 267.79846,269.99999 0 0 1 272.20147,540.00011 h 267.79864 z"
      inkscape:label="round_icon_test" />
   <g
@@ -315,7 +329,7 @@
      class="UnoptimicedTransforms"
      transform="matrix(1.0743433,0,0,1.0743433,-18.359172,-18.944112)"
      style="display:inline"
-     inkscape:path-effect="#path-effect2191">
+     inkscape:path-effect="#path-effect1313">
     <path
        id="rect1842"
        style="display:inline;fill:url(#linearGradient9964);fill-opacity:1;stroke:none;stroke-width:0.265;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter12168)"
