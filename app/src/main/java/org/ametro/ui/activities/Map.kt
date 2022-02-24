@@ -92,8 +92,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         super.onCreate(savedInstanceState)
 
         binding = ActivityMapViewBinding.inflate(layoutInflater)
-        val rootView = binding.root
-        setContentView(rootView)
+        setContentView(binding.root)
 
         app = ApplicationEx.getInstanceActivity(this)
 
@@ -125,20 +124,11 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         density = resources.displayMetrics.density
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
-            window.statusBarColor = Color.TRANSPARENT
-            rootView.apply {
-                systemUiVisibility = systemUiVisibility or
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-            }
-
+            setFitSystemWindowsFlags(binding.root)
             val emptyView = binding.includeEmptyMap.mapEmptyPanel
             val toolbar = navigationController.toolbar
-            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar) { topHeight, insets ->
-                val bottomInset = insets.systemWindowInsetBottom
-                Log.d("HEH", "bottom: $bottomInset")
-                emptyView.updatePadding(bottom = topHeight, top = bottomInset)
+            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar) { topHeight, _ ->
+                emptyView.updatePadding(bottom = topHeight)
             }
             toolbar.setOnApplyWindowInsetsListener { _, insets ->
                 toolbarTopInset(insets)
@@ -407,10 +397,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             app.clearCurrentMapViewState()
             navigationController.setNavigation(null, null, null, null)
             mapPanelView.visibility = View.GONE
-            setupNavbarForceDark()
             return
         }
-        setupNavbar()
         container = app.container
         schemeName = app.schemeName
         scheme = container!!.getScheme(schemeName)
