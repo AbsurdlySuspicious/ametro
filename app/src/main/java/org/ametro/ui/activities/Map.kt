@@ -15,6 +15,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
@@ -90,7 +92,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         super.onCreate(savedInstanceState)
 
         binding = ActivityMapViewBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        val rootView = binding.root
+        setContentView(rootView)
 
         app = ApplicationEx.getInstanceActivity(this)
 
@@ -123,14 +126,20 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             window.statusBarColor = Color.TRANSPARENT
-            binding.root.apply {
+            rootView.apply {
                 systemUiVisibility = systemUiVisibility or
                         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             }
 
+            val emptyView = binding.includeEmptyMap.mapEmptyPanel
             val toolbar = navigationController.toolbar
-            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar)
+            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar) { topHeight, insets ->
+                val bottomInset = insets.systemWindowInsetBottom
+                Log.d("HEH", "bottom: $bottomInset")
+                emptyView.updatePadding(bottom = topHeight, top = bottomInset)
+            }
             toolbar.setOnApplyWindowInsetsListener { _, insets ->
                 toolbarTopInset(insets)
                 insets

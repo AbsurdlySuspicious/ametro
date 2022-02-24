@@ -32,7 +32,7 @@
     <color name="panel_sub_background">#0D000000</color>
     <color name="panel_background">#FFFFFF</color>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppBase.AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -41,14 +41,16 @@
         <item name="searchViewStyle">@style/SearchViewStyle</item>
     </style>
 
-    <style name="SplashTheme.Base" parent="AppTheme">
+    <style name="AppTheme" parent="AppBase.AppTheme" />
+
+    <style name="AppBase.SplashTheme" parent="AppBase.AppTheme">
         <item name="colorPrimary">@android:color/transparent</item>
         <item name="colorPrimaryDark">@android:color/transparent</item>
         <item name="colorAccent">@android:color/transparent</item>
         <item name="android:windowBackground">@drawable/splash_bg</item>
     </style>
 
-    <style name="SplashTheme.Real" parent="SplashTheme.Base" />
+    <style name="SplashTheme" parent="AppBase.SplashTheme" />
 
     <style name="SearchViewStyle" parent="Widget.AppCompat.SearchView">
         <item name="queryBackground">@drawable/search_view_bg</item>

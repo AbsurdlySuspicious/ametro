@@ -21,6 +21,7 @@ open class AppCompatActivityEx : AppCompatActivity() {
     }
 
     protected fun setupNavbar(variant: Int) {
+        return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
             return
         when (variant) {

@@ -21,7 +21,7 @@
         <activity
                 android:name="org.ametro.ui.activities.Splash"
                 android:launchMode="standard"
-                android:theme="@style/SplashTheme.Real">
+                android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
