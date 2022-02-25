@@ -60,7 +60,7 @@ class MultiTouchMapView @JvmOverloads constructor(
                     .toWindowInsetsCompat(insets)
                     .getInsets(WindowInsetsCompat.Type.navigationBars())
                     .bottom
-                panelPadding = 0
+                panelPadding = panelPadding
                 insets
             }
             UIUtils.requestApplyInsetsWhenAttached(this)
@@ -99,9 +99,9 @@ class MultiTouchMapView @JvmOverloads constructor(
             viewportChangedListener!!.onViewportChanged(matrix)
         }
 
-    var panelPadding: Int
-        get() = multiTouchController.verticalPadding
+    var panelPadding: Int = multiTouchController.verticalPadding
         set(value) {
+            field = value
             multiTouchController.verticalPadding = value + bottomInset
             updateScrollBars(
                 multiTouchController.positionAndScale,
