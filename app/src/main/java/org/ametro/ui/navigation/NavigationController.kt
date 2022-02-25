@@ -3,6 +3,7 @@ package org.ametro.ui.navigation
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
@@ -13,8 +14,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import org.ametro.R
+import org.ametro.app.Constants
 import org.ametro.catalog.entities.TransportTypeHelper
 import org.ametro.catalog.localization.MapInfoLocalizationProvider
 import org.ametro.databinding.ActivityMapViewBinding
@@ -30,6 +33,7 @@ import org.ametro.ui.navigation.entities.*
 import org.ametro.ui.navigation.helpers.DelayResources
 import org.ametro.utils.ListUtils
 import org.ametro.utils.StringUtils.isNullOrEmpty
+import org.ametro.utils.misc.UIUtils
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -52,6 +56,7 @@ class NavigationController(
 
     private var delayItems: Array<NavigationItem> = emptyArray()
     private var transportNameLocalizations: MutableMap<String, String>? = null
+    private var paddingItemHeight: Int = 0
 
     init {
         toolbar = activity.findViewById(R.id.toolbar)
@@ -61,14 +66,26 @@ class NavigationController(
         resources = activity.resources
         createTransportsLocalizationTable()
 
-        drawerMenuAdapter =
-            NavigationDrawerAdapter(activity, createNavigationItems(null, null, null, null))
         binding.drawer.also {
-            it.adapter = drawerMenuAdapter
             it.onItemClickListener = this
             it.choiceMode = ListView.CHOICE_MODE_NONE
             drawerView = it
         }
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            drawerView.setOnApplyWindowInsetsListener { _, insets ->
+                paddingItemHeight = WindowInsetsCompat
+                    .toWindowInsetsCompat(insets)
+                    .getInsets(WindowInsetsCompat.Type.navigationBars())
+                    .bottom
+                insets
+            }
+            UIUtils.requestApplyInsetsWhenAttached(drawerView)
+        }
+
+        drawerMenuAdapter =
+            NavigationDrawerAdapter(activity, createNavigationItems(null, null, null, null))
+        drawerView.adapter = drawerMenuAdapter
 
         drawerLayout = binding.drawerLayout
         drawerToggle = ActionBarDrawerToggle(
@@ -234,7 +251,7 @@ class NavigationController(
                 )
             )
         }
-        items.add(NavigationPaddingItem())
+        items.add(NavigationPaddingItem(paddingItemHeight))
         return items.toTypedArray()
     }
 

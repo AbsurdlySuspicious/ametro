@@ -147,8 +147,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             }
             UIUtils.requestApplyInsetsWhenAttached(sheetPadView)
 
-
-
             mapBottomSheet.bottomSheet.addBottomSheetCallback(object : BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
                     when (newState) {
