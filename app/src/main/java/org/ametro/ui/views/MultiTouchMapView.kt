@@ -3,10 +3,13 @@ package org.ametro.ui.views
 import android.content.Context
 import android.graphics.*
 import android.graphics.Paint.Align
+import android.os.Build
 import android.os.Handler
 import android.util.Pair
 import android.view.MotionEvent
 import android.widget.ScrollView
+import androidx.core.view.WindowInsetsCompat
+import org.ametro.app.Constants
 import org.ametro.model.MapContainer
 import org.ametro.model.entities.MapPoint
 import org.ametro.model.entities.MapScheme
@@ -15,6 +18,7 @@ import org.ametro.render.ElementsToHighlight
 import org.ametro.render.RenderProgram
 import org.ametro.ui.controllers.MultiTouchController
 import org.ametro.ui.controllers.MultiTouchController.IMultiTouchListener
+import org.ametro.utils.misc.UIUtils
 import kotlin.math.min
 
 class MultiTouchMapView @JvmOverloads constructor(
@@ -34,6 +38,7 @@ class MultiTouchMapView @JvmOverloads constructor(
     private var horizontalScrollRange = 0
     private var changeCenterPoint: PointF? = null
     private var changeScale: Float? = null
+    private var bottomInset: Int = 0
 
     init {
         isScrollbarFadingEnabled = false
@@ -48,6 +53,18 @@ class MultiTouchMapView @JvmOverloads constructor(
         renderer = CanvasRenderer(this, mapScheme, rendererProgram)
         initializeViewport()
         renderer.postRebuildMipmap()
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            setOnApplyWindowInsetsListener { _, insets ->
+                bottomInset = WindowInsetsCompat
+                    .toWindowInsetsCompat(insets)
+                    .getInsets(WindowInsetsCompat.Type.navigationBars())
+                    .bottom
+                panelPadding = 0
+                insets
+            }
+            UIUtils.requestApplyInsetsWhenAttached(this)
+        }
     }
 
     override fun computeVerticalScrollOffset(): Int {
@@ -85,7 +102,7 @@ class MultiTouchMapView @JvmOverloads constructor(
     var panelPadding: Int
         get() = multiTouchController.verticalPadding
         set(value) {
-            multiTouchController.verticalPadding = value
+            multiTouchController.verticalPadding = value + bottomInset
             updateScrollBars(
                 multiTouchController.positionAndScale,
                 multiTouchController.verticalPaddingFixed
