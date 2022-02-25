@@ -33,7 +33,7 @@ import org.ametro.ui.navigation.entities.*
 import org.ametro.ui.navigation.helpers.DelayResources
 import org.ametro.utils.ListUtils
 import org.ametro.utils.StringUtils.isNullOrEmpty
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.ui.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -80,7 +80,7 @@ class NavigationController(
                     .bottom
                 insets
             }
-            UIUtils.requestApplyInsetsWhenAttached(drawerView)
+            requestApplyInsetsWhenAttached(drawerView)
         }
 
         drawerMenuAdapter =

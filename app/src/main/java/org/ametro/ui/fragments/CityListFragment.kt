@@ -22,7 +22,7 @@ import org.ametro.databinding.FragmentCityListViewBinding
 import org.ametro.providers.FilteringMapGeographyProvider
 import org.ametro.ui.adapters.CityListAdapter
 import org.ametro.utils.ListUtils
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.ui.*
 import java.util.*
 
 class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderCallbacks<Array<MapInfo>?>,
@@ -59,13 +59,7 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
         list = binding.list
         list.setOnChildClickListener(this)
 
-        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
-            val listApplier = UIUtils.makeBottomInsetsApplier(list, keepHeight = true)
-            list.setOnApplyWindowInsetsListener { _, insets ->
-                listApplier.applyInset(insets)
-                insets
-            }
-        }
+        applyInsets(makeBottomInsetsApplier(list, keepHeight = true))
 
         return binding.root
     }

@@ -4,7 +4,6 @@ import android.app.ProgressDialog
 import android.app.SearchManager
 import android.content.Intent
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.PointF
 import android.os.Build
 import android.os.Bundle
@@ -13,12 +12,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -54,8 +49,9 @@ import org.ametro.ui.views.MultiTouchMapView
 import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.misc.ColorUtils
 import org.ametro.utils.misc.convertPair
+import org.ametro.utils.ui.*
 import java.util.*
 
 class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControllerListener,
@@ -130,22 +126,14 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)
 
-            val emptyView = binding.includeEmptyMap.mapEmptyPanel
             val toolbar = navigationController.toolbar
-            val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar)
-            toolbar.setOnApplyWindowInsetsListener { _, insets ->
-                toolbarTopInset.applyInset(insets)
+            val emptyView = binding.includeEmptyMap.mapEmptyPanel
+            applyInsets(makeTopInsetsApplier(toolbar)) {
                 emptyView.updatePadding(bottom = toolbar.layoutParams.height)
-                insets
             }
 
             val sheetPadView = mapBottomSheet.binding.paddingView
-            val sheetPadInset = UIUtils.makeBottomInsetsApplier(sheetPadView)
-            sheetPadView.setOnApplyWindowInsetsListener { _, insets ->
-                sheetPadInset.applyInset(insets)
-                insets
-            }
-            UIUtils.requestApplyInsetsWhenAttached(sheetPadView)
+            applyInsets(makeBottomInsetsApplier(sheetPadView))
 
             mapBottomSheet.bottomSheet.addBottomSheetCallback(object : BottomSheetCallback() {
                 override fun onStateChanged(bottomSheet: View, newState: Int) {
@@ -169,7 +157,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API)
-            window.statusBarColor = UIUtils.colorArgb(0.4f * slideOffset, 0f, 0f, 0f)
+            window.statusBarColor = ColorUtils(0.4f * slideOffset, 0f, 0f, 0f).toColorInt()
     }
 
     override fun updatePanelPadding(newPadding: Int) {

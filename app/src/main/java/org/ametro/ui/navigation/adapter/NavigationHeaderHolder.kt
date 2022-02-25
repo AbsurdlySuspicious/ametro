@@ -9,19 +9,19 @@ import org.ametro.R
 import org.ametro.app.Constants
 import org.ametro.ui.navigation.entities.NavigationHeader
 import org.ametro.ui.navigation.entities.NavigationItem
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.ui.*
 
 internal object NavigationHeaderHolderFactory : HolderFactory {
     override fun layoutRes(): Int = R.layout.drawer_header_item
     override fun spawnHolder(convertView: View): Holder = NavigationHeaderHolder(convertView)
     override fun onCreateView(view: View) {
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
-            val topInset = UIUtils.makeTopInsetsApplier(view)
+            val topInset = makeTopInsetsApplier(view)
             view.setOnApplyWindowInsetsListener { _, insets ->
                 topInset.applyInset(insets)
                 insets
             }
-            UIUtils.requestApplyInsetsWhenAttached(view)
+            requestApplyInsetsWhenAttached(view)
         }
     }
 }

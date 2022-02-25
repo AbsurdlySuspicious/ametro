@@ -12,7 +12,7 @@ import android.text.Html
 import org.ametro.app.Constants
 import org.ametro.databinding.ActivityAboutViewBinding
 import org.ametro.utils.FileUtils
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.ui.*
 import org.ametro.utils.misc.getAppVersion
 import java.io.IOException
 import java.lang.RuntimeException
@@ -34,21 +34,8 @@ open class About : AppCompatActivityEx() {
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)
-
-            val toolbar = binding.includeToolbar.toolbar
-            val toolbarApplier = UIUtils.makeTopInsetsApplier(toolbar)
-            toolbar.setOnApplyWindowInsetsListener { _, insets ->
-                toolbarApplier.applyInset(insets)
-                insets
-            }
-
-            val scrollView = binding.scrollView
-            val scrollViewApplier = UIUtils.makeBottomInsetsApplier(scrollView, keepHeight = true)
-            scrollView.setOnApplyWindowInsetsListener { _, insets ->
-                scrollViewApplier.applyInset(insets)
-                insets
-            }
-            UIUtils.requestApplyInsetsWhenAttached(scrollView)
+            applyInsets(makeTopInsetsApplier(binding.includeToolbar.toolbar))
+            applyInsets(makeBottomInsetsApplier(binding.scrollView, keepHeight = true))
         }
 
         try {

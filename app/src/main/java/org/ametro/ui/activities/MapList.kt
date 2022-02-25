@@ -1,6 +1,5 @@
 package org.ametro.ui.activities
 
-import androidx.appcompat.app.AppCompatActivity
 import org.ametro.ui.fragments.MapListFragment.IMapListEventListener
 import org.ametro.ui.tasks.MapInstallerAsyncTask.IMapInstallerEventListener
 import org.ametro.ui.fragments.MapListFragment
@@ -25,7 +24,7 @@ import org.ametro.app.Constants
 import org.ametro.databinding.ActivityMapListViewBinding
 import org.ametro.ui.tasks.TaskHelpers
 import org.ametro.utils.StringUtils
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.ui.*
 import java.util.ArrayList
 
 class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEventListener {
@@ -55,12 +54,7 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)
-            val toolbar = binding.includeToolbar.toolbar
-            val toolbarApplier = UIUtils.makeTopInsetsApplier(toolbar)
-            toolbar.setOnApplyWindowInsetsListener { _, insets ->
-                toolbarApplier.applyInset(insets)
-                insets
-            }
+            applyInsets(makeTopInsetsApplier(binding.includeToolbar.toolbar))
         }
 
         listFragment = supportFragmentManager.findFragmentById(R.id.list) as MapListFragment

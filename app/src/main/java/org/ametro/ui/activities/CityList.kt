@@ -6,13 +6,8 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NavUtils
-import androidx.core.view.MenuItemCompat
-import androidx.core.view.WindowInsetsCompat
 import org.ametro.R
 import org.ametro.app.Constants
 import org.ametro.catalog.entities.MapInfo
@@ -23,7 +18,7 @@ import org.ametro.ui.tasks.MapInstallerAsyncTask
 import org.ametro.ui.tasks.MapInstallerAsyncTask.IMapInstallerEventListener
 import org.ametro.ui.tasks.TaskHelpers
 import org.ametro.utils.StringUtils
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.ui.*
 
 class CityList : AppCompatActivityEx(), ICitySelectionListener, IMapInstallerEventListener {
     private lateinit var binding: ActivityCityListViewBinding
@@ -45,12 +40,7 @@ class CityList : AppCompatActivityEx(), ICitySelectionListener, IMapInstallerEve
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)
-            val toolbar = binding.includeToolbar.toolbar
-            val toolbarApplier = UIUtils.makeTopInsetsApplier(toolbar)
-            toolbar.setOnApplyWindowInsetsListener { _, insets ->
-                toolbarApplier.applyInset(insets)
-                insets
-            }
+            applyInsets(makeTopInsetsApplier(binding.includeToolbar.toolbar))
         }
 
         cityListFragment = supportFragmentManager

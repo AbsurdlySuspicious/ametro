@@ -3,7 +3,6 @@ package org.ametro.ui.fragments
 import android.app.Activity
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.*
 import android.widget.AbsListView.MultiChoiceModeListener
@@ -24,6 +23,7 @@ import org.ametro.ui.adapters.MapListAdapter
 import org.ametro.ui.loaders.ExtendedMapInfo
 import org.ametro.ui.loaders.ExtendedMapStatus
 import org.ametro.utils.misc.*
+import org.ametro.utils.ui.*
 
 class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnCloseListener,
     LoaderManager.LoaderCallbacks<MapCatalog?>, OnItemClickListener, MultiChoiceModeListener, View.OnClickListener {
@@ -55,14 +55,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
             adapter = this@MapListFragment.adapter
         }
 
-        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
-            val list = binding!!.list
-            val listApplier = UIUtils.makeBottomInsetsApplier(list, keepHeight = true)
-            list.setOnApplyWindowInsetsListener { _, insets ->
-                listApplier.applyInset(insets)
-                insets
-            }
-        }
+        applyInsets(makeBottomInsetsApplier(binding!!.list, keepHeight = true))
 
         return binding!!.root
     }

@@ -2,7 +2,6 @@ package org.ametro.ui.views
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.Paint.Align
 import android.os.Build
 import android.os.Handler
 import android.util.Pair
@@ -18,7 +17,7 @@ import org.ametro.render.ElementsToHighlight
 import org.ametro.render.RenderProgram
 import org.ametro.ui.controllers.MultiTouchController
 import org.ametro.ui.controllers.MultiTouchController.IMultiTouchListener
-import org.ametro.utils.misc.UIUtils
+import org.ametro.utils.ui.*
 import kotlin.math.min
 
 class MultiTouchMapView @JvmOverloads constructor(
@@ -63,7 +62,7 @@ class MultiTouchMapView @JvmOverloads constructor(
                 panelPadding = panelPadding
                 insets
             }
-            UIUtils.requestApplyInsetsWhenAttached(this)
+            requestApplyInsetsWhenAttached(this)
         }
     }
 
