@@ -86,8 +86,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
     private lateinit var settingsProvider: ApplicationSettingsProvider
     private lateinit var navigationController: NavigationController
 
-    private var density: Float = 1f
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -120,8 +118,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             ApplicationEx.getInstanceActivity(this).getCountryFlagProvider(),
             ApplicationEx.getInstanceActivity(this).getLocalizedMapInfoProvider()
         )
-
-        density = resources.displayMetrics.density
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)

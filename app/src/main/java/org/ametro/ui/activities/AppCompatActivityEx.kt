@@ -10,6 +10,7 @@ import android.view.WindowInsets
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.WindowInsetsCompat
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
@@ -23,6 +24,21 @@ open class AppCompatActivityEx : AppCompatActivity() {
         ResourcesCompat.getColor(applicationContext.resources, R.color.navigationColor, null)
     }
 
+    val density by lazy {
+        resources.displayMetrics.density
+    }
+
+    var transparentNavbarColor = Color.TRANSPARENT
+        private set
+    var transparentNavbarLight = false
+        private set
+
+    private fun setTransparentNavbarLightFlag(flags: Int) =
+        if (transparentNavbarLight)
+            flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        else
+            flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+
     @RequiresApi(Constants.INSETS_MIN_API)
     protected fun setNavbarSolid() {
         window.navigationBarColor = panelOpenNavbarColor
@@ -34,10 +50,9 @@ open class AppCompatActivityEx : AppCompatActivity() {
 
     @RequiresApi(Constants.INSETS_MIN_API)
     protected fun setNavbarTransparent() {
-        window.navigationBarColor = Color.TRANSPARENT
+        window.navigationBarColor = transparentNavbarColor
         window.decorView.apply {
-            systemUiVisibility =
-                systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+            systemUiVisibility = setTransparentNavbarLightFlag(systemUiVisibility)
         }
     }
 
@@ -51,8 +66,7 @@ open class AppCompatActivityEx : AppCompatActivity() {
                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
         }
         window.apply {
-            if (!keepNavbar)
-                navigationBarColor = Color.TRANSPARENT
+            if (!keepNavbar) setNavbarTransparent()
             statusBarColor = Color.TRANSPARENT
         }
     }
@@ -62,7 +76,20 @@ open class AppCompatActivityEx : AppCompatActivity() {
         toolbar: View,
         additionalActions: (WindowInsets) -> Unit = {}
     ) {
-        applyInsets(makeTopInsetsApplier(toolbar), additionalActions)
+        applyInsets(makeTopInsetsApplier(toolbar)) { insets ->
+            val bottomWindow = WindowInsetsCompat
+                .toWindowInsetsCompat(insets)
+                .getInsets(WindowInsetsCompat.Type.navigationBars())
+                .bottom
+            if (bottomWindow / density > 24f) {
+                transparentNavbarLight = true
+                transparentNavbarColor =
+                    ResourcesCompat.getColor(applicationContext.resources, R.color.navigationColorTransparent, null)
+                if (window.navigationBarColor == Color.TRANSPARENT)
+                    setNavbarTransparent()
+            }
+            additionalActions(insets)
+        }
     }
 
     private fun setLocale(localeCode: String) {

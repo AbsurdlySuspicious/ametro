@@ -34,7 +34,7 @@ open class About : AppCompatActivityEx() {
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)
-            applyInsets(makeTopInsetsApplier(binding.includeToolbar.toolbar))
+            applyToolbarInsets(binding.includeToolbar.toolbar)
             applyInsets(makeBottomInsetsApplier(binding.scrollView, keepHeight = true))
         }
 
