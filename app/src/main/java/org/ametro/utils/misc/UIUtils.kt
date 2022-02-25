@@ -9,7 +9,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 
 object UIUtils {
-    abstract class InsetsApplier(val view: View, val initialPadding: Int, val keepHeight: Boolean) {
+    abstract class InsetsApplier(
+        val view: View,
+        val initialPadding: Int,
+        val keepHeight: Boolean = false
+    ) {
         val initialHeight = view.layoutParams.height
 
         protected abstract fun updatePadding(padding: Int)
@@ -21,11 +25,15 @@ object UIUtils {
             if (!keepHeight) view.layoutParams.height = initialHeight + inset
             updatePadding(initialPadding + inset)
         }
+
+        fun rollback() {
+            if (!keepHeight) view.layoutParams.height = initialHeight
+            updatePadding(initialPadding)
+        }
     }
 
-    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
     fun makeTopInsetsApplier(view: View) =
-        object : InsetsApplier(view, view.paddingTop, false) {
+        object : InsetsApplier(view, view.paddingTop) {
             override fun updatePadding(padding: Int) =
                 view.updatePadding(top = padding)
 
@@ -33,7 +41,6 @@ object UIUtils {
                 insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
         }
 
-    @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
     fun makeBottomInsetsApplier(view: View, keepHeight: Boolean = false) =
         object : InsetsApplier(view, view.paddingBottom, keepHeight) {
             override fun updatePadding(padding: Int) =

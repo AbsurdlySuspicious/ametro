@@ -101,10 +101,12 @@ class MapBottomPanelSheet(
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
                     runPendingSheetActions(newState)
+                    adapter.applyInsetsTopmost()
                     updatePeekHeightTopmostImpl(true)
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     runPendingSheetActions(newState)
+                    adapter.applyInsetsBottomest()
                     updatePeekHeightTopmostImpl(true)
                 }
                 else -> {}
