@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.PersistableBundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -13,6 +14,7 @@ import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
 import java.util.*
+import org.ametro.utils.ui.*
 
 
 open class AppCompatActivityEx : AppCompatActivity() {
@@ -53,6 +55,14 @@ open class AppCompatActivityEx : AppCompatActivity() {
                 navigationBarColor = Color.TRANSPARENT
             statusBarColor = Color.TRANSPARENT
         }
+    }
+
+    @RequiresApi(Constants.INSETS_MIN_API)
+    protected fun applyToolbarInsets(
+        toolbar: View,
+        additionalActions: (WindowInsets) -> Unit = {}
+    ) {
+        applyInsets(makeTopInsetsApplier(toolbar), additionalActions)
     }
 
     private fun setLocale(localeCode: String) {

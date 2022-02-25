@@ -128,7 +128,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
             val toolbar = navigationController.toolbar
             val emptyView = binding.includeEmptyMap.mapEmptyPanel
-            applyInsets(makeTopInsetsApplier(toolbar)) {
+            applyToolbarInsets(toolbar) {
                 emptyView.updatePadding(bottom = toolbar.layoutParams.height)
             }
 

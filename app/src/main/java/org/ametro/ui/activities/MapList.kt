@@ -54,7 +54,7 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)
-            applyInsets(makeTopInsetsApplier(binding.includeToolbar.toolbar))
+            applyToolbarInsets(binding.includeToolbar.toolbar)
         }
 
         listFragment = supportFragmentManager.findFragmentById(R.id.list) as MapListFragment

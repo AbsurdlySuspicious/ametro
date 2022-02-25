@@ -30,7 +30,7 @@ class SettingsList : AppCompatActivityEx() {
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root, keepNavbar = true)
             setNavbarSolid()
-            applyInsets(makeTopInsetsApplier(binding.includeToolbar.toolbar))
+            applyToolbarInsets(binding.includeToolbar.toolbar)
         }
 
         supportFragmentManager
