@@ -33,11 +33,11 @@ class MapBottomPanelSheet(
 
     private val density = activity.resources.displayMetrics.density
 
-    private val binding = WidgetMapBottomPanelBinding.bind(sheetView)
+    val binding = WidgetMapBottomPanelBinding.bind(sheetView)
     val bottomSheet = BottomSheetBehavior.from(sheetView)
     val adapter = BottomPanelController(binding)
 
-    private val topPadViews = listOf(binding.drag)
+    private val topPadViews = listOf(binding.drag, binding.paddingView)
 
     private var sheetStateCallbacksPre: MutableList<(View, Int) -> Unit> = mutableListOf()
     private val pendingSheetActions = ConcurrentLinkedQueue<Pair<Int, () -> Unit>>()

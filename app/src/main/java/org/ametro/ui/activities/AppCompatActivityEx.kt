@@ -8,12 +8,36 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.res.ResourcesCompat
+import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
 import java.util.*
 
 
 open class AppCompatActivityEx : AppCompatActivity() {
+
+    val panelOpenNavbarColor by lazy {
+        ResourcesCompat.getColor(applicationContext.resources, R.color.navigationColor, null)
+    }
+
+    @RequiresApi(Constants.INSETS_MIN_API)
+    protected fun setNavbarSolid() {
+        window.navigationBarColor = panelOpenNavbarColor
+        window.decorView.apply {
+            systemUiVisibility =
+                systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        }
+    }
+
+    @RequiresApi(Constants.INSETS_MIN_API)
+    protected fun setNavbarTransparent() {
+        window.navigationBarColor = Color.TRANSPARENT
+        window.decorView.apply {
+            systemUiVisibility =
+                systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+        }
+    }
 
     @RequiresApi(Constants.INSETS_MIN_API)
     protected fun setFitSystemWindowsFlags(rootView: ViewGroup) {

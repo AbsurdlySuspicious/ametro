@@ -6,7 +6,7 @@
     <color name="primary_text">#212121</color>
     <color name="activated_color">#9bff5526</color>
     <color name="navigationColor">#ffffff</color>
-    <color name="navigationColorForceDark">#000000</color>
+    <color name="navigationColorTransparent">#9AFFFFFF</color>
 
     <drawable name="list_selected">#9EC07D</drawable>
 

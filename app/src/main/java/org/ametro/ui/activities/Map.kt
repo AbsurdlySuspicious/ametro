@@ -13,12 +13,16 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
@@ -125,6 +129,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             setFitSystemWindowsFlags(binding.root)
+
             val emptyView = binding.includeEmptyMap.mapEmptyPanel
             val toolbar = navigationController.toolbar
             val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar)
@@ -133,6 +138,34 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
                 emptyView.updatePadding(bottom = toolbar.layoutParams.height)
                 insets
             }
+
+            val sheetPadView = mapBottomSheet.binding.paddingView
+            val sheetPadInset = UIUtils.makeBottomInsetsApplier(sheetPadView)
+            sheetPadView.setOnApplyWindowInsetsListener { _, insets ->
+                sheetPadInset.applyInset(insets)
+                insets
+            }
+            UIUtils.requestApplyInsetsWhenAttached(sheetPadView)
+
+
+
+            mapBottomSheet.bottomSheet.addBottomSheetCallback(object : BottomSheetCallback() {
+                override fun onStateChanged(bottomSheet: View, newState: Int) {
+                    when (newState) {
+                        BottomSheetBehavior.STATE_HIDDEN -> {
+                            setNavbarTransparent()
+                        }
+                        BottomSheetBehavior.STATE_EXPANDED, BottomSheetBehavior.STATE_COLLAPSED -> {
+                            setNavbarSolid()
+                        }
+                    }
+                }
+
+                override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                    if (slideOffset < -0.4f)
+                        setNavbarTransparent()
+                }
+            })
         }
     }
 
