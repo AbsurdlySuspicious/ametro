@@ -1,9 +1,12 @@
 package org.ametro.ui.bottom_panel
 
+import android.os.Build
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.viewbinding.ViewBinding
+import org.ametro.app.Constants
 import org.ametro.databinding.WidgetMapBottomPanelBinding
+import org.ametro.utils.misc.UIUtils
 
 interface PanelAdapterBinder<B: ViewBinding> {
     fun createPanel(bind: B)
@@ -43,7 +46,17 @@ class BottomPanelController(binding: WidgetMapBottomPanelBinding) {
     )
 
     init {
-        viewOrder.forEach { it.isVisible = false }
+        viewOrder.forEach {
+            if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+                val insetsApplier = UIUtils.makeBottomInsetsApplier(it, keepHeight = true)
+                it.setOnApplyWindowInsetsListener { _, insets ->
+                    insetsApplier.applyInset(insets)
+                    insets
+                }
+                UIUtils.requestApplyInsetsWhenAttached(it)
+            }
+            it.isVisible = false
+        }
     }
 
     private fun panelShowHide(
