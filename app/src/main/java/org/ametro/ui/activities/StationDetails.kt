@@ -1,6 +1,7 @@
 package org.ametro.ui.activities
 
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import org.ametro.ui.views.SlidingTabLayout.TabColorizer
 import android.os.Bundle
@@ -14,6 +15,8 @@ import androidx.fragment.app.Fragment
 import org.ametro.app.Constants
 import org.ametro.databinding.ActivityStationDetailsViewBinding
 import org.ametro.model.entities.MapStationInformation
+import org.ametro.utils.ui.applyInsets
+import org.ametro.utils.ui.makeTopInsetsApplier
 import java.util.ArrayList
 
 class StationDetails : AppCompatActivityEx(), TabColorizer {
@@ -41,6 +44,11 @@ class StationDetails : AppCompatActivityEx(), TabColorizer {
             setDefaultDisplayHomeAsUpEnabled(true)
             setDisplayHomeAsUpEnabled(true)
             title = stationScheme.displayName
+        }
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            setFitSystemWindowsFlags(binding.root)
+            applyInsets(makeTopInsetsApplier(binding.includeToolbar.toolbar))
         }
 
         val viewPager = binding.viewpager

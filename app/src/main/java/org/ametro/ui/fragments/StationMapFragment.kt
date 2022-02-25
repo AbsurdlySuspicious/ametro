@@ -10,6 +10,7 @@ import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
 import org.ametro.model.entities.MapStationInformation
+import org.ametro.utils.ui.*
 
 class StationMapFragment(private val station: MapStationInformation) : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -38,7 +39,9 @@ class StationMapFragment(private val station: MapStationInformation) : Fragment(
                     "not_defined"
                 )
                 visibility = View.VISIBLE
+                clipToPadding = false
             }
+            applyInsets(makeBottomInsetsApplier(webView, keepHeight = true))
         } catch (e: Exception) {
             webView.visibility = View.GONE
         }
