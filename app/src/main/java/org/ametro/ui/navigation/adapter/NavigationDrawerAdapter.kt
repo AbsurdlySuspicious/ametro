@@ -15,7 +15,6 @@ class NavigationDrawerAdapter(context: Context, items: Array<NavigationItem>) : 
         it[NavigationTextItem::class.java] = 1
         it[NavigationSubHeader::class.java] = 2
         it[NavigationCheckBoxItem::class.java] = 3
-        it[NavigationPaddingItem::class.java] = 4
     }
 
     init {

@@ -56,7 +56,6 @@ class NavigationController(
 
     private var delayItems: Array<NavigationItem> = emptyArray()
     private var transportNameLocalizations: MutableMap<String, String>? = null
-    private var paddingItemHeight: Int = 0
 
     init {
         toolbar = activity.findViewById(R.id.toolbar)
@@ -73,14 +72,9 @@ class NavigationController(
         }
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
-            drawerView.setOnApplyWindowInsetsListener { _, insets ->
-                paddingItemHeight = WindowInsetsCompat
-                    .toWindowInsetsCompat(insets)
-                    .getInsets(WindowInsetsCompat.Type.navigationBars())
-                    .bottom
-                insets
+            applyInsets(makeBottomInsetsApplier(drawerView, keepHeight = true)) {
+                drawerView.clipToPadding = false
             }
-            requestApplyInsetsWhenAttached(drawerView)
         }
 
         drawerMenuAdapter =
@@ -251,7 +245,6 @@ class NavigationController(
                 )
             )
         }
-        items.add(NavigationPaddingItem(paddingItemHeight))
         return items.toTypedArray()
     }
 
