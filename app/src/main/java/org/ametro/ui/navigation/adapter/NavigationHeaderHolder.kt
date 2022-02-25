@@ -18,7 +18,7 @@ internal object NavigationHeaderHolderFactory : HolderFactory {
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
             val topInset = UIUtils.makeTopInsetsApplier(view)
             view.setOnApplyWindowInsetsListener { _, insets ->
-                topInset(insets)
+                topInset.applyInset(insets)
                 insets
             }
             UIUtils.requestApplyInsetsWhenAttached(view)

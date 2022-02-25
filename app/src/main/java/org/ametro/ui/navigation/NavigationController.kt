@@ -234,6 +234,7 @@ class NavigationController(
                 )
             )
         }
+        items.add(NavigationPaddingItem())
         return items.toTypedArray()
     }
 

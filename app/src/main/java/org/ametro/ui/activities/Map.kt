@@ -129,7 +129,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             val toolbar = navigationController.toolbar
             val toolbarTopInset = UIUtils.makeTopInsetsApplier(toolbar)
             toolbar.setOnApplyWindowInsetsListener { _, insets ->
-                toolbarTopInset(insets)
+                toolbarTopInset.applyInset(insets)
                 emptyView.updatePadding(bottom = toolbar.layoutParams.height)
                 insets
             }
