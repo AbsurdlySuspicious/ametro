@@ -1,19 +1,11 @@
 package org.ametro.ui.bottom_panel
 
-import android.os.Build
-import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.viewbinding.ViewBinding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
-import org.ametro.app.Constants
 import org.ametro.databinding.WidgetMapBottomPanelBinding
-import org.ametro.utils.misc.UIUtils
 
-interface PanelAdapterBinder<B : ViewBinding> {
+interface PanelAdapterBinder<B: ViewBinding> {
     fun createPanel(bind: B)
     fun attachItem()
     fun detachItem() {}
@@ -22,7 +14,6 @@ interface PanelAdapterBinder<B : ViewBinding> {
 class BottomPanelController(binding: WidgetMapBottomPanelBinding) {
     private val routeBinding = binding.includeBotRoute
     private val stationBinding = binding.includeBotStation
-    private var insets: WindowInsets? = null
 
     var showRoute: Boolean = false
         set(value) {
@@ -46,47 +37,13 @@ class BottomPanelController(binding: WidgetMapBottomPanelBinding) {
             field = value
         }
 
-    private val viewOrder = makeViewOrder(
+    private val viewOrder: List<ViewGroup> = listOf(
         routeBinding.root,
         stationBinding.root
     )
 
-    private data class BottomPanelItem(
-        val view: ViewGroup,
-        val insetsApplier: UIUtils.InsetsApplier?
-    )
-
-    private fun makeViewOrder(vararg views: ViewGroup): List<BottomPanelItem> {
-        return views.map {
-            val insetsApplier =
-                UIUtils.makeBottomInsetsApplier(it, keepHeight = true)
-            BottomPanelItem(it, insetsApplier)
-        }
-    }
-
     init {
-        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
-            binding.root.setOnApplyWindowInsetsListener { _, insets ->
-                this.insets = insets
-                insets
-            }
-            UIUtils.requestApplyInsetsWhenAttached(binding.root)
-        }
-        viewOrder.forEach { it.view.isVisible = false }
-    }
-
-    private fun applyInsets(item: BottomPanelItem?) {
-        if (Build.VERSION.SDK_INT < Constants.INSETS_MIN_API) return
-        viewOrder.forEach { it.insetsApplier?.rollback() }
-        item?.insetsApplier?.applyInset(insets ?: return)
-    }
-
-    fun applyInsetsTopmost() {
-        applyInsets(topmostItem())
-    }
-
-    fun applyInsetsBottomest() {
-        applyInsets(bottomestItem())
+        viewOrder.forEach { it.isVisible = false }
     }
 
     private fun panelShowHide(
@@ -102,14 +59,8 @@ class BottomPanelController(binding: WidgetMapBottomPanelBinding) {
         panelBinding.root.isVisible = state
     }
 
-    private fun bottomestItem(): BottomPanelItem? =
-        viewOrder.findLast { it.view.isVisible }
-
-    private fun topmostItem(): BottomPanelItem? =
-        viewOrder.find { it.view.isVisible }
-
     fun topmostLayout(): ViewGroup? =
-        topmostItem()?.view
+        viewOrder.find { it.isVisible }
 
     fun topmostHeight(): Int =
         topmostLayout()?.height ?: 0
