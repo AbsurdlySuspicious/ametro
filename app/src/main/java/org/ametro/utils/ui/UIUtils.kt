@@ -1,6 +1,7 @@
 package org.ametro.utils.ui
 
 import android.os.Build
+import android.util.Log
 import android.view.View
 import android.view.WindowInsets
 import android.widget.Toolbar
@@ -38,8 +39,11 @@ fun makeBottomInsetsApplier(view: View, keepHeight: Boolean = false) =
         override fun updatePadding(padding: Int) =
             view.updatePadding(bottom = padding)
 
-        override fun getInset(insets: WindowInsetsCompat) =
-            insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+        override fun getInset(insets: WindowInsetsCompat): Int {
+            val mask = WindowInsetsCompat.Type.navigationBars() or
+                    WindowInsetsCompat.Type.systemGestures()
+            return insets.getInsets(mask).bottom
+        }
     }
 
 fun applyInsets(
