@@ -1,6 +1,7 @@
 package org.ametro.ui.fragments
 
 import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +22,7 @@ import org.ametro.databinding.FragmentCityListViewBinding
 import org.ametro.providers.FilteringMapGeographyProvider
 import org.ametro.ui.adapters.CityListAdapter
 import org.ametro.utils.ListUtils
+import org.ametro.utils.misc.UIUtils
 import java.util.*
 
 class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderCallbacks<Array<MapInfo>?>,
@@ -56,6 +58,14 @@ class CityListFragment : Fragment(), OnChildClickListener, LoaderManager.LoaderC
         emptyView = binding.empty
         list = binding.list
         list.setOnChildClickListener(this)
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            val listApplier = UIUtils.makeBottomInsetsApplier(list, keepHeight = true)
+            list.setOnApplyWindowInsetsListener { _, insets ->
+                listApplier.applyInset(insets)
+                insets
+            }
+        }
 
         return binding.root
     }

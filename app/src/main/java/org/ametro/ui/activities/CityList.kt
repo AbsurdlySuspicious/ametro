@@ -2,6 +2,7 @@ package org.ametro.ui.activities
 
 import android.annotation.SuppressLint
 import android.app.ProgressDialog
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -11,7 +12,9 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.NavUtils
 import androidx.core.view.MenuItemCompat
+import androidx.core.view.WindowInsetsCompat
 import org.ametro.R
+import org.ametro.app.Constants
 import org.ametro.catalog.entities.MapInfo
 import org.ametro.databinding.ActivityCityListViewBinding
 import org.ametro.ui.fragments.CityListFragment
@@ -20,6 +23,7 @@ import org.ametro.ui.tasks.MapInstallerAsyncTask
 import org.ametro.ui.tasks.MapInstallerAsyncTask.IMapInstallerEventListener
 import org.ametro.ui.tasks.TaskHelpers
 import org.ametro.utils.StringUtils
+import org.ametro.utils.misc.UIUtils
 
 class CityList : AppCompatActivityEx(), ICitySelectionListener, IMapInstallerEventListener {
     private lateinit var binding: ActivityCityListViewBinding
@@ -37,6 +41,16 @@ class CityList : AppCompatActivityEx(), ICitySelectionListener, IMapInstallerEve
         supportActionBar?.run {
             setDefaultDisplayHomeAsUpEnabled(true)
             setDisplayHomeAsUpEnabled(true)
+        }
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            setFitSystemWindowsFlags(binding.root)
+            val toolbar = binding.includeToolbar.toolbar
+            val toolbarApplier = UIUtils.makeTopInsetsApplier(toolbar)
+            toolbar.setOnApplyWindowInsetsListener { _, insets ->
+                toolbarApplier.applyInset(insets)
+                insets
+            }
         }
 
         cityListFragment = supportFragmentManager
