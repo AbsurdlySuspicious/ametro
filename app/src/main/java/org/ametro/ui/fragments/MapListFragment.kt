@@ -1,6 +1,7 @@
 package org.ametro.ui.fragments
 
 import android.app.Activity
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -14,6 +15,7 @@ import androidx.loader.content.AsyncTaskLoader
 import androidx.loader.content.Loader
 import org.ametro.R
 import org.ametro.app.ApplicationEx
+import org.ametro.app.Constants
 import org.ametro.catalog.entities.MapCatalog
 import org.ametro.catalog.entities.MapInfo
 import org.ametro.catalog.entities.MapInfoHelpers
@@ -52,6 +54,16 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
             setMultiChoiceModeListener(this@MapListFragment)
             adapter = this@MapListFragment.adapter
         }
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            val list = binding!!.list
+            val listApplier = UIUtils.makeBottomInsetsApplier(list, keepHeight = true)
+            list.setOnApplyWindowInsetsListener { _, insets ->
+                listApplier.applyInset(insets)
+                insets
+            }
+        }
+
         return binding!!.root
     }
 

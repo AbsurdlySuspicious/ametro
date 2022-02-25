@@ -10,6 +10,7 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import org.ametro.R
 import android.content.Intent
+import android.os.Build
 import android.widget.Toast
 import org.ametro.app.ApplicationEx
 import org.ametro.ui.loaders.ExtendedMapInfo
@@ -24,6 +25,7 @@ import org.ametro.app.Constants
 import org.ametro.databinding.ActivityMapListViewBinding
 import org.ametro.ui.tasks.TaskHelpers
 import org.ametro.utils.StringUtils
+import org.ametro.utils.misc.UIUtils
 import java.util.ArrayList
 
 class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEventListener {
@@ -49,6 +51,16 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
         supportActionBar?.run {
             setDefaultDisplayHomeAsUpEnabled(true)
             setDisplayHomeAsUpEnabled(true)
+        }
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            setFitSystemWindowsFlags(binding.root)
+            val toolbar = binding.includeToolbar.toolbar
+            val toolbarApplier = UIUtils.makeTopInsetsApplier(toolbar)
+            toolbar.setOnApplyWindowInsetsListener { _, insets ->
+                toolbarApplier.applyInset(insets)
+                insets
+            }
         }
 
         listFragment = supportFragmentManager.findFragmentById(R.id.list) as MapListFragment
