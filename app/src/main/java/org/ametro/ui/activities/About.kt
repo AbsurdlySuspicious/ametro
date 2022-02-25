@@ -1,6 +1,7 @@
 package org.ametro.ui.activities
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.os.Bundle
 import org.ametro.R
 import android.text.method.LinkMovementMethod
@@ -8,8 +9,10 @@ import kotlin.Throws
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Html
+import org.ametro.app.Constants
 import org.ametro.databinding.ActivityAboutViewBinding
 import org.ametro.utils.FileUtils
+import org.ametro.utils.misc.UIUtils
 import org.ametro.utils.misc.getAppVersion
 import java.io.IOException
 import java.lang.RuntimeException
@@ -27,6 +30,25 @@ open class About : AppCompatActivityEx() {
         supportActionBar?.run {
             setDefaultDisplayHomeAsUpEnabled(true)
             setDisplayHomeAsUpEnabled(true)
+        }
+
+        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
+            setFitSystemWindowsFlags(binding.root)
+
+            val toolbar = binding.includeToolbar.toolbar
+            val toolbarApplier = UIUtils.makeTopInsetsApplier(toolbar)
+            toolbar.setOnApplyWindowInsetsListener { _, insets ->
+                toolbarApplier.applyInset(insets)
+                insets
+            }
+
+            val scrollView = binding.scrollView
+            val scrollViewApplier = UIUtils.makeBottomInsetsApplier(scrollView, keepHeight = true)
+            scrollView.setOnApplyWindowInsetsListener { _, insets ->
+                scrollViewApplier.applyInset(insets)
+                insets
+            }
+            UIUtils.requestApplyInsetsWhenAttached(scrollView)
         }
 
         try {

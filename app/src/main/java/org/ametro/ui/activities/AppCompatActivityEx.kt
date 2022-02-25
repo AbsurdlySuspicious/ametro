@@ -40,15 +40,17 @@ open class AppCompatActivityEx : AppCompatActivity() {
     }
 
     @RequiresApi(Constants.INSETS_MIN_API)
-    protected fun setFitSystemWindowsFlags(rootView: ViewGroup) {
+    protected fun setFitSystemWindowsFlags(rootView: ViewGroup, keepNavbar: Boolean = false) {
         rootView.apply {
             systemUiVisibility = systemUiVisibility or
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
                     View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    (if (keepNavbar) 0 else
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
         }
         window.apply {
-            navigationBarColor = Color.TRANSPARENT
+            if (!keepNavbar)
+                navigationBarColor = Color.TRANSPARENT
             statusBarColor = Color.TRANSPARENT
         }
     }
