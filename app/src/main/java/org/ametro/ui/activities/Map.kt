@@ -152,8 +152,24 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
     }
 
     override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-        if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API)
-            window.statusBarColor = ColorUtils(0.4f * slideOffset, 0f, 0f, 0f).toColorInt()
+        if (Build.VERSION.SDK_INT < Constants.INSETS_MIN_API)
+            return
+        window.statusBarColor = ColorUtils(0.4f * slideOffset, 0f, 0f, 0f).toColorInt()
+        if (app.container == null) {
+            if (slideOffset > 0.05f)
+                setNavbarTransparent()
+            else
+                setNavbarSolidPrimary()
+        }
+    }
+
+    fun mapEmptyNavbar(empty: Boolean) {
+        if (Build.VERSION.SDK_INT < Constants.INSETS_MIN_API)
+            return
+        if (empty)
+            setNavbarSolidPrimary()
+        else
+            setNavbarTransparent()
     }
 
     override fun updatePanelPadding(newPadding: Int) {
@@ -411,8 +427,10 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             app.clearCurrentMapViewState()
             navigationController.setNavigation(null, null, null, null)
             mapPanelView.visibility = View.GONE
+            mapEmptyNavbar(true)
             return
         }
+        mapEmptyNavbar(false)
         container = app.container
         schemeName = app.schemeName
         scheme = container!!.getScheme(schemeName)

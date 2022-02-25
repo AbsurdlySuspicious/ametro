@@ -7,6 +7,7 @@ import android.os.PersistableBundle
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import androidx.annotation.ColorInt
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
@@ -14,11 +15,17 @@ import androidx.core.view.WindowInsetsCompat
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
+import org.ametro.utils.misc.ColorUtils
 import java.util.*
 import org.ametro.utils.ui.*
 
 
 open class AppCompatActivityEx : AppCompatActivity() {
+
+    val primaryNavbarColor by lazy {
+        val resColor = ResourcesCompat.getColor(applicationContext.resources, R.color.primary, null)
+        ColorUtils.fromColorInt(resColor).apply { a = 0.1f }.toColorInt()
+    }
 
     val panelOpenNavbarColor by lazy {
         ResourcesCompat.getColor(applicationContext.resources, R.color.navigationColor, null)
@@ -30,30 +37,36 @@ open class AppCompatActivityEx : AppCompatActivity() {
 
     var transparentNavbarColor = Color.TRANSPARENT
         private set
-    var transparentNavbarLight = false
+    var transparentNavbarLight = true
         private set
 
-    private fun setTransparentNavbarLightFlag(flags: Int) =
-        if (transparentNavbarLight)
+    private fun setTransparentNavbarLightFlag(flags: Int, light: Boolean) =
+        if (light)
             flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
         else
             flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
 
     @RequiresApi(Constants.INSETS_MIN_API)
-    protected fun setNavbarSolid() {
-        window.navigationBarColor = panelOpenNavbarColor
+    private fun setNavbarColor(@ColorInt color: Int, light: Boolean) {
+        window.navigationBarColor = color
         window.decorView.apply {
-            systemUiVisibility =
-                systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+            systemUiVisibility = setTransparentNavbarLightFlag(systemUiVisibility, light)
         }
     }
 
     @RequiresApi(Constants.INSETS_MIN_API)
+    protected fun setNavbarSolid() {
+        setNavbarColor(panelOpenNavbarColor, true)
+    }
+
+    @RequiresApi(Constants.INSETS_MIN_API)
+    protected fun setNavbarSolidPrimary() {
+        setNavbarColor(primaryNavbarColor, false)
+    }
+
+    @RequiresApi(Constants.INSETS_MIN_API)
     protected fun setNavbarTransparent() {
-        window.navigationBarColor = transparentNavbarColor
-        window.decorView.apply {
-            systemUiVisibility = setTransparentNavbarLightFlag(systemUiVisibility)
-        }
+        setNavbarColor(transparentNavbarColor, transparentNavbarLight)
     }
 
     @RequiresApi(Constants.INSETS_MIN_API)

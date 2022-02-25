@@ -3,10 +3,10 @@ package org.ametro.utils.misc
 import androidx.annotation.ColorInt
 
 data class ColorUtils(
-    val a: Float,
-    val r: Float,
-    val g: Float,
-    val b: Float
+    var a: Float,
+    var r: Float,
+    var g: Float,
+    var b: Float
 ) {
     companion object {
         fun fromColorInt(@ColorInt color: Int): ColorUtils {

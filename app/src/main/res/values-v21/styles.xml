@@ -2,6 +2,6 @@
 <resources>
     <style name="SplashTheme" parent="AppBase.SplashTheme">
         <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/primary</item>
     </style>
 </resources>
