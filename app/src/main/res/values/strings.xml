@@ -82,7 +82,7 @@
     <string name="msg_maps_updating">Updating maps…</string>
     <string name="title_activity_settings">Settings</string>
     <string name="msg_downloading">Downloading…</string>
-    <string name="msg_map_loading_progress">Loading map %s …</string>
+    <string name="msg_map_loading_progress">Loading map</string>
     <string name="msg_map_list_failed_to_download">Failed to download map list</string>
     <string name="nav_delays">Time of day:</string>
     <string name="delay_type_not_defined"></string>

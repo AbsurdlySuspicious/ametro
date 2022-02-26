@@ -3,8 +3,11 @@ package org.ametro.ui.activities
 import android.app.ProgressDialog
 import android.app.SearchManager
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.PointF
+import android.graphics.PorterDuff
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -14,10 +17,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetBehavior.BottomSheetCallback
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
@@ -79,7 +83,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         get() = binding.mapContainer
 
     private var mapView: MultiTouchMapView? = null
-    private var loadingProgressDialog: ProgressDialog? = null
 
     private lateinit var testMenuOptionsProcessor: TestMenuOptionsProcessor
     private lateinit var app: ApplicationEx
@@ -91,6 +94,19 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
         binding = ActivityMapViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.includeEmptyMap.loadingProgress.apply {
+            val color =
+                ResourcesCompat.getColor(context.resources, R.color.map_loading_bar, null)
+
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                val wrapDrawable = DrawableCompat.wrap(indeterminateDrawable)
+                DrawableCompat.setTint(wrapDrawable, color)
+                indeterminateDrawable = DrawableCompat.unwrap(wrapDrawable)
+            } else {
+                indeterminateTintList = ColorStateList.valueOf(color)
+            }
+        }
 
         app = ApplicationEx.getInstanceActivity(this)
 
@@ -362,24 +378,26 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun dismissLoadingDialog() {
-        if (loadingProgressDialog != null) {
-            loadingProgressDialog!!.dismiss()
-            loadingProgressDialog = null
+    private fun dismissLoadingBar() {
+        showHideLoadingBar(false)
+    }
+
+    private fun showHideLoadingBar(show: Boolean) {
+        val states = arrayOf(View.INVISIBLE, View.VISIBLE)
+        if (show) states.reverse()
+
+        binding.includeEmptyMap.apply {
+            arrayOf(loadingProgress, loadingText)
+                .forEach { it.visibility = states[0] }
+            arrayOf(textHelp1, textHelp2)
+                .forEach { it.visibility = states[1] }
         }
     }
 
     override fun onBeforeMapLoading(container: MapContainer, schemeName: String, enabledTransports: Array<String>?) {
         if (!container.isLoaded(schemeName, enabledTransports)) {
-            dismissLoadingDialog()
-            loadingProgressDialog = ProgressDialog(this)
-            with(loadingProgressDialog!!) {
-                isIndeterminate = true
-                setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                setCancelable(false)
-                setMessage(resources.getString(R.string.msg_map_loading_progress, schemeName))
-                show()
-            }
+            mapView?.visibility = View.GONE
+            showHideLoadingBar(true)
         }
     }
 
@@ -389,7 +407,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         enabledTransports: Array<String>?,
         time: Long
     ) {
-        dismissLoadingDialog()
         if (container != null && schemeName != null) {
             DebugToast.show(this, getString(R.string.msg_map_loaded, time.toString()), Toast.LENGTH_LONG)
             app.setCurrentMapViewState(container, schemeName, enabledTransports)
@@ -399,6 +416,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             settingsProvider.currentMap = null
         }
         initMapViewState()
+        dismissLoadingBar()
     }
 
     private fun initMapViewState() {
@@ -445,7 +463,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         enabledTransports: Array<String>?,
         reason: Throwable
     ) {
-        dismissLoadingDialog()
+        dismissLoadingBar()
         Toast.makeText(this, getString(R.string.msg_map_loading_failed, reason.message), Toast.LENGTH_LONG).show()
         Log.e(Constants.LOG, "Map load failed due exception: " + reason.message, reason)
     }

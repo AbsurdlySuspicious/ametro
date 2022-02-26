@@ -41,6 +41,8 @@
             app:layout_constraintBottom_toTopOf="@id/text_help1"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintVertical_bias="0"
+
+            tools:text="aMetro"
     />
 
     <TextView
@@ -57,6 +59,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_appname"
             app:layout_constraintBottom_toTopOf="@id/text_help2"
+
+            tools:visibility="invisible"
     />
 
     <TextView
@@ -74,6 +78,44 @@
             app:layout_constraintBottom_toBottomOf="parent"
 
             tools:text="long long long long long long long long long long long long long long long long long long"
+            tools:visibility="invisible"
+    />
+
+    <ProgressBar
+            android:id="@+id/loading_progress"
+            android:layout_width="@dimen/map_loading_size"
+            android:layout_height="@dimen/map_loading_size"
+            android:visibility="invisible"
+
+            style="?android:attr/progressBarStyleLarge"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/loading_text"
+            app:layout_constraintTop_toTopOf="@id/text_help1"
+            app:layout_constraintHorizontal_chainStyle="packed"
+
+            tools:visibility="visible"
+    />
+
+    <TextView
+            android:id="@+id/loading_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="invisible"
+
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/msg_map_loading_progress"
+            android:textColor="@android:color/white"
+            android:includeFontPadding="false"
+            android:textSize="22sp"
+
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/loading_progress"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/loading_progress"
+            app:layout_constraintBottom_toBottomOf="@id/loading_progress"
+
+            tools:visibility="visible"
     />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

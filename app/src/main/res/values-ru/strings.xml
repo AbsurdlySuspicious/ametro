@@ -65,7 +65,7 @@
     <string name="msg_maps_updating">Обновление карт…</string>
     <string name="msg_no_maps_selected">Не выбраны карты</string>
     <string name="msg_downloading">Загрузка…</string>
-    <string name="msg_map_loading_progress">Загрузка карты %s …</string>
+    <string name="msg_map_loading_progress">Загрузка карты</string>
     <string name="msg_map_list_failed_to_download">Ошибка загрузки списка карт</string>
     <string name="nav_delays">Время суток:</string>
     <string name="delay_type_custom">Настраиваемый</string>

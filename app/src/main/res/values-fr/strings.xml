@@ -70,7 +70,7 @@
     <string name="msg_maps_updating">Mise à jour des cartes…</string>
     <string name="title_activity_settings">Paramètres</string>
     <string name="msg_downloading">Téléchargement…</string>
-    <string name="msg_map_loading_progress">Chargement de la carte %s …</string>
+    <string name="msg_map_loading_progress">Chargement de la carte</string>
     <string name="msg_map_list_failed_to_download">Le téléchargement de la liste de carte a échoué</string>
     <string name="nav_delays">Période:</string>
     <string name="delay_type_custom" >Personnalisé</string>

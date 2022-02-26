@@ -71,7 +71,7 @@
     <string name="msg_maps_updating">Bezig met bijwerken van kaarten…</string>
     <string name="title_activity_settings">Instellingen</string>
     <string name="msg_downloading">Bezig met downloaden…</string>
-    <string name="msg_map_loading_progress">Bezig met laden van kaart %s…</string>
+    <string name="msg_map_loading_progress">Bezig met laden van kaart</string>
     <string name="msg_map_list_failed_to_download">Het downloaden van de kaartenlijst is mislukt.</string>
     <string name="nav_delays">Tijd:</string>
     <string name="delay_type_not_defined"></string>
