@@ -15,7 +15,7 @@ abstract class InsetsApplier(val view: View, val initialPadding: Int, val keepHe
     val initialHeight = view.layoutParams.height
 
     protected abstract fun updatePadding(padding: Int)
-    protected abstract fun getInset(insets: WindowInsetsCompat): Int
+    abstract fun getInset(insets: WindowInsetsCompat): Int
 
     @RequiresApi(Build.VERSION_CODES.KITKAT_WATCH)
     fun applyInset(insets: WindowInsets) {

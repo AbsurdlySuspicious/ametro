@@ -127,27 +127,6 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             applyToolbarInsets(toolbar) {
                 emptyView.updatePadding(bottom = toolbar.layoutParams.height)
             }
-
-            val sheetPadView = mapBottomSheet.binding.paddingView
-            applyInsets(makeBottomInsetsApplier(sheetPadView))
-
-            mapBottomSheet.bottomSheet.addBottomSheetCallback(object : BottomSheetCallback() {
-                override fun onStateChanged(bottomSheet: View, newState: Int) {
-                    when (newState) {
-                        BottomSheetBehavior.STATE_HIDDEN -> {
-                            setNavbarTransparent()
-                        }
-                        BottomSheetBehavior.STATE_EXPANDED, BottomSheetBehavior.STATE_COLLAPSED -> {
-                            setNavbarSolid()
-                        }
-                    }
-                }
-
-                override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                    if (slideOffset < -0.4f)
-                        setNavbarTransparent()
-                }
-            })
         }
     }
 

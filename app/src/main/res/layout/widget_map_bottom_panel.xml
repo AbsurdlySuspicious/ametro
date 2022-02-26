@@ -34,10 +34,5 @@
         />
         <include android:id="@+id/include_bot_route" layout="@layout/widget_item_bot_route"/>
         <include android:id="@+id/include_bot_station" layout="@layout/widget_item_bot_station"/>
-        <View
-                android:id="@+id/padding_view"
-                android:layout_width="match_parent"
-                android:layout_height="0px"
-        />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

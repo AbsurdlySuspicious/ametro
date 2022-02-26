@@ -1,14 +1,24 @@
 package org.ametro.ui.bottom_panel
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.os.Build
 import android.util.Log
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
+import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.app.ApplicationEx
 import org.ametro.databinding.WidgetMapBottomPanelBinding
+import org.ametro.utils.misc.AnimUtils
 import org.ametro.utils.misc.BottomSheetUtils
+import org.ametro.utils.ui.applyInsets
+import org.ametro.utils.ui.makeBottomInsetsApplier
+import org.ametro.utils.ui.makeTopInsetsApplier
 import java.util.concurrent.ConcurrentLinkedQueue
 
 interface BottomPanelSheetListener {
@@ -37,7 +47,10 @@ class MapBottomPanelSheet(
     val bottomSheet = BottomSheetBehavior.from(sheetView)
     val adapter = BottomPanelController(binding)
 
-    private val topPadViews = listOf(binding.drag, binding.paddingView)
+    private val topPadViews = listOf(binding.drag)
+    private var bottomInset: Int = 0
+    private var isNonTopHidden = false
+    private val nonTopInterpolator = DecelerateInterpolator()
 
     private var sheetStateCallbacksPre: MutableList<(View, Int) -> Unit> = mutableListOf()
     private val pendingSheetActions = ConcurrentLinkedQueue<Pair<Int, () -> Unit>>()
@@ -71,6 +84,19 @@ class MapBottomPanelSheet(
         return (win - loc[1]).coerceAtLeast(0)
     }
 
+    private fun showHideNonTopViews(show: Boolean) {
+        if (show && !isNonTopHidden)
+            return
+        else if (!show && isNonTopHidden)
+            return
+        isNonTopHidden = !show
+
+        val views = adapter.nonTopLayouts()
+        AnimUtils.getValueAnimator(show, 150L, nonTopInterpolator) { p ->
+            views.forEach { it.alpha = p }
+        }.also { it.start() }
+    }
+
     private val bottomSheetCallback = object : BottomSheetBehavior.BottomSheetCallback() {
         override fun onStateChanged(sheetView: View, newState: Int) {
             Log.d("AM2", "Bottom sheet state: ${BottomSheetUtils.stateToString(newState)}")
@@ -101,13 +127,17 @@ class MapBottomPanelSheet(
                 }
                 BottomSheetBehavior.STATE_COLLAPSED -> {
                     runPendingSheetActions(newState)
+                    showHideNonTopViews(false)
                     updatePeekHeightTopmostImpl(true)
                 }
                 BottomSheetBehavior.STATE_EXPANDED -> {
                     runPendingSheetActions(newState)
+                    showHideNonTopViews(true)
                     updatePeekHeightTopmostImpl(true)
                 }
-                else -> {}
+                else -> {
+                    showHideNonTopViews(true)
+                }
             }
         }
 
@@ -131,6 +161,14 @@ class MapBottomPanelSheet(
             state = BottomSheetBehavior.STATE_HIDDEN
             addBottomSheetCallback(bottomSheetCallback)
         }
+        sheetView.also {
+            it.clipToPadding = false
+            val applier = makeBottomInsetsApplier(it, keepHeight = true)
+            applyInsets(applier) { insets ->
+                @SuppressLint("NewApi") // won't be called anyway if api is less than supported
+                bottomInset = applier.getInset(WindowInsetsCompat.toWindowInsetsCompat(insets))
+            }
+        }
     }
 
     fun updatePeekHeightTopmostQueue(animate: Boolean, force: Boolean = false) = queueState {
@@ -152,7 +190,7 @@ class MapBottomPanelSheet(
                 val params = view.layoutParams as LinearLayout.LayoutParams
                 acc + view.height + params.topMargin + params.bottomMargin
             }
-            bottomSheet.setPeekHeight(pad + height, animate)
+            bottomSheet.setPeekHeight(pad + bottomInset + height, animate)
         }
     }
 

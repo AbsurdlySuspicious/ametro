@@ -1,5 +1,6 @@
 package org.ametro.ui.bottom_panel
 
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.viewbinding.ViewBinding
@@ -61,6 +62,13 @@ class BottomPanelController(binding: WidgetMapBottomPanelBinding) {
 
     fun topmostLayout(): ViewGroup? =
         viewOrder.find { it.isVisible }
+
+    fun nonTopLayouts(): List<ViewGroup> =
+        viewOrder
+            .asSequence()
+            .filter { it.visibility != View.GONE }
+            .drop(1)
+            .toList()
 
     fun topmostHeight(): Int =
         topmostLayout()?.height ?: 0
