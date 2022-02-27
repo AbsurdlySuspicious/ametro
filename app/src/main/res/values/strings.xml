@@ -3,7 +3,7 @@
         <!ENTITY appname "aMetro">
         ]>
 <resources>
-    <string name="app_name">&appname;</string>
+    <string name="app_name" translatable="false">&appname;</string>
     <string name="render_failed">Render failed!</string>
 
     <string name="title_activity_map_view">aMetro</string>
@@ -27,7 +27,7 @@
 
     <string name="msg_no_maps_loaded">No map selected</string>
     <string name="msg_press_to_add_map">tap screen to show map list</string>
-    <string name="msg_operation_interrupted">Operaiton canceled</string>
+    <string name="msg_operation_interrupted">Operation canceled</string>
     <string name="msg_download_progress">Downloaded %s bytes</string>
     <string name="msg_error">Error: %s</string>
     <string name="msg_some_maps_out_of_date">Some maps are out-of-date.</string>
@@ -62,7 +62,7 @@
     <string name="msg_no_scheme_available_for_station">No map available for station</string>
     <string name="tab_map">Map</string>
     <string name="tab_about">About</string>
-    <string name="empty"></string>
+    <string name="empty" translatable="false"></string>
     <string name="msg_selected" >Selected</string>
     <string name="nav_select_map">Change map</string>
     <string name="nav_settings">Settings</string>
@@ -105,7 +105,7 @@
     <string name="delay_type_south_east" >South - East</string>
     <string name="delay_type_south_west" >South - West</string>
     <string name="delay_type_south_north" >South - North</string>
-    <string name="delay_weekdays_type_not_defined" ></string>
+    <string name="delay_weekdays_type_not_defined"></string>
     <string name="delay_weekdays_type_monday" >Mo.</string>
     <string name="delay_weekdays_type_tuesday" >Tu.</string>
     <string name="delay_weekdays_type_wednesday" >We.</string>

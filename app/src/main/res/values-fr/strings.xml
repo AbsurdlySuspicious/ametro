@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">aMetro</string>
-
     <string name="title_activity_map_view">aMetro</string>
     <string name="title_activity_map_list_view">Cartes</string>
     <string name="title_activity_city_list_view">Ajouter une carte</string>
@@ -32,6 +30,7 @@
     <string name="btn_close">Fermer</string>
     <string name="btn_download">Télécharger</string>
     <string name="btn_cancel">Annuler</string>
+    <string name="btn_ok">OK</string>
 
     <string name="drawer_open">Navigation ouverte</string>
     <string name="drawer_close">Navigation fermée</string>
@@ -73,6 +72,7 @@
     <string name="msg_map_loading_progress">Chargement de la carte</string>
     <string name="msg_map_list_failed_to_download">Le téléchargement de la liste de carte a échoué</string>
     <string name="nav_delays">Période:</string>
+    <string name="delay_type_not_defined"></string>
     <string name="delay_type_custom" >Personnalisé</string>
     <string name="delay_type_day" >Jour</string>
     <string name="delay_type_night" >Nuit</string>
@@ -80,6 +80,7 @@
     <string name="delay_type_morning" >Matin</string>
     <string name="delay_type_rush" >Heures de pointe</string>
     <string name="delay_type_direct" >Direct</string>
+    <string name="delay_weekdays_type_not_defined"></string>
     <string name="delay_type_west_north" >Ouest - Nord</string>
     <string name="delay_type_west_south" >Ouest - Sud</string>
     <string name="delay_type_west_east" >Ouest - Est</string>
