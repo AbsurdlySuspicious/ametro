@@ -7,6 +7,7 @@ import android.graphics.RectF
 import android.os.Handler
 import android.os.Message
 import android.util.DisplayMetrics
+import android.util.Log
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.ViewConfiguration
@@ -194,6 +195,8 @@ class MultiTouchController(context: Context, private val listener: IMultiTouchLi
     fun setViewRect(newContentWidth: Float, newContentHeight: Float, newDisplayRect: RectF) {
         contentWidthReal = newContentWidth
         contentHeightReal = newContentHeight
+        Log.d("AM1", "touch set view rect: $matrix")
+
         if (displayRect != null) {
             matrix.postTranslate(
                 (newDisplayRect.width() - displayRect!!.width()) / 2,

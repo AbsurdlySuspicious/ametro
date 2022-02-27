@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
+import android.graphics.Matrix
 import android.graphics.PointF
 import android.graphics.PorterDuff
 import android.os.Build
@@ -60,7 +61,7 @@ import java.util.*
 
 class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControllerListener,
     IMapSelectionEventListener, MapBottomPanelStationListener, MapBottomPanelRoute.MapBottomPanelRouteListener,
-    BottomPanelSheetListener {
+    BottomPanelSheetListener, MultiTouchMapView.IViewportChangedListener {
 
     private var backPressTime = 0L
     private var backPressCount = 0
@@ -397,6 +398,7 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
     override fun onBeforeMapLoading(container: MapContainer, schemeName: String, enabledTransports: Array<String>?) {
         if (!container.isLoaded(schemeName, enabledTransports)) {
             mapView?.visibility = View.GONE
+            app.viewportInitialized = false
             showHideLoadingBar(true)
         }
     }
@@ -440,7 +442,8 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         navigationController.setNavigation(container, schemeName, app.enabledTransports, currentDelay)
         mapPanelView.visibility = View.VISIBLE
         mapSelectionIndicators.clearSelection()
-        mapView = MultiTouchMapView(this, container, schemeName, mapSelectionIndicators)
+        mapView = MultiTouchMapView(this, container, schemeName, arrayOf(mapSelectionIndicators, this))
+        mapView!!.viewportInitialized = app.viewportInitialized
         mapView!!.setOnClickListener {
             ModelUtil.findTouchedStation(scheme, mapView!!.touchPoint)?.let { stationInfo ->
                 val stationInformation = container!!
@@ -664,6 +667,12 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             app.clearRoute()
             mapBottomRoute.hide()
         }
+    }
+
+    override fun onViewportChanged(matrix: Matrix) {}
+
+    override fun onViewportInitialized() {
+        app.viewportInitialized = mapView?.viewportInitialized ?: false
     }
 
     private val currentDelayIndex: Int?

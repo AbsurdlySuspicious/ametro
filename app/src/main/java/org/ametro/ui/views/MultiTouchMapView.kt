@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.os.Build
 import android.os.Handler
+import android.util.Log
 import android.util.Pair
 import android.view.MotionEvent
 import android.widget.ScrollView
@@ -24,7 +25,7 @@ class MultiTouchMapView @JvmOverloads constructor(
     context: Context?,
     container: MapContainer? = null,
     schemeName: String? = null,
-    private val viewportChangedListener: IViewportChangedListener? = null
+    private val viewportListeners: Array<IViewportChangedListener> = emptyArray(),
 ) : ScrollView(context), IMultiTouchListener {
     private val multiTouchController: MultiTouchController
     private val renderer: CanvasRenderer
@@ -39,6 +40,8 @@ class MultiTouchMapView @JvmOverloads constructor(
     private var changeScale: Float? = null
     private var bottomInset: Int = 0
 
+    var viewportInitialized = false
+
     init {
         isScrollbarFadingEnabled = false
         isFocusable = true
@@ -50,7 +53,6 @@ class MultiTouchMapView @JvmOverloads constructor(
         multiTouchController = MultiTouchController(getContext(), this)
         rendererProgram = RenderProgram(container, schemeName!!)
         renderer = CanvasRenderer(this, mapScheme, rendererProgram)
-        initializeViewport()
         renderer.postRebuildMipmap()
 
         if (Build.VERSION.SDK_INT >= Constants.INSETS_MIN_API) {
@@ -64,6 +66,10 @@ class MultiTouchMapView @JvmOverloads constructor(
             }
             requestApplyInsetsWhenAttached(this)
         }
+    }
+
+    private inline fun viewportListener(crossinline f: (IViewportChangedListener) -> Unit) {
+        viewportListeners.forEach(f)
     }
 
     override fun computeVerticalScrollOffset(): Int {
@@ -95,7 +101,7 @@ class MultiTouchMapView @JvmOverloads constructor(
             updateScrollBars(matrix, verticalPaddingScroll)
             renderer.setMatrix(matrix)
             renderer.setVelocity(multiTouchController.getVelocity())
-            viewportChangedListener!!.onViewportChanged(matrix)
+            viewportListener { it.onViewportChanged(matrix) }
         }
 
     var panelPadding: Int = multiTouchController.verticalPadding
@@ -162,6 +168,7 @@ class MultiTouchMapView @JvmOverloads constructor(
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldWidth: Int, oldHeight: Int) {
+        initializeViewport()
         updateViewRect()
         super.onSizeChanged(w, h, oldWidth, oldHeight)
     }
@@ -171,6 +178,9 @@ class MultiTouchMapView @JvmOverloads constructor(
     }
 
     private fun initializeViewport() {
+        if (viewportInitialized)
+            return
+        Log.d("AM1", "init viewport: view ${width}x${height}")
         val area = RectF(0f, 0f, mapScheme.width.toFloat(), mapScheme.height.toFloat())
         val scaleX = width / area.width()
         val scaleY = height / area.height()
@@ -178,6 +188,8 @@ class MultiTouchMapView @JvmOverloads constructor(
         val currentScale = scale
         val scale = min(targetScale, currentScale)
         setCenterPositionAndScale(PointF(area.centerX(), area.centerY()), scale, false)
+        viewportInitialized = true
+        viewportListener { it.onViewportInitialized() }
     }
 
     private fun updateViewRect() {
@@ -223,6 +235,7 @@ class MultiTouchMapView @JvmOverloads constructor(
 
     interface IViewportChangedListener {
         fun onViewportChanged(matrix: Matrix)
+        fun onViewportInitialized()
     }
 
     companion object {

@@ -13,8 +13,6 @@ import org.ametro.utils.misc.epsilonEqual
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.abs
-import kotlin.math.floor
-import kotlin.math.round
 
 typealias ElementsToHighlight = (() -> java.util.HashSet<Int>?)?
 
@@ -48,6 +46,7 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     private val screenRect = RectF()
     private val schemeRect = RectF()
+
     private val renderViewPort = RectF()
     private val renderViewPortVertical = RectF()
     private val renderViewPortHorizontal = RectF()
@@ -72,9 +71,9 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
 
     private val density: Float
     private val renderFailedErrorText: String
-    private val renderFailedTextPaint = Paint().also {
-        it.color = Color.RED
-        it.textAlign = Paint.Align.CENTER
+    private val renderFailedTextPaint = Paint().apply {
+        color = Color.RED
+        textAlign = Paint.Align.CENTER
     }
 
     private val handler = object : Handler(rendererThread.looper) {
@@ -157,6 +156,8 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     }
 
     fun draw(canvas: Canvas) {
+        Log.d("AM1", "draw: screen rect ${screenRect.width()}x${screenRect.height()}")
+
         maximumBitmapWidth = canvas.maximumBitmapWidth
         maximumBitmapHeight = canvas.maximumBitmapHeight
         canvas.save()
@@ -173,21 +174,22 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
             if (isRebuildPending.get())
                 postRebuildCache().also { Log.d("AM1", "draw: rebuild pending") }
         } else {
-            val willRebuild = isCacheRebuilding.get()
-            Log.d("AM1", "draw: no cache, will rebuild: ${!willRebuild}")
-            if (!willRebuild)
+            val pending = handler.hasMessages(MSG_REBUILD_CACHE)
+            val willRebuild = !(pending || isCacheRebuilding.get())
+            Log.d("AM1", "draw: no cache, will rebuild: $willRebuild, pending $pending")
+            if (willRebuild)
                 postRebuildCache()
         }
 
         if (isRenderFailed.get())
-            drawFailure(canvas)
+            drawText(canvas, renderFailedErrorText, renderFailedTextPaint)
 
         canvas.restore()
     }
 
-    private fun drawFailure(canvas: Canvas) {
-        renderFailedTextPaint.textSize = density * 50f
-        canvas.drawText(renderFailedErrorText, screenRect.width() / 2, screenRect.height() / 2, renderFailedTextPaint)
+    private fun drawText(canvas: Canvas, text: String, paint: Paint) {
+        paint.textSize = density * 50f
+        canvas.drawText(text, screenRect.width() / 2, screenRect.height() / 2, paint)
     }
 
     private fun drawImpl(canvas: Canvas, drawCache: MapCache, noUpdates: Boolean) {
@@ -258,10 +260,12 @@ class CanvasRenderer(private val canvasView: View, private val mapScheme: MapSch
     }
 
     fun updateViewRect() {
-        schemeRect[0f, 0f, canvasView.width.toFloat()] = canvasView.height.toFloat()
+        Log.d("AM1", "update view rect: canvas ${canvasView.width.toFloat()}x${canvasView.height.toFloat()}")
+        schemeRect.set(0f, 0f, canvasView.width.toFloat(), canvasView.height.toFloat())
         invertedMatrix.mapRect(schemeRect)
         screenRect.set(schemeRect)
         matrix.mapRect(screenRect)
+        Log.d("AM1", "update view rect: screenRect ${screenRect.width()}x${screenRect.height()}")
     }
 
     @Synchronized

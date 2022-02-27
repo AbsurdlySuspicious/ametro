@@ -72,6 +72,8 @@ class MapSelectionIndicatorsWidget(
         updateIndicatorsPositionAndState()
     }
 
+    override fun onViewportInitialized() {}
+
     private fun updateIndicatorsPositionAndState() {
         if (beginStation != null) {
             beginIndicator.visibility = View.VISIBLE

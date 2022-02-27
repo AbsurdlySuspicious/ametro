@@ -63,6 +63,7 @@ class ApplicationEx : MultiDexApplication() {
     var enabledTransports: Array<String>? = null
     var delay: MapDelay? = null
     var centerPositionAndScale: Pair<PointF, Float>? = null
+    var viewportInitialized = false
 
     var currentRoute = SavedRoute()
         private set
