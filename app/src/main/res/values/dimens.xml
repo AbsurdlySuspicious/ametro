@@ -35,6 +35,8 @@
     <dimen name="drawer_splitter_padding_top_bottom">4dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
 
+    <dimen name="about_icon_size">100dp</dimen>
+    <dimen name="about_section_text_size">19sp</dimen>
     <dimen name="map_loading_size">35dp</dimen>
 
     <dimen name="panel_bottom_line_icon_size">12dp</dimen>

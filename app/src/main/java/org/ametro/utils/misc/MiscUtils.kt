@@ -1,7 +1,9 @@
 package org.ametro.utils.misc
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.util.Pair
 import kotlin.math.abs
 
@@ -22,6 +24,9 @@ fun <A, B> convertPair(p: kotlin.Pair<A, B>): Pair<A, B> {
 fun <A, B> convertPair(p: Pair<A, B>): kotlin.Pair<A, B> {
     return kotlin.Pair(p.first, p.second)
 }
+
+fun linkIntent(url: String) =
+    Intent(Intent.ACTION_VIEW).also { it.data = Uri.parse(url) }
 
 inline fun <T, reified R> Array<T>.mapArray(noinline mapper: (T) -> R): Array<R> {
     val out = arrayOfNulls<R>(this.size)

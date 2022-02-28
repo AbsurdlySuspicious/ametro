@@ -6,7 +6,17 @@
     <string name="app_name" translatable="false">&appname;</string>
     <string name="render_failed">Render failed!</string>
 
-    <string name="title_activity_map_view">aMetro</string>
+    <string name="about_desc"><![CDATA[
+        <p>This is a program for navigating in cities undergrounds and other public transport.</p>
+        <p>It displays transports schemes, allows you to find the shortest path between stations, and also describes what is
+        next to the stations.</p>
+    ]]></string>
+    <string name="about_button_src">Source code</string>
+    <string name="about_button_issues">Issues</string>
+    <string name="about_section_components">Open-source components</string>
+    <string name="about_section_license">License</string>
+
+    <string name="title_activity_map_view">&appname;</string>
     <string name="title_activity_map_list_view">Maps</string>
     <string name="title_activity_city_list_view">Add map</string>
     <string name="title_activity_map_details_view">Map details</string>

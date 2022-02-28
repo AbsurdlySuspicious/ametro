@@ -16,7 +16,7 @@
     <!-- Station layout -->
     <View
             android:id="@+id/station_layout"
-            android:background="@drawable/bottom_panel_sub"
+            android:background="@drawable/bg_button_rounded"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginEnd="@dimen/panel_bottom_sub_spacing"
@@ -108,7 +108,7 @@
             android:id="@+id/action_start"
             android:layout_height="0dp"
             android:layout_width="@dimen/panel_bottom_actions_width"
-            android:background="@drawable/bottom_panel_sub"
+            android:background="@drawable/bg_button_rounded"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/station_layout"
             app:layout_constraintBottom_toTopOf="@id/action_end"
@@ -180,7 +180,7 @@
             android:id="@+id/action_end"
             android:layout_height="0dp"
             android:layout_width="@dimen/panel_bottom_actions_width"
-            android:background="@drawable/bottom_panel_sub"
+            android:background="@drawable/bg_button_rounded"
             android:layout_marginTop="@dimen/panel_bottom_actions_h_spacing"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="@id/station_layout"

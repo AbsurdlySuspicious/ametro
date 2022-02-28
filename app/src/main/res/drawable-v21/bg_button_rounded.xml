@@ -9,6 +9,6 @@
         </shape>
     </item>
 
-    <item android:drawable="@drawable/bottom_panel_sub_noripple" />
+    <item android:drawable="@drawable/bg_button_rounded_noripple" />
 
 </ripple>
