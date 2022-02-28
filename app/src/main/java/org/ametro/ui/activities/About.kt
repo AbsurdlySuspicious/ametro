@@ -130,6 +130,7 @@ open class About : AppCompatActivityEx() {
     private val components = arrayOf(
         Component("Maps Icons Collection", "https://mapicons.mapsmarker.com"),
         Component("Flag Icons by Steven Skelton", "github.com/stevenrskelton/flag-icon"),
+        Component("Material icons", "fonts.google.com/icons"),
         Component("Android-SVG", "github.com/japgolly/svg-android"),
         Component("FasterXML Jackson", "github.com/FasterXML"),
         Component("AndroidX and other google components", "github.com/google"),
