@@ -25,7 +25,7 @@ fun <A, B> convertPair(p: Pair<A, B>): kotlin.Pair<A, B> {
     return kotlin.Pair(p.first, p.second)
 }
 
-private val schemaRe = Regex("^[a-zA-Z]+://")
+private val schemaRe = Regex("^[a-zA-Z]+://.+$")
 
 fun linkIntent(url: String, forceHttp: Boolean = false) =
     Intent(Intent.ACTION_VIEW).also {
