@@ -7,7 +7,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_ripple_transparent"
         android:orientation="vertical"
-        android:paddingVertical="5dp"
+        android:paddingVertical="10dp"
         android:paddingStart="15dp"
 >
 

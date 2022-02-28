@@ -20,6 +20,7 @@ import androidx.viewbinding.ViewBinding
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.flexbox.JustifyContent
 import org.ametro.R
 import org.ametro.app.Constants
 import org.ametro.databinding.ActivityAboutViewBinding
@@ -40,7 +41,6 @@ open class About : AppCompatActivityEx() {
 
         val res = this.resources
         val inflater = LayoutInflater.from(this)
-        val linkRe = Regex("^https?://")
 
         binding = ActivityAboutViewBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -69,7 +69,9 @@ open class About : AppCompatActivityEx() {
 
         binding.components.apply {
             overScrollMode = RecyclerView.OVER_SCROLL_NEVER
+
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+
             adapter = object : SimpleBaseAdapter<WidgetAboutComponentItemBinding, Component>(components) {
                 override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder =
                     Holder(WidgetAboutComponentItemBinding.inflate(inflater, parent, false))
@@ -80,10 +82,7 @@ open class About : AppCompatActivityEx() {
                         title.text = item.title
                         link.text = item.link
                         root.setOnClickListener {
-                            var link = item.link
-                            if (!linkRe.matches(link))
-                                link = "http://$link"
-                            context.startActivity(linkIntent(link))
+                            context.startActivity(linkIntent(item.link, true))
                         }
                     }
                 }
@@ -92,7 +91,11 @@ open class About : AppCompatActivityEx() {
 
         binding.buttons.apply {
             overScrollMode = RecyclerView.OVER_SCROLL_NEVER
-            layoutManager = FlexboxLayoutManager(context, FlexDirection.ROW, FlexWrap.WRAP)
+
+            layoutManager = FlexboxLayoutManager(context, FlexDirection.ROW, FlexWrap.WRAP).also {
+                it.justifyContent = JustifyContent.SPACE_EVENLY
+            }
+
             adapter = object : SimpleBaseAdapter<WidgetIconButtonBinding, Link>(links) {
                 override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder =
                     Holder(WidgetIconButtonBinding.inflate(inflater, parent, false))
@@ -105,6 +108,11 @@ open class About : AppCompatActivityEx() {
                         button.setOnClickListener {
                             item.intent?.also { context.startActivity(it) }
                         }
+
+                        (root.layoutParams as FlexboxLayoutManager.LayoutParams).apply {
+                            flexGrow = 1f
+                        }
+                        root.requestLayout()
                     }
                 }
             }
@@ -120,9 +128,13 @@ open class About : AppCompatActivityEx() {
     )
 
     private val components = arrayOf(
+        Component("Maps Icons Collection", "mapicons.mapsmarker.com"),
+        Component("Flag Icons by Steven Skelton", "github.com/stevenrskelton/flag-icon"),
         Component("Android-SVG", "github.com/japgolly/svg-android"),
-        Component("Android-SVG 2", "github.com/japgolly/svg-android"),
-        Component("Android-SVG 3", "github.com/japgolly/svg-android"),
+        Component("FasterXML Jackson", "github.com/FasterXML"),
+        Component("AndroidX and other google components", "github.com/google"),
+        Component("Material components", "github.com/material-components"),
+        Component("Kotlin stdlib", "github.com/JetBrains/kotlin")
     )
 
     private fun sectionSetup(click: View, arrow: View, expand: View) {
@@ -136,12 +148,16 @@ open class About : AppCompatActivityEx() {
 
     private fun htmlContentRaw(@RawRes resId: Int): SpannableString {
         val html = FileUtils.readAllText(resources.openRawResource(resId))
-        return SpannableString(Html.fromHtml(html))
+        return htmlContent(html)
     }
 
     private fun htmlContentString(@StringRes resId: Int): SpannableString {
         val html = resources.getString(resId)
-        return SpannableString(Html.fromHtml(html))
+        return htmlContent(html)
+    }
+
+    private fun htmlContent(html: String): SpannableString {
+        return SpannableString(Html.fromHtml(html).trimEnd('\r', '\n'))
     }
 
     data class Link(@DrawableRes val icon: Int, @StringRes val text: Int, val intent: Intent?)
