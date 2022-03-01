@@ -396,9 +396,9 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
     }
 
     override fun onBeforeMapLoading(container: MapContainer, schemeName: String, enabledTransports: Array<String>?) {
+        app.viewportInitialized = false
         if (!container.isLoaded(schemeName, enabledTransports)) {
             mapView?.visibility = View.GONE
-            app.viewportInitialized = false
             showHideLoadingBar(true)
         }
     }
