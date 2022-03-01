@@ -35,20 +35,18 @@
 
                 <ImageView
                         android:id="@+id/begin_indicator"
-                        android:contentDescription="@string/empty"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="@dimen/map_indicator_size"
+                        android:layout_height="@dimen/map_indicator_size"
                         android:visibility="invisible"
-                        android:src="@drawable/map_marker_begin"
+                        android:src="@drawable/ic_map_point_green"
                 />
 
                 <ImageView
                         android:id="@+id/end_indicator"
-                        android:contentDescription="@string/empty"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_width="@dimen/map_indicator_size"
+                        android:layout_height="@dimen/map_indicator_size"
                         android:visibility="invisible"
-                        android:src="@drawable/map_marker_end"
+                        android:src="@drawable/ic_map_point_red"
                 />
             </FrameLayout>
 

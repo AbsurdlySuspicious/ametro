@@ -18,6 +18,15 @@ fun saturate(value: Float, minFrom: Float, minTo: Float, maxFrom: Float, maxTo: 
     else if (value < minFrom) minTo
     else value
 
+fun mapValue(value: Float, fromMin: Float, fromMax: Float, toMin: Float, toMax: Float): Float {
+    if (value < fromMin)
+        return toMin
+    else if (value > fromMax)
+        return toMax
+    else
+        return toMin + (value - fromMin) * (toMax - toMin) / (fromMax - fromMin)
+}
+
 fun <A, B> convertPair(p: kotlin.Pair<A, B>): Pair<A, B> {
     return Pair(p.first, p.second)
 }

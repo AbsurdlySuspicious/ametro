@@ -3,22 +3,30 @@ package org.ametro.ui.widgets
 import android.graphics.Matrix
 import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
+import android.widget.ImageView
 import org.ametro.model.entities.MapPoint
 import org.ametro.model.entities.MapSchemeLine
 import org.ametro.model.entities.MapSchemeStation
 import org.ametro.ui.views.MultiTouchMapView.IViewportChangedListener
+import org.ametro.utils.misc.mapValue
 import kotlin.math.roundToInt
 
 class MapSelectionIndicatorsWidget(
     private val listener: IMapSelectionEventListener,
-    private val beginIndicator: View,
-    private val endIndicator: View
+    private val beginIndicator: ImageView,
+    private val endIndicator: ImageView
 ) : IViewportChangedListener {
 
+    private val indicators = arrayOf(beginIndicator, endIndicator)
     private val viewMatrix = Matrix()
+    private val viewMatrixValues = FloatArray(9)
 
     private var beginStation: Pair<MapSchemeLine, MapSchemeStation>? = null
     private var endStation: Pair<MapSchemeLine, MapSchemeStation>? = null
+
+    private fun updateOpacity(o: Float) {
+        indicators.forEach { it.alpha = o }
+    }
 
     fun getBeginStation(): Pair<MapSchemeLine, MapSchemeStation>? {
         return beginStation
@@ -69,6 +77,9 @@ class MapSelectionIndicatorsWidget(
 
     override fun onViewportChanged(matrix: Matrix) {
         viewMatrix.set(matrix)
+        matrix.getValues(viewMatrixValues)
+        val scale = viewMatrixValues[Matrix.MSCALE_X]
+        updateOpacity(mapValue(scale, 0.95f, 1.20f, 0.3f, 1f))
         updateIndicatorsPositionAndState()
     }
 
@@ -90,12 +101,10 @@ class MapSelectionIndicatorsWidget(
     }
 
     private fun setViewPosition(view: View, point: MapPoint) {
-        val pts = FloatArray(2)
-        pts[0] = point.x
-        pts[1] = point.y
+        val pts = floatArrayOf(point.x, point.y)
         viewMatrix.mapPoints(pts)
         val p = view.layoutParams as MarginLayoutParams
-        p.setMargins((pts[0] - view.width / 4).roundToInt(), (pts[1] - view.height).roundToInt(), 0, 0)
+        p.setMargins((pts[0] - view.width / 2).roundToInt(), (pts[1] - view.height).roundToInt(), 0, 0)
         view.requestLayout()
     }
 
