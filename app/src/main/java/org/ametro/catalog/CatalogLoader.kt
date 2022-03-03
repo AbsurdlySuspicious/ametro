@@ -1,6 +1,7 @@
 package org.ametro.catalog
 
 import android.app.Activity
+import android.app.Notification
 import android.content.Context
 import android.os.Bundle
 import androidx.loader.app.LoaderManager
@@ -8,6 +9,9 @@ import androidx.loader.content.AsyncTaskLoader
 import androidx.loader.content.Loader
 import org.ametro.app.ApplicationEx
 import org.ametro.catalog.entities.MapCatalog
+import org.ametro.ui.Notifications
+import org.ametro.ui.loaders.ExtendedMapStatus
+import org.ametro.utils.misc.mapArray
 
 class MapCatalogAsyncTaskLoaderLocal(private val app: ApplicationEx?, context: Context) :
     AsyncTaskLoader<MapCatalog?>(context) {
@@ -59,4 +63,43 @@ class CatalogLoader(
         listener?.onLoaderReset(loader)
     }
 
+}
+
+class BackgroundUpdateCheck(private val context: Context): CatalogLoaderCallbacks {
+    private var localMapCatalog: MapCatalog? = null
+    private var remoteMapCatalog: MapCatalog? = null
+
+    override fun onCreateLoader(id: Int, args: Bundle?, loader: Loader<MapCatalog?>) {}
+    override fun onLoaderReset(loader: Loader<MapCatalog?>) {}
+
+    override fun onLoadFinished(loader: Loader<MapCatalog?>, data: MapCatalog?) {
+        if (data == null)
+            return
+        when (loader.id) {
+            CatalogLoader.LOCAL_CATALOG_LOADER -> localMapCatalog = data
+            CatalogLoader.REMOTE_CATALOG_LOADER -> remoteMapCatalog = data
+        }
+        checkIfUpdated()
+    }
+
+    private fun checkIfUpdated() {
+        val local = localMapCatalog ?: return
+        val remote = remoteMapCatalog ?: return
+        val localized = ApplicationEx
+            .getInstanceContext(context.applicationContext)!!
+            .getLocalizedMapInfoProvider()
+
+        val maps = local.maps.asSequence()
+            .filter { remote.findMap(it.fileName).timestamp != it.timestamp }
+            .map { localized.getCityName(it.cityId) }
+            .toList()
+        if (maps.isNotEmpty())
+            Notifications.mapUpdate(context, true, maps)
+    }
+
+    fun initLoaders(lm: LoaderManager) {
+        val loader = CatalogLoader(context, this)
+        lm.initLoader(CatalogLoader.LOCAL_CATALOG_LOADER, null, loader).forceLoad()
+        lm.initLoader(CatalogLoader.REMOTE_CATALOG_LOADER, null, loader).forceLoad()
+    }
 }

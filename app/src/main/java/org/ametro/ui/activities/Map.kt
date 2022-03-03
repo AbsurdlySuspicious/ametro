@@ -22,12 +22,14 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
+import androidx.loader.app.LoaderManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.ApplicationSettingsProvider
 import org.ametro.app.Constants
 import org.ametro.app.SavedRoute
+import org.ametro.catalog.BackgroundUpdateCheck
 import org.ametro.databinding.ActivityMapViewBinding
 import org.ametro.model.MapContainer
 import org.ametro.model.ModelUtil
@@ -145,6 +147,10 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             applyToolbarInsets(toolbar) {
                 emptyView.updatePadding(bottom = toolbar.layoutParams.height)
             }
+        }
+
+        BackgroundUpdateCheck(this).also {
+            it.initLoaders(LoaderManager.getInstance(this))
         }
     }
 

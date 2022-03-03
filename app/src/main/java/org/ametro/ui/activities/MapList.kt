@@ -20,8 +20,10 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
+import androidx.core.app.NotificationManagerCompat
 import org.ametro.app.Constants
 import org.ametro.databinding.ActivityMapListViewBinding
+import org.ametro.ui.Notifications
 import org.ametro.ui.tasks.TaskHelpers
 import org.ametro.utils.StringUtils
 import org.ametro.utils.ui.*
@@ -146,6 +148,7 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
     }
 
     fun updateMaps() {
+        NotificationManagerCompat.from(this).cancel(Notifications.ID_MAP_UPDATE)
         if (outdatedMaps == null || outdatedMaps!!.isEmpty()) {
             Toast.makeText(this, getString(R.string.msg_maps_all_updated), Toast.LENGTH_LONG).show()
             return
