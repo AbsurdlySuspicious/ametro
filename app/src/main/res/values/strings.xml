@@ -16,6 +16,11 @@
     <string name="about_section_components">Open-source components</string>
     <string name="about_section_license">License</string>
 
+    <string name="notif_map_update_chn_name">Map updates</string>
+    <string name="notif_map_update_chn_desc">Notifications about map updates</string>
+    <string name="notif_map_update_title">New map updates</string>
+    <string name="notif_map_update_action_now">Update now</string>
+
     <string name="title_activity_map_view">&appname;</string>
     <string name="title_activity_map_list_view">Maps</string>
     <string name="title_activity_city_list_view">Add map</string>

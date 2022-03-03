@@ -42,6 +42,7 @@ import org.ametro.routes.RouteUtils
 import org.ametro.routes.entities.MapRoute
 import org.ametro.routes.entities.MapRoutePart
 import org.ametro.routes.entities.MapRouteQueryParameters
+import org.ametro.ui.Notifications
 import org.ametro.ui.adapters.StationSearchAdapter
 import org.ametro.ui.bottom_panel.*
 import org.ametro.ui.navigation.NavigationControllerListener
@@ -690,9 +691,9 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         }
 
     companion object {
-        private const val OPEN_MAPS_ACTION = 1
-        private const val OPEN_SETTINGS_ACTION = 2
-        private const val OPEN_STATION_DETAILS_ACTION = 3
+        const val OPEN_MAPS_ACTION = 1
+        const val OPEN_SETTINGS_ACTION = 2
+        const val OPEN_STATION_DETAILS_ACTION = 3
 
         const val CONFIGURATION_CHANGED_RESULT = 2
     }
