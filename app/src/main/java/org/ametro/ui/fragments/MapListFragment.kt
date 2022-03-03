@@ -15,6 +15,8 @@ import androidx.loader.content.Loader
 import org.ametro.R
 import org.ametro.app.ApplicationEx
 import org.ametro.app.Constants
+import org.ametro.catalog.CatalogLoader
+import org.ametro.catalog.CatalogLoaderCallbacks
 import org.ametro.catalog.entities.MapCatalog
 import org.ametro.catalog.entities.MapInfo
 import org.ametro.catalog.entities.MapInfoHelpers
@@ -26,7 +28,7 @@ import org.ametro.utils.misc.*
 import org.ametro.utils.ui.*
 
 class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.OnCloseListener,
-    LoaderManager.LoaderCallbacks<MapCatalog?>, OnItemClickListener, MultiChoiceModeListener, View.OnClickListener {
+    CatalogLoaderCallbacks, OnItemClickListener, MultiChoiceModeListener, View.OnClickListener {
 
     private var binding: FragmentMapListViewBinding? = null
     private var adapter: MapListAdapter? = null
@@ -35,6 +37,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     private var remoteMapCatalog: MapCatalog? = null
     private var actionMode: ActionMode? = null
     private val actionModeSelection: MutableSet<String> = HashSet()
+    private var catalogLoader: CatalogLoader? = null
     
     private var listener: IMapListEventListener = object : IMapListEventListener {
         override fun onOpenMap(map: MapInfo) {}
@@ -46,6 +49,8 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         binding = FragmentMapListViewBinding.inflate(inflater, container, false)
         adapter = MapListAdapter(activity, ApplicationEx.getInstanceActivity(requireActivity()).getCountryFlagProvider())
+        catalogLoader = CatalogLoader(requireContext(), this)
+
         binding!!.noMaps.setOnClickListener(this)
         binding!!.list.apply {
             onItemClickListener = this@MapListFragment
@@ -63,6 +68,8 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
+        catalogLoader = null
+        adapter = null
     }
 
     override fun onResume() {
@@ -89,8 +96,9 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     }
 
     fun forceUpdate() {
-        loaderManager.initLoader(LOCAL_CATALOG_LOADER, null, this).forceLoad()
-        loaderManager.initLoader(REMOTE_CATALOG_LOADER, null, this).forceLoad()
+        val lm = LoaderManager.getInstance(this)
+        lm.initLoader(CatalogLoader.LOCAL_CATALOG_LOADER, null, catalogLoader!!).forceLoad()
+        lm.initLoader(CatalogLoader.REMOTE_CATALOG_LOADER, null, catalogLoader!!).forceLoad()
     }
 
     fun startContextActionMode() {
@@ -111,46 +119,21 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
         adapter!!.getItem(position)?.let{ listener.onOpenMap(it) }
     }
 
-    private class MapCatalogAsyncTaskLoaderLocal(private val app: ApplicationEx?, act: Activity?) :
-        AsyncTaskLoader<MapCatalog>(
-            act!!
-        ) {
-        override fun loadInBackground(): MapCatalog {
-            return app!!.getLocalMapCatalogManager().mapCatalog
-        }
-    }
-
-    private class MapCatalogAsyncTaskLoaderRemote(private val app: ApplicationEx?, act: Activity?) :
-        AsyncTaskLoader<MapCatalog?>(
-            act!!
-        ) {
-        override fun loadInBackground(): MapCatalog? {
-            return app!!.getRemoteMapCatalogProvider().getMapCatalog(false)
-        }
-    }
-
-    override fun onCreateLoader(id: Int, args: Bundle?): Loader<MapCatalog?> {
-        val app = ApplicationEx.getInstanceActivity(this@MapListFragment.requireActivity())
-        when (id) {
-            LOCAL_CATALOG_LOADER -> return MapCatalogAsyncTaskLoaderLocal(app, activity)
-            REMOTE_CATALOG_LOADER -> return MapCatalogAsyncTaskLoaderRemote(app, activity)
-        }
-        throw Exception("Unknown loader $id")
-    }
-
     override fun onLoadFinished(loader: Loader<MapCatalog?>, data: MapCatalog?) {
         if (data == null)
             return
         
         when (loader.id) {
-            LOCAL_CATALOG_LOADER -> localMapCatalog = data
-            REMOTE_CATALOG_LOADER -> remoteMapCatalog = data
+            CatalogLoader.LOCAL_CATALOG_LOADER -> localMapCatalog = data
+            CatalogLoader.REMOTE_CATALOG_LOADER -> remoteMapCatalog = data
         }
         
         resetAdapter()
     }
 
+    override fun onCreateLoader(id: Int, args: Bundle?, loader: Loader<MapCatalog?>) {}
     override fun onLoaderReset(loader: Loader<MapCatalog?>) {}
+
     override fun onClose(): Boolean {
         filterValue = null
         adapter!!.filter.filter(null)
@@ -305,7 +288,5 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
     companion object {
         private const val STATE_ACTION_MODE = "STATE_ACTION_MODE"
         private const val STATE_SELECTION = "STATE_SELECTION"
-        private const val LOCAL_CATALOG_LOADER = 1
-        private const val REMOTE_CATALOG_LOADER = 2
     }
 }
