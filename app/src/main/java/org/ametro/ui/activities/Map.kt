@@ -144,22 +144,21 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
             }
         }
 
-        BackgroundUpdateCheck(this).also {
-            it.initLoaders(LoaderManager.getInstance(this))
-        }
-
-        handleIntent(intent)
+        handleMapUpdate(intent)
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        intent?.also { handleIntent(it) }
+        intent?.also { handleMapUpdate(it) }
     }
 
-    private fun handleIntent(intent: Intent) {
+    private fun handleMapUpdate(intent: Intent) {
         when (intent.getIntExtra(EXTRA_REQUEST, 0)) {
             REQUEST_MAPS -> openMaps(false)
             REQUEST_MAPS_UPDATE -> openMaps(true)
+            else -> BackgroundUpdateCheck(this).also {
+                it.initLoaders(LoaderManager.getInstance(this))
+            }
         }
     }
 
