@@ -20,23 +20,37 @@ object Notifications {
         val id: String,
         @StringRes val name: Int,
         @StringRes val desc: Int,
+        val priority: Int
     )
 
     const val ID_MAP_UPDATE = 100
 
     private val CHANNEL_MAP_UPDATE =
-        ChannelInfo("map_update", R.string.notif_map_update_chn_name, R.string.notif_map_update_chn_desc)
+        ChannelInfo(
+            "map_update",
+            R.string.notif_map_update_chn_name,
+            R.string.notif_map_update_chn_desc,
+            NotificationCompat.PRIORITY_HIGH,
+        )
 
     private fun createNotificationChannel(context: Context, mgr: NotificationManagerCompat, info: ChannelInfo): String {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Log.d("HEH", "channel: ${mgr.getNotificationChannel(info.id)}")
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+            mgr.getNotificationChannel(info.id) == null
+        ) {
+            val importance = when (info.priority) {
+                NotificationCompat.PRIORITY_HIGH -> NotificationManagerCompat.IMPORTANCE_HIGH
+                NotificationCompat.PRIORITY_MAX -> NotificationManagerCompat.IMPORTANCE_MAX
+                NotificationCompat.PRIORITY_LOW -> NotificationManagerCompat.IMPORTANCE_LOW
+                NotificationCompat.PRIORITY_MIN -> NotificationManagerCompat.IMPORTANCE_MIN
+                else -> NotificationManagerCompat.IMPORTANCE_DEFAULT
+            }
             val name = context.getString(info.name)
             val channel = NotificationChannel(info.id, name, importance).apply {
                 description = context.getString(info.desc)
             }
             mgr.createNotificationChannel(channel)
         }
+
         return info.id
     }
 
@@ -66,7 +80,7 @@ object Notifications {
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(context.getString(R.string.notif_map_update_title))
             .setContentText(cities.joinToString(", "))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(CHANNEL_MAP_UPDATE.priority)
             .setContentIntent(mapUpdateIntent(context, false))
             .setAutoCancel(false)
             .addAction(updateAction)
