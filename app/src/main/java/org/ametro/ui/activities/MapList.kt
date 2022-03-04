@@ -105,6 +105,9 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
         }
         outdatedMaps = outdated.toTypedArray()
         messagePanel.visibility = if (outdatedMaps!!.isNotEmpty()) View.VISIBLE else View.GONE
+    }
+
+    override fun onLoadedRemoteMaps() {
         if (updateNow) updateMaps()
     }
 

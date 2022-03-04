@@ -43,6 +43,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
         override fun onOpenMap(map: MapInfo) {}
         override fun onDeleteMaps(map: Array<MapInfo>) {}
         override fun onLoadedMaps(maps: Array<ExtendedMapInfo>) {}
+        override fun onLoadedRemoteMaps() {}
         override fun onAddMap() {}
     }
 
@@ -212,6 +213,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
         fun onOpenMap(map: MapInfo)
         fun onDeleteMaps(map: Array<MapInfo>)
         fun onLoadedMaps(maps: Array<ExtendedMapInfo>)
+        fun onLoadedRemoteMaps()
         fun onAddMap()
     }
 
@@ -245,6 +247,9 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
         adapter!!.filter.filter(filterValue)
         setListShown()
         listener.onLoadedMaps(maps)
+
+        if (localMapCatalog != null && remoteMapCatalog != null)
+            listener.onLoadedRemoteMaps()
     }
 
     private fun getMapStatus(map: MapInfo, catalog: MapCatalog): ExtendedMapStatus {
