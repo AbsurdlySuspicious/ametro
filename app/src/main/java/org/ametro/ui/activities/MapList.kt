@@ -209,6 +209,11 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
         progressDialog!!.dismiss()
         Toast.makeText(this, getString(R.string.msg_maps_updated, maps.size.toString()), Toast.LENGTH_LONG).show()
         listFragment.forceUpdate()
+        Intent().also {
+            val prefs = ApplicationEx.getInstanceActivity(this).applicationSettingsProvider
+            it.putExtra(Constants.MAP_PATH, prefs.currentMap?.name)
+            setResult(RESULT_OK, it)
+        }
     }
 
     override fun onMapDownloadingFailed(maps: Array<MapInfo>, reason: Throwable) {
