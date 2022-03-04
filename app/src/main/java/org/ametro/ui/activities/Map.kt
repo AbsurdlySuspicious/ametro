@@ -43,19 +43,18 @@ import org.ametro.routes.entities.MapRoutePart
 import org.ametro.routes.entities.MapRouteQueryParameters
 import org.ametro.ui.adapters.StationSearchAdapter
 import org.ametro.ui.bottom_panel.*
-import org.ametro.ui.navigation.NavigationControllerListener
+import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.navigation.NavigationController
+import org.ametro.ui.navigation.NavigationControllerListener
 import org.ametro.ui.tasks.MapLoadAsyncTask
 import org.ametro.ui.tasks.MapLoadAsyncTask.IMapLoadingEventListener
 import org.ametro.ui.testing.DebugToast
 import org.ametro.ui.testing.TestMenuOptionsProcessor
 import org.ametro.ui.views.MultiTouchMapView
-import org.ametro.ui.bottom_panel.MapBottomPanelStation.MapBottomPanelStationListener
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
 import org.ametro.utils.misc.ColorUtils
 import org.ametro.utils.misc.convertPair
-import org.ametro.utils.misc.stripHighMaskRequestCode
 import java.util.*
 
 class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControllerListener,
@@ -147,6 +146,20 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
         BackgroundUpdateCheck(this).also {
             it.initLoaders(LoaderManager.getInstance(this))
+        }
+
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.also { handleIntent(it) }
+    }
+
+    private fun handleIntent(intent: Intent) {
+        when (intent.getIntExtra(EXTRA_REQUEST, 0)) {
+            REQUEST_MAPS -> openMaps(false)
+            REQUEST_MAPS_UPDATE -> openMaps(true)
         }
     }
 
@@ -354,20 +367,18 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         waitingForActivityResult = false
-        when (stripHighMaskRequestCode(requestCode)) {
-            OPEN_MAPS_ACTION -> {
-                if (resultCode == RESULT_OK) {
-                    app.clearCurrentMapViewState()
-                    val mapPath = data?.getStringExtra(Constants.MAP_PATH)
-                    if (mapPath != null) {
-                        val localMapCatalogManager = app.getLocalMapCatalogManager()
-                        val map = localMapCatalogManager.findMapByName(mapPath)
-                        val mapFile = localMapCatalogManager.getMapFile(map)
-                        val mapContainer = MapContainer(mapFile, settingsProvider.preferredMapLanguage)
-                        MapLoadAsyncTask(this, this, mapContainer).execute()
-                    } else {
-                        onMapLoadComplete(null, null, null, 0)
-                    }
+        when (requestCode) {
+            OPEN_MAPS_ACTION -> if (resultCode == RESULT_OK) {
+                app.clearCurrentMapViewState()
+                val mapPath = data?.getStringExtra(Constants.MAP_PATH)
+                if (mapPath != null) {
+                    val localMapCatalogManager = app.getLocalMapCatalogManager()
+                    val map = localMapCatalogManager.findMapByName(mapPath)
+                    val mapFile = localMapCatalogManager.getMapFile(map)
+                    val mapContainer = MapContainer(mapFile, settingsProvider.preferredMapLanguage)
+                    MapLoadAsyncTask(this, this, mapContainer).execute()
+                } else {
+                    onMapLoadComplete(null, null, null, 0)
                 }
             }
             OPEN_STATION_DETAILS_ACTION -> {
@@ -476,11 +487,17 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         Log.e(Constants.LOG, "Map load failed due exception: " + reason.message, reason)
     }
 
-    override fun onOpenMaps(): Boolean {
+    private fun openMaps(updateNow: Boolean): Boolean {
         mapBottomStation.hide()
-        startActivityForResult(Intent(this, MapList::class.java), OPEN_MAPS_ACTION)
+        val i = Intent(this, MapList::class.java)
+            .also { it.putExtra(MapList.EXTRA_UPDATE_NOW, updateNow) }
+        startActivityForResult(i, OPEN_MAPS_ACTION)
         waitingForActivityResult = true
         return true
+    }
+
+    override fun onOpenMaps(): Boolean {
+        return openMaps(false)
     }
 
     override fun onOpenSettings(): Boolean {
@@ -695,9 +712,13 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
         }
 
     companion object {
-        const val OPEN_MAPS_ACTION = 1
-        const val OPEN_SETTINGS_ACTION = 2
-        const val OPEN_STATION_DETAILS_ACTION = 3
+        private const val OPEN_MAPS_ACTION = 1
+        private const val OPEN_SETTINGS_ACTION = 2
+        private const val OPEN_STATION_DETAILS_ACTION = 3
+
+        const val EXTRA_REQUEST = "request"
+        const val REQUEST_MAPS = 1
+        const val REQUEST_MAPS_UPDATE = 2
 
         const val CONFIGURATION_CHANGED_RESULT = 2
     }

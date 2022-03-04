@@ -75,8 +75,7 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
     }
 
     private fun setUpdateNow() {
-        updateNow = intent.getBooleanExtra(Notifications.EXTRA_UPDATE_NOW, false)
-        Log.d("FOO", "extra $updateNow")
+        updateNow = intent.getBooleanExtra(EXTRA_UPDATE_NOW, false)
     }
 
     override fun onOpenMap(map: MapInfo) {
@@ -216,5 +215,7 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
 
     companion object {
         private const val ADD_ACTION = 1
+
+        const val EXTRA_UPDATE_NOW = "update_now"
     }
 }
