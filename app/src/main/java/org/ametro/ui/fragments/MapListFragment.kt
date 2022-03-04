@@ -249,7 +249,7 @@ class MapListFragment : Fragment(), SearchView.OnQueryTextListener, SearchView.O
 
     private fun getMapStatus(map: MapInfo, catalog: MapCatalog): ExtendedMapStatus {
         val remoteMap = catalog.findMap(map.fileName) ?: return ExtendedMapStatus.Unknown
-        return if (remoteMap.timestamp == map.timestamp) {
+        return if (remoteMap.timestamp+1 == map.timestamp) {
             ExtendedMapStatus.Installed
         } else ExtendedMapStatus.Outdated
     }

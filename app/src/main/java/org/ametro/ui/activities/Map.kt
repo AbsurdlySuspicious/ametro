@@ -1,14 +1,11 @@
 package org.ametro.ui.activities
 
-import android.app.ProgressDialog
 import android.app.SearchManager
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.PointF
-import android.graphics.PorterDuff
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -44,7 +41,6 @@ import org.ametro.routes.RouteUtils
 import org.ametro.routes.entities.MapRoute
 import org.ametro.routes.entities.MapRoutePart
 import org.ametro.routes.entities.MapRouteQueryParameters
-import org.ametro.ui.Notifications
 import org.ametro.ui.adapters.StationSearchAdapter
 import org.ametro.ui.bottom_panel.*
 import org.ametro.ui.navigation.NavigationControllerListener
@@ -59,7 +55,7 @@ import org.ametro.ui.widgets.MapSelectionIndicatorsWidget
 import org.ametro.ui.widgets.MapSelectionIndicatorsWidget.IMapSelectionEventListener
 import org.ametro.utils.misc.ColorUtils
 import org.ametro.utils.misc.convertPair
-import org.ametro.utils.ui.*
+import org.ametro.utils.misc.stripHighMaskRequestCode
 import java.util.*
 
 class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControllerListener,
@@ -358,18 +354,20 @@ class Map : AppCompatActivityEx(), IMapLoadingEventListener, NavigationControlle
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         waitingForActivityResult = false
-        when (requestCode) {
-            OPEN_MAPS_ACTION -> if (resultCode == RESULT_OK) {
-                app.clearCurrentMapViewState()
-                val mapPath = data?.getStringExtra(Constants.MAP_PATH)
-                if (mapPath != null) {
-                    val localMapCatalogManager = app.getLocalMapCatalogManager()
-                    val map = localMapCatalogManager.findMapByName(mapPath)
-                    val mapFile = localMapCatalogManager.getMapFile(map)
-                    val mapContainer = MapContainer(mapFile, settingsProvider.preferredMapLanguage)
-                    MapLoadAsyncTask(this, this, mapContainer).execute()
-                } else {
-                    onMapLoadComplete(null, null, null, 0)
+        when (stripHighMaskRequestCode(requestCode)) {
+            OPEN_MAPS_ACTION -> {
+                if (resultCode == RESULT_OK) {
+                    app.clearCurrentMapViewState()
+                    val mapPath = data?.getStringExtra(Constants.MAP_PATH)
+                    if (mapPath != null) {
+                        val localMapCatalogManager = app.getLocalMapCatalogManager()
+                        val map = localMapCatalogManager.findMapByName(mapPath)
+                        val mapFile = localMapCatalogManager.getMapFile(map)
+                        val mapContainer = MapContainer(mapFile, settingsProvider.preferredMapLanguage)
+                        MapLoadAsyncTask(this, this, mapContainer).execute()
+                    } else {
+                        onMapLoadComplete(null, null, null, 0)
+                    }
                 }
             }
             OPEN_STATION_DETAILS_ACTION -> {

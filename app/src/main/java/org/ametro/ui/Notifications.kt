@@ -1,5 +1,6 @@
 package org.ametro.ui
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -12,11 +13,13 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.app.TaskStackBuilder
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.res.ResourcesCompat
 import org.ametro.R
 import org.ametro.ui.activities.MapList
 import org.ametro.ui.activities.Map
+import org.ametro.utils.misc.uniqueRequestCode
 
 object Notifications {
     private data class ChannelInfo(
@@ -44,17 +47,13 @@ object Notifications {
         return info.id
     }
 
-    private fun pendingIntent(flags: Int): Int =
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) flags
-        else flags or PendingIntent.FLAG_IMMUTABLE
-
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun mapUpdateIntent(context: Context, update: Boolean): PendingIntent {
         val i = Intent(context, MapList::class.java).apply {
             putExtra(EXTRA_UPDATE_NOW, update)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        val flags = pendingIntent(0)
-        return PendingIntent.getActivity(context, Map.OPEN_MAPS_ACTION, i, flags)
+        return PendingIntent.getActivity(context, uniqueRequestCode(Map.OPEN_MAPS_ACTION), i, 0)
     }
 
     fun mapUpdate(context: Context, show: Boolean, cities: List<String>): Notification {

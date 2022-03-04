@@ -10,6 +10,7 @@ import android.os.Bundle
 import org.ametro.R
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 import org.ametro.app.ApplicationEx
 import org.ametro.ui.loaders.ExtendedMapInfo
@@ -40,6 +41,7 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
 
     private var outdatedMaps: Array<MapInfo>? = null
     private var waitingForActivityResult: Boolean = false
+    private var updateNow: Boolean = false
 
     @SuppressLint("RestrictedApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,6 +63,20 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
 
         listFragment = supportFragmentManager.findFragmentById(R.id.list) as MapListFragment
         listFragment.setMapListEventListener(this)
+
+        setUpdateNow()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setUpdateNow()
+        if (updateNow)
+            listFragment.forceUpdate()
+    }
+
+    private fun setUpdateNow() {
+        updateNow = intent.getBooleanExtra(Notifications.EXTRA_UPDATE_NOW, false)
+        Log.d("FOO", "extra $updateNow")
     }
 
     override fun onOpenMap(map: MapInfo) {
@@ -90,6 +106,7 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
         }
         outdatedMaps = outdated.toTypedArray()
         messagePanel.visibility = if (outdatedMaps!!.isNotEmpty()) View.VISIBLE else View.GONE
+        if (updateNow) updateMaps()
     }
 
     override fun onAddMap() {
@@ -149,6 +166,8 @@ class MapList : AppCompatActivityEx(), IMapListEventListener, IMapInstallerEvent
 
     fun updateMaps() {
         NotificationManagerCompat.from(this).cancel(Notifications.ID_MAP_UPDATE)
+        updateNow = false
+
         if (outdatedMaps == null || outdatedMaps!!.isEmpty()) {
             Toast.makeText(this, getString(R.string.msg_maps_all_updated), Toast.LENGTH_LONG).show()
             return

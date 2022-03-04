@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Pair
 import kotlin.math.abs
+import kotlin.random.Random
 
 const val EPSILON = 1.19209290e-07f
 
@@ -16,6 +17,21 @@ fun saturate(value: Float, minFrom: Float, minTo: Float, maxFrom: Float, maxTo: 
     if (value > maxFrom) maxTo
     else if (value < minFrom) minTo
     else value
+
+private const val HIGH_SHIFT = 24
+private const val HIGH_MASK = 0xffffff // (2 ^ HIGH_SHIFT) - 1
+
+fun stripHighMaskRequestCode(reqCode: Int): Int =
+    if (reqCode and HIGH_MASK.inv() != 0)
+        reqCode shr HIGH_SHIFT
+    else
+        reqCode
+
+fun highMaskRequestCode(requestType: Int, value: Int): Int =
+    (requestType and 0xff shl HIGH_SHIFT) or (value and HIGH_MASK)
+
+fun uniqueRequestCode(requestType: Int): Int =
+    highMaskRequestCode(requestType, Random(System.currentTimeMillis()).nextInt(0, HIGH_MASK))
 
 fun <A, B> convertPair(p: kotlin.Pair<A, B>): Pair<A, B> {
     return Pair(p.first, p.second)
