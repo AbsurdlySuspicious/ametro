@@ -1,5 +1,6 @@
 package org.ametro.ui
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,14 +9,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.res.ResourcesCompat
 import org.ametro.R
-import org.ametro.ui.activities.MapList
 import org.ametro.ui.activities.Map
 
 object Notifications {
@@ -25,7 +22,6 @@ object Notifications {
         @StringRes val desc: Int,
     )
 
-    const val EXTRA_UPDATE_NOW = "update_now"
     const val ID_MAP_UPDATE = 100
 
     private val CHANNEL_MAP_UPDATE =
@@ -44,17 +40,16 @@ object Notifications {
         return info.id
     }
 
-    private fun pendingIntent(flags: Int): Int =
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) flags
-        else flags or PendingIntent.FLAG_IMMUTABLE
-
+    @SuppressLint("UnspecifiedImmutableFlag")
     private fun mapUpdateIntent(context: Context, update: Boolean): PendingIntent {
-        val i = Intent(context, MapList::class.java).apply {
-            putExtra(EXTRA_UPDATE_NOW, update)
+        val request =
+            if (update) Map.REQUEST_MAPS_UPDATE
+            else Map.REQUEST_MAPS
+        val i = Intent(context, Map::class.java).apply {
+            putExtra(Map.EXTRA_REQUEST, request)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
-        val flags = pendingIntent(0)
-        return PendingIntent.getActivity(context, Map.OPEN_MAPS_ACTION, i, flags)
+        return PendingIntent.getActivity(context, request, i, 0)
     }
 
     fun mapUpdate(context: Context, show: Boolean, cities: List<String>): Notification {

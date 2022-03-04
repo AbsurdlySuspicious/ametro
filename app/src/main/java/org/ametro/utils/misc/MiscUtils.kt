@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Pair
 import kotlin.math.abs
+import kotlin.random.Random
 
 const val EPSILON = 1.19209290e-07f
 
