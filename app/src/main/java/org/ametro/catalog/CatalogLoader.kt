@@ -90,7 +90,7 @@ class BackgroundUpdateCheck(private val context: Context): CatalogLoaderCallback
             .getLocalizedMapInfoProvider()
 
         val maps = local.maps.asSequence()
-            .filter { remote.findMap(it.fileName).timestamp+1 != it.timestamp }
+            .filter { remote.findMap(it.fileName).timestamp != it.timestamp }
             .map { localized.getCityName(it.cityId) }
             .toList()
         if (maps.isNotEmpty())
