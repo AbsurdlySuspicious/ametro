@@ -1,0 +1,111 @@
+name: Build app
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - 'doc/**'
+      - 'fastlane/**'
+      - 'assets/**'
+      - '.github/**/*.md'
+      - '.github/FUNDING.yml'
+      - '.github/ISSUE_TEMPLATE/**'
+  push:
+    branches:
+      - master
+    tags:
+      - release-*
+    paths-ignore:
+      - 'README.md'
+      - 'doc/**'
+      - 'fastlane/**'
+      - 'assets/**'
+      - '.github/**/*.md'
+      - '.github/FUNDING.yml'
+      - '.github/ISSUE_TEMPLATE/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v3
+
+      - name: Validate gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+        with:
+          min-wrapper-count: 1
+
+      - name: Update submodules
+        run: git submodule update --init
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: 11
+          distribution: "temurin"
+          cache: 'gradle'
+
+      - name: (DEBUG) Show SDK
+        if: ${{ false }}
+        run: /usr/local/lib/android/sdk/tools/bin/sdkmanager --list
+
+      - name: Set gradle.properties
+        run: |
+          mkdir -p ~/.gradle
+          cp .github/runner/runner-gradle.properties ~/.gradle/gradle.properties
+
+      - name: Build APK
+        run: ./gradlew assembleRelease
+
+      - name: Rename APK
+        run: .github/runner/rename-apk.sh
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app
+          retention-days: 5
+          path: ~/out/*.apk
+
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/release-') && github.repository == 'AbsurdlySuspicious/ametro'
+    needs:
+      - build
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v3
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: app
+          path: ${{ runner.temp }}/out
+
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: ${{ runner.temp }}/out
+          signingKeyBase64: ${{ secrets.KEY_STORE }}
+          alias: ametro
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_STORE_PASSWORD }}
+
+      - name: Prepare release info
+        id: id-release
+        run: .github/runner/prepare-release.sh ${{ github.ref }} ${{ runner.temp }}/out
+
+      - name: Upload release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.id-release.outputs.tag }}
+          name: aMetro ${{ steps.id-release.outputs.version }}
+          files: ${{ runner.temp }}/out/*-signed.apk
+          draft: true
+          prerelease: false
