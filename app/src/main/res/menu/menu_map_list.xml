@@ -6,23 +6,23 @@
 
     <item android:id="@+id/action_search"
         android:title="@string/action_search"
-        android:icon="@drawable/ic_search_black_24dp"
+        android:icon="@drawable/ic_search"
         app:showAsAction="ifRoom|collapseActionView"
         app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
     <item android:id="@+id/action_add"
         android:title="@string/action_add"
-        android:icon="@drawable/ic_add_circle_black_24dp"
+        android:icon="@drawable/ic_add_circle"
         app:showAsAction="ifRoom|withText|collapseActionView"/>
 
     <item android:id="@+id/action_update"
         android:title="@string/action_update"
-        android:icon="@drawable/ic_cloud_download_black_24dp"
+        android:icon="@drawable/ic_cloud_download"
         app:showAsAction="ifRoom|withText|collapseActionView"/>
 
     <item android:id="@+id/action_delete"
         android:title="@string/action_delete"
-        android:icon="@drawable/ic_delete_black_24dp"
+        android:icon="@drawable/ic_delete"
         app:showAsAction="ifRoom|withText|collapseActionView"/>
 
     <item android:id="@+id/action_close_map"

@@ -73,7 +73,7 @@
             android:layout_width="@dimen/panel_bottom_info_icon_size"
             android:layout_height="@dimen/panel_bottom_info_icon_size"
             android:layout_marginEnd="15dp"
-            android:src="@drawable/ic_station_info"
+            android:src="@drawable/ic_info"
             app:tint="@color/panel_secondary_icon"
             app:layout_constraintEnd_toEndOf="@id/station_layout"
             app:layout_constraintTop_toTopOf="@id/station_layout"

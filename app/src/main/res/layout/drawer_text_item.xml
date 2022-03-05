@@ -30,7 +30,7 @@
             android:layout_height="@dimen/drawer_item_image_height"
             android:padding="@dimen/drawer_item_image_padding"
             android:scaleType="fitCenter"
-            tools:src="@drawable/ic_public_black_18dp"
+            tools:src="@drawable/ic_public"
             android:layout_marginStart="10dp"
             app:layout_constraintStart_toStartOf="@id/bg"
             app:layout_constraintTop_toTopOf="parent"
