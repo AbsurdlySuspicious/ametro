@@ -133,6 +133,7 @@ open class About : AppCompatActivityEx() {
         Component("Material icons", "fonts.google.com/icons"),
         Component("Android-SVG", "github.com/japgolly/svg-android"),
         Component("FasterXML Jackson", "github.com/FasterXML"),
+        Component("Pager Dots Indicator", "github.com/tommybuonomo/dotsindicator"),
         Component("AndroidX and other google components", "github.com/google"),
         Component("Material components", "github.com/material-components"),
         Component("Kotlin stdlib", "github.com/JetBrains/kotlin")
