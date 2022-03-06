@@ -13,8 +13,8 @@ android {
 
         targetSdkVersion 30
 
-        versionCode 42
-        versionName "2.0.2"
+        versionCode 1000
+        versionName "3.0.0"
 
         setProperty("archivesBaseName", "aMetro-$versionName")
 
