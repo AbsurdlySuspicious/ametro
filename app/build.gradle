@@ -65,8 +65,8 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0'
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
-    // patched version, upstream is 'com.tbuonomo:dotsindicator:4.2'; todo use jitpack (?)
-    implementation project(path: ':dots')
+    // patched version, upstream is 'com.tbuonomo:dotsindicator:4.2'
+    implementation 'com.github.AbsurdlySuspicious:dotsindicator:a035a6f5e2152c05047b49730b30b7ef981d6825'
 
     implementation 'com.fasterxml.jackson.core:jackson-core:2.13.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
